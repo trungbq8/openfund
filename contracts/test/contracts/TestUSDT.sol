@@ -6,14 +6,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title TestUSDT
- * @dev A test USDT token for testing the OpenFund contract
- * This token uses 6 decimals
+ * @dev Test USDT token for testing the fundraising contract
  */
 contract TestUSDT is ERC20, Ownable {
     uint8 private _decimals = 6;
 
     constructor() ERC20("Test USDT", "USDT") Ownable(msg.sender) {
-        // Mint 1 million test USDT to deployer
         _mint(msg.sender, 1_000_000 * 10**_decimals);
     }
 
@@ -34,11 +32,10 @@ contract TestUSDT is ERC20, Ownable {
     }
 
     /**
-     * @dev Allows users to request test tokens (faucet functionality)
-     * Limits to 10,000 USDT per request
+     * @dev Allows users to request test tokens
      */
     function requestTokens() external {
-        uint256 amount = 10_000 * 10**_decimals; // 10,000 USDT
+        uint256 amount = 10_000 * 10**_decimals;
         _mint(msg.sender, amount);
     }
 }

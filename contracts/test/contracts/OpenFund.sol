@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract OpenFund is Ownable, ReentrancyGuard {
-    // Constants
     uint256 public constant USDT_UNIT = 100 * 10**6;
     uint256 public constant MAX_INVESTMENT_UNITS = 10;
     uint256 public constant PLATFORM_FEE_PERCENT = 5;
@@ -37,15 +36,12 @@ contract OpenFund is Ownable, ReentrancyGuard {
         bool claimUnsoldToken;
     }
     
-    // USDT token address
     IERC20 public usdtToken;
     
-    // Project storage
     mapping(uint256 => Project) private projects;
 
     mapping(address => uint256[]) private investorProjects;
     
-    // Events
     event ProjectCreated(uint256 indexed projectId, address indexed raiser, uint256 tokensToSell, uint256 tokenPrice, uint256 endTime);
     event TokensDeposited(uint256 indexed projectId, uint256 amount);
     event InvestmentMade(uint256 indexed projectId, address indexed investor, uint256 amount);
@@ -123,7 +119,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
         IERC20 projectToken = IERC20(project.tokenAddress);
         uint256 tokenAmount = project.tokensToSell;
         
-        // Transfer tokens from raiser to contract
         require(
             projectToken.transferFrom(msg.sender, address(this), tokenAmount),
             "Depositing: Token transfer failed"
@@ -152,13 +147,11 @@ contract OpenFund is Ownable, ReentrancyGuard {
         
         require(project.tokensSold + tokensToReceive <= project.tokensToSell, "Not enough tokens left");
         
-        // Transfer USDT from investor to contract
         require(
             usdtToken.transferFrom(msg.sender, address(this), investmentAmount),
             "Investing: USDT transfer failed"
         );
         
-        // Record investment
         if (project.investments[msg.sender] == 0) {
             project.investorsCount++;
             investorProjects[msg.sender].push(_projectId);
@@ -226,11 +219,9 @@ contract OpenFund is Ownable, ReentrancyGuard {
         require(project.status == ProjectStatus.Approved, "Project not approved");
         
         
-        // Calculate amounts
         uint256 platformFee = (project.fundsRaised * PLATFORM_FEE_PERCENT) / 100;
         uint256 raiserAmount = project.fundsRaised - platformFee;
         
-        // Transfer funds to raiser
         require(
             usdtToken.transfer(project.raiser, raiserAmount),
             "USDT transfer to raiser failed"
@@ -309,7 +300,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
         uint256 unsoldTokens = project.tokensToSell - project.tokensSold;
         require(unsoldTokens > 0, "No unsold tokens");
         
-        // Transfer unsold tokens back to raiser
         IERC20 projectToken = IERC20(project.tokenAddress);
         require(
             projectToken.transfer(project.raiser, unsoldTokens),
@@ -364,7 +354,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
     ) {
         Project storage project = projects[_projectId];
         
-        // Calculate approval percentage (0 if no funds raised to avoid division by zero)
         uint256 _approvalPercentage = 0;
         if (project.fundsRaised > 0) {
             _approvalPercentage = (project.approvalVotes * 100) / project.fundsRaised;
