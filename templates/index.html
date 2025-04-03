@@ -14,6 +14,7 @@
       body{
          margin: 0;
          font-family: "Poppins";
+         overflow-x: hidden;
       }
       button{
          font-family: "Poppins";
@@ -129,7 +130,7 @@
          transition: background-color 0.2s ease-in-out;
       }
 
-      @media (max-width: 950px) {
+      @media (max-width: 880px) {
          .menu-btn{
             display: block;
          }
@@ -208,37 +209,38 @@
       /* hero */
       .hero{
          width: 100%;
-         height: 540px;
-         padding-top: 90px;
+         height: 580px;
+         background-image: url(/static/app_assets/hero-background.png);
+         background-size: cover;
+         background-position: center;
+         background-repeat: no-repeat;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         flex-wrap: wrap;
+         gap: 10%;
+         padding: 110px 5% 0 5%;
+         box-sizing: border-box;
       }
       .hero-text{
-         width: 40%;
-         min-width: 369px;
-         max-width: 620px;
+         width: 552px;
          border: 0;
-         margin-top: 6%;
-         margin-left: 12%;
       }
       .hero-text h1{
          font-size: 3.15rem;
          margin-top: 0;
-         margin-bottom: -8px;
+         margin-bottom: -15px;
       }
       .hero-text p{
          color: black;
-         opacity: 0.69;
+         opacity: 0.56;
+         margin-top: 30px;
+         font-size: 0.915rem;
       }
-      .hero-background-video-desktop, .hero-background-video-mobile{
-         position: absolute;
-         top: 0;
-         left: 0;
-         width: 100vw;
-         height: 620px;
-         z-index: -1;
-         object-fit:cover;
-      }
-      .hero-background-video-mobile{
-         display: none;
+      .hero-gif{
+         width: 300px;
+         height: 300px;
+         margin-bottom: 40px;
       }
       .get_started{
          padding: 5px 10px;
@@ -256,14 +258,6 @@
          align-items: center;
          position: relative;
       }
-      .separate-section{
-         width: 120px;
-         position: absolute;
-         left: 50%;
-         transform: translate(-50%, -50%);
-         top: 0px;
-         border: solid 0.5px black;
-      }
       .description-boxes{
          margin-top: 10px;
          margin-bottom: 20px;
@@ -272,12 +266,15 @@
          flex-wrap: wrap;
          align-items: center;
          justify-content: center;
+         padding-left: 10px;
+         padding-right: 10px;
       }
       .description-box{
          cursor: pointer;
          width: 380px;
+         max-width: 380px;
          height: 200px;
-         border: solid 2px rgb(65, 65, 65);
+         border: dashed 2px rgb(65, 65, 65);
          border-radius: 20px;
          display: flex;
          align-items: center;
@@ -326,31 +323,39 @@
          right: 15px;
          top: 10px;
       }
-      @media (max-width: 768px) {
+      .faq-section{
+         width: 100%;
+         background-color: white;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         position: relative;
+         padding-left: 10px;
+         padding-right: 10px;
+         box-sizing: border-box;
+      }
+      @media (min-width: 768px) and (max-width: 1135px) {
          .nav-bar{
             width: 90%;
          }
-         .hero-background-video-desktop{
-            display: none;
+         .hero{
+            gap: 3%;
+            padding: 30px 5% 0 5%;
          }
-         .hero-background-video-mobile{
-            display: block;
-         }
-         .hero-text h1{
-            font-size: 1.58rem;
+         .hero-gif{
+            width: 230px;
+            height: 230px;
          }
          .hero-text{
-            min-width: 280px;
-            margin-top: 8.5%;
+            width: 440px;
+         }
+         .hero-text h1{
+            font-size: 2.51rem;
          }
          .hero-text p{
             margin-top: 20px;
             font-size: 0.74rem;
             text-align: justify;
-         }
-         .description h1{
-            font-size: 1rem;
-            margin-top: 20px;
          }
          .description-box{
             width: 86%;
@@ -366,6 +371,55 @@
             font-size: 0.6rem;
          }
       }
+      @media (max-width: 768px) {
+         .nav-bar{
+            width: 90%;
+         }
+         .hero{
+            gap: 20px;
+            padding: 60px 0px 0px 0px;
+            flex-direction: column;
+         }
+         .hero-gif{
+            width: 200px;
+            height: 200px;
+            margin-bottom: 0;
+         }
+         .hero-text h1{
+            font-size: 1.77rem;
+            margin-bottom: -10px;
+         }
+         .hero-text{
+            width: 310px;
+         }
+         .hero-text p{
+            margin-top: 15px;
+            font-size: 0.68rem;
+            text-align: justify;
+         }
+         .description h1{
+            font-size: 1rem;
+            margin-top: 0px;
+         }
+         .description-box{
+            width: 86%;
+         }
+         .description-box-text{
+            width: 220px;
+         }
+         .description-box-text h1{
+            font-size: 0.86rem;
+            margin-top: 0px;
+         }
+         .description-box-text h2{
+            font-size: 0.6rem;
+         }
+         .faq-section h1{
+            font-size: 1rem;
+         }
+      }
+
+      
    </style>
    <!-- nav bar -->
    <div class="nav-bar">
@@ -410,22 +464,16 @@
    <!-- end connect wallet -->
 
    <div class="hero">
-      <video autoplay loop muted playsinline class="hero-background-video-desktop">
-         <source src="/static/app_assets/hero_background_video_desktop.mp4" type="video/mp4">
-      </video>
-      <video autoplay loop muted playsinline class="hero-background-video-mobile">
-         <source src="/static/app_assets/hero_background_video_mobile.mp4" type="video/mp4">
-      </video>
       <div class="hero-text">
          <h1>Decentralized <i class="fa-solid fa-circle-nodes"></i></h1>
          <h1>Fundraising Platform</h1>
          <h1>for Visionary Projects</h1>
-         <p>Empower innovation by investing in the next big idea. Our transparent, blockchain-powered platform connects ambitious entrepreneurs with forward-thinking investors.</p>
+         <p>🎯 Discover and seize early investment opportunities by engaging in secure and transparent token sales of groundbreaking projects.</p>
          <button class="get_started">Get started</button>
       </div>
+      <img class="hero-gif" src="/static/app_assets/hero-gif.gif">
    </div>
    <div class="description">
-      <div class="separate-section"></div>
       <h1>Why Choose OpenFund?</h1>
       <div class="description-boxes">
          <div class="description-box">
@@ -460,11 +508,112 @@
          </div>
       </div>
    </div>
-   <div class="description">
-      <h1>Why Choose Our Platform?</h1>
+   <div class="faq-section">
+      <h1>FAQ</h1>
+      <style>
+         .toggle-faq-icon{
+            cursor: pointer;
+            opacity: 0.4;
+         }
+         .faq-container{
+            display: flex;
+            flex-direction: column;
+            width: 75%;
+            border: solid 2px black;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+         }
+         .faq-container hr{
+            width: 100%;
+            color: black;
+            opacity: 0.6;
+         }
+         .faq{
+            display: flex;
+            gap: 10px;
+         }
+         .faq-content{
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+         }
+         .question{
+            cursor: pointer;
+            font-weight: 500;
+         }
+         .answer{
+            opacity: 0.8;
+            margin-bottom: 10px;
+            font-weight: 300;
+         }
+      </style>
+      <div class="faq-container">
+         <div class="faq">
+            <div class="toggle-faq-icon"><i class="fa-solid fa-plus"></i></div>
+            <div class="faq-content">
+               <div class="question">
+                  What is OpenFund?
+               </div>
+               <div class="answer">
+                  OpenFund is a decentralized fundraising platform that enables investors to discover and invest early in promising projects while providing fundraisers with a transparent way to raise capital.
+               </div>
+            </div>
+         </div>
+         <hr>
+         <div class="faq">
+            <div class="toggle-faq-icon"><i class="fa-solid fa-plus"></i></div>
+            <div class="faq-content">
+               <div class="question">
+                  How projects are listed for fundraising?
+               </div>
+               <div class="answer">
+                  Fundraisers submit project details to OpenFund (off-chain) for review. The platform carefully verifies each project before listing it on-chain for fundraising, ensuring security and trust. Once approved, the fundraising process is fully decentralized.
+               </div>
+            </div>
+         </div>
+         <hr>
+         <div class="faq">
+            <div class="toggle-faq-icon"><i class="fa-solid fa-plus"></i></div>
+            <div class="faq-content">
+               <div class="question">
+                  How to invest in a project?
+               </div>
+               <div class="answer">
+                  Investors can invest in projects using USDT. The number of project tokens received is calculated based on the token price. Tokens are distributed after the funding period ends. Each investor can contribute up to 10 units, with 1 unit equal to 100 USDT.
+               </div>
+            </div>
+         </div>
+         <hr>
+         <div class="faq">
+            <div class="toggle-faq-icon"><i class="fa-solid fa-plus"></i></div>
+            <div class="faq-content">
+               <div class="question">
+                  What if a project fails?
+               </div>
+               <div class="answer">
+                  After funding ends, investors vote on fund release. If 50%+ approval (by investment amount & investors), funds go to the fundraiser; otherwise, investors get refunds. This reduces the risk of funding non-developing projects.
+               </div>
+            </div>
+         </div>
+         <hr>
+         <div class="faq">
+            <div class="toggle-faq-icon"><i class="fa-solid fa-plus"></i></div>
+            <div class="faq-content">
+               <div class="question">
+                  Do OpenFund charge fundraisng fee?
+               </div>
+               <div class="answer">
+                  Yes, OpenFund charges fundraiser a 5% fee, but only for successfully funded projects.
+               </div>
+            </div>
+         </div>
+      </div>
    </div>
 
    <script>
+      //connect
       const connect_wallet_btn = document.getElementById("connect-btn");
       const close_wallet_btn = document.getElementById("close-connect-wallet-btn");
       const connect_box = document.getElementById("connect-wallet-box");
@@ -480,6 +629,37 @@
          overlay.classList.add("hidden");
       });
 
+      // faq
+      document.addEventListener("DOMContentLoaded", function () {
+         const faqs = document.querySelectorAll(".faq");
+
+         faqs.forEach((faq) => {
+            const icon = faq.querySelector(".toggle-faq-icon i");
+            const answer = faq.querySelector(".answer");
+
+            // Initially hide all answers
+            answer.style.display = "none";
+
+            faq.addEventListener("click", function () {
+                  // Close all other answers
+                  faqs.forEach((otherFaq) => {
+                     if (otherFaq !== faq) {
+                        otherFaq.querySelector(".answer").style.display = "none";
+                        otherFaq.querySelector(".toggle-faq-icon i").classList.replace("fa-minus", "fa-plus");
+                     }
+                  });
+
+                  // Toggle the clicked FAQ
+                  if (answer.style.display === "none") {
+                     answer.style.display = "block";
+                     icon.classList.replace("fa-plus", "fa-minus");
+                  } else {
+                     answer.style.display = "none";
+                     icon.classList.replace("fa-minus", "fa-plus");
+                  }
+            });
+         });
+      });
    </script>
 </body>
 </html>
