@@ -22,6 +22,7 @@ contract OpenFund is Ownable, ReentrancyGuard {
         uint256 tokenPrice; // Use decimal 6
         uint256 endFundingTime;
         uint256 endVotingTime;
+        uint256 endRefundTime;
         uint256 fundsRaised;
         uint256 tokensSold;
         uint8 decimal;
@@ -100,6 +101,7 @@ contract OpenFund is Ownable, ReentrancyGuard {
         project.platformFeeClaimed = false;
         project.fundsRaised = 0;
         project.endVotingTime = _endFundingTime + 3 days;
+        project.endRefundTime = _endFundingTime + 4 days;
         project.decimal = projectTokenDecimal;
         
         emit ProjectCreated(_projectId, _raiser, _tokensToSell, _tokenPrice, _endFundingTime);
@@ -213,9 +215,8 @@ contract OpenFund is Ownable, ReentrancyGuard {
         Project storage project = projects[_projectId];
         
         require(msg.sender == project.raiser, "Only raiser can claim funds");
-        require(block.timestamp >= project.endVotingTime, "Voting period has not ended yet");
+        require(block.timestamp >= project.endRefundTime, "It is not time to claim fund");
         require(!project.fundsClaimed, "Funds already claimed");
-        require(project.status != ProjectStatus.FundingFailed, "Project was rejected by investors, started refunding");
         
         uint256 platformFee = (project.fundsRaised * PLATFORM_FEE_PERCENT) / 100;
         uint256 raiserAmount = project.fundsRaised - platformFee;
@@ -226,7 +227,10 @@ contract OpenFund is Ownable, ReentrancyGuard {
         );
         
         project.fundsClaimed = true;
-        project.status = ProjectStatus.FundingCompleted;
+
+        if (project.status != ProjectStatus.FundingFailed){
+            project.status = ProjectStatus.FundingCompleted;
+        }
 
         emit FundsClaimed(_projectId, raiserAmount);
     }
@@ -237,15 +241,13 @@ contract OpenFund is Ownable, ReentrancyGuard {
      */
     function getRefund(uint256 _projectId) external nonReentrant {
         Project storage project = projects[_projectId];
-        
-        require(block.timestamp >= project.endFundingTime, "Project funding period has not ended yet");
-        require(project.investments[msg.sender] > 0, "No investment found");
+        require(block.timestamp >= project.endVotingTime && block.timestamp <= project.endRefundTime, "Not in refund period");
         require(project.status == ProjectStatus.FundingFailed, "Project is not rejected");
         require(!project.refundClaimed[msg.sender], "Already claim refund");
         
         IERC20 projectToken = IERC20(project.tokenAddress);
         uint256 userTokenBalance = projectToken.balanceOf(msg.sender);
-        require(userTokenBalance > 0, "No tokens to refund");
+        require(userTokenBalance > 0, "Only tokens holder can get refund");
 
         uint256 refundAmount = (userTokenBalance / 10**project.decimal) * project.tokenPrice;
         
@@ -262,6 +264,7 @@ contract OpenFund is Ownable, ReentrancyGuard {
         project.tokensSold -= userTokenBalance / 10**project.decimal;
         project.tokensToSell += userTokenBalance / 10**project.decimal;
         project.refundClaimed[msg.sender] = true;
+        project.fundsRaised -= refundAmount;
         
         emit Refunded(_projectId, msg.sender, refundAmount);
     }
@@ -273,7 +276,7 @@ contract OpenFund is Ownable, ReentrancyGuard {
         Project storage project = projects[_projectId];
         
         require(msg.sender == project.raiser, "Only raiser can claim unsold tokens");
-        require(block.timestamp >= project.endFundingTime, "Project funding period has not ended yet");
+        require(block.timestamp >= project.endRefundTime, "It is not time to claim unsold tokens");
         
         uint256 unsoldTokens = project.tokensToSell - project.tokensSold;
         require(unsoldTokens > 0, "No unsold tokens");
@@ -294,7 +297,8 @@ contract OpenFund is Ownable, ReentrancyGuard {
     function claimPlatformFee(uint256 _projectId) external onlyOwner nonReentrant {
         Project storage project = projects[_projectId];
         
-        require(project.status == ProjectStatus.FundingCompleted, "Project is not completed");
+        require(block.timestamp >= project.endRefundTime, "It is not time to claim fee");
+        require(project.status == ProjectStatus.FundingCompleted, "Project funding is failed");
         require(!project.platformFeeClaimed, "Platform fee already claimed");
         
         uint256 platformFee = (project.fundsRaised * PLATFORM_FEE_PERCENT) / 100;
@@ -319,7 +323,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
         uint256 tokensSold,
         uint256 tokenPrice,
         uint256 endFundingTime,
-        uint256 endVotingTime,
         uint256 fundsRaised,
         ProjectStatus status,
         uint256 investorsCount,
@@ -332,7 +335,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
         if (project.fundsRaised > 0) {
             _voterForRefundPercentage = (project.voteForRefund * 100) / project.fundsRaised;
         }
-        
         return (
             project.raiser,
             project.tokenAddress,
@@ -340,7 +342,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
             project.tokensSold,
             project.tokenPrice,
             project.endFundingTime,
-            project.endVotingTime,
             project.fundsRaised,
             project.status,
             project.investorsCount,
