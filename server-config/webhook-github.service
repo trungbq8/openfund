@@ -8,8 +8,8 @@ After=network.target
 User=root
 Group=root
 WorkingDirectory=/root/openfund/
-Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/openfund/env/bin"
-ExecStart=/root/openfund/env/bin/gunicorn --workers 1 --bind 0.0.0.0:5001 auto_deploy_webhook:app
+Environment="PATH=/root/openfund/env/bin"
+ExecStart=/root/openfund/env/bin/python3 auto_deploy_webhook
 Restart=always
 RestartSec=3
 
