@@ -7,6 +7,6 @@ app = Flask(__name__)
 def webhook():
     os.system("/root/openfund/deploy.sh")
     return "Deployed", 200
-#
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001)

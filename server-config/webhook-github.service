@@ -8,7 +8,7 @@ After=network.target
 User=root
 Group=root
 WorkingDirectory=/root/openfund/
-Environment="PATH=/root/openfund/env/bin"
+Environment="PATH=/root/openfund/env/bin:/usr/bin"
 ExecStart=/root/openfund/env/bin/python3 auto_deploy_webhook.py
 Restart=always
 RestartSec=3
