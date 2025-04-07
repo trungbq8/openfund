@@ -1,6 +1,3 @@
-#!/bin/bash
-cd /root/openfund
-
 # Pull the latest code
 git pull origin main
 
