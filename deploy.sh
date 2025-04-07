@@ -5,4 +5,4 @@ git pull origin main
 pip install -r requirements.txt
 
 # Restart the app
-sudo systemctl restart openfund.service
+systemctl restart openfund.service
