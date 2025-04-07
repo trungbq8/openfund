@@ -1,0 +1,5 @@
+git update-index --add --chmod=+x deploy.sh
+git commit -m "Make deploy.sh executable"
+git push origin main
+
+# Run to not loose the permission each time pull
