@@ -5,7 +5,6 @@ app = Flask(__name__)
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    os.system("chmod +x /root/openfund/deploy.sh")
     os.system("/root/openfund/deploy.sh")
     return "Deployed", 200
 
