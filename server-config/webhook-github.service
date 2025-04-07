@@ -1,0 +1,17 @@
+sudo nano /etc/systemd/system/webhook-github.service
+
+[Unit]
+Description=Gunicorn instance for webhook github auto deployment
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/root/openfund/
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/openfund/env/bin"
+ExecStart=/root/openfund/env/bin/gunicorn --workers 1 --bind 0.0.0.0:5001 auto_deploy_webhook:app
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
