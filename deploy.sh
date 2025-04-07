@@ -4,5 +4,5 @@ git pull origin main
 # Reinstall dependencies
 pip install -r requirements.txt
 
-# Restart the app using gunicorn or systemd
+# Restart the app
 sudo systemctl restart openfund.service
