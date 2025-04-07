@@ -1,11 +1,11 @@
 from flask import Flask
-import subprocess
+import os
 
 app = Flask(__name__)
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    subprocess.Popen(["/root/openfund/deploy.sh"])
+    os.system("./deploy.sh")
     return "Deployed", 200
 
 if __name__ == "__main__":
