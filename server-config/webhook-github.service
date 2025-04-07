@@ -1,5 +1,3 @@
-sudo nano /etc/systemd/system/webhook-github.service
-
 [Unit]
 Description=Gunicorn instance for webhook github auto deployment
 After=network.target

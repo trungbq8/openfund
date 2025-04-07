@@ -1,0 +1,14 @@
+# Each time modify deploy.sh, run again
+chmod +x deploy.sh
+
+# Cronjob
+*/5 * * * * /root/ddns.sh
+30 4 1 * * sudo certbot renew --quiet
+
+# DDNS
+Using https://freedns.afraid.org
+curl -s "https://freedns.afraid.org/dynamic/update.php?bTRRTzFqM04yY1JwWFJlSEpSVXVOT2g4O>
+curl -s "https://freedns.afraid.org/dynamic/update.php?bTRRTzFqM04yY1JwWFJlSEpSVXVOT2g4O>
+curl -s "https://freedns.afraid.org/dynamic/update.php?bTRRTzFqM04yY1JwWFJlSEpSVXVOT2g4O>
+curl -s "https://freedns.afraid.org/dynamic/update.php?bTRRTzFqM04yY1JwWFJlSEpSVXVOT2g4O>
+
