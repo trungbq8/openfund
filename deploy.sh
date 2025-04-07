@@ -1,4 +1,4 @@
-# Must allow execute the file mannually: chmod +x /root/openfund/deploy.sh
+# Must allow execute this mannually: chmod +x /root/openfund/deploy.sh
 # Pull the latest code
 git pull origin main
 
