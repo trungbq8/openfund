@@ -342,17 +342,6 @@
          padding-right: 10px;
          box-sizing: border-box;
       }
-      @media (min-width: 768px) and (max-width: 1135px) {
-         .nav-bar{
-            width: 90%;
-         }
-      }
-      @media (max-width: 768px) {
-         .nav-bar{
-            width: 90%;
-         }
-      }
-
       
    </style>
    <!-- nav bar -->
@@ -461,6 +450,11 @@
          width: 50%;
          min-width: 260px;
       }
+      .refund-description-text {
+         display: flex;
+         flex-direction: column;
+         align-items: end;
+      }
       .invest-description-image, .refund-description-image{
          width: 30%;
          min-width: 260px;
@@ -485,13 +479,14 @@
          margin: 0 3% 0 0;
       }
       .invest-description-text p, .refund-description-text p{
-         opacity: 0.69
+         opacity: 0.69;
+         margin-top: 0;
       }
    </style>
    <div class="invest-description">
       <div class="invest-description-text">
-         <h1>Get token instantly.</h1>
-         <p>Enter your amount and receive project tokens right away.</p>
+         <h1>Instant token distribution.</h1>
+         <p>Enter your amount and receive project tokens right after transaction done.</p>
       </div>
       <div class="invest-description-image">
          <img src="/static/app_assets/invest.png">
@@ -503,7 +498,7 @@
       </div>
       <div class="refund-description-text">
          <h1>Refund mechanism.</h1>
-         <p>If more than 50% investment amount request a refund, every investors can reclaim 100% of invested funds.</p>
+         <p>Reclaim fund if more than 50% investment amount of the project request a refund.</p>
       </div>
    </div>
    <div class="faq-section">
@@ -621,6 +616,9 @@
          background-color: rgb(245, 245, 245);
          padding: 20px;
          box-sizing: border-box;
+         display: flex;
+         flex-direction: column;
+         align-items: center;
       }
       .app-logo-footer{
          display: flex;
@@ -643,6 +641,8 @@
          display: flex;
          align-items: center;
          justify-content: space-between;
+         flex-wrap: wrap;
+         width: 100%;
       }
       .community-links{
          color: rgb(50, 50, 50);
@@ -651,6 +651,35 @@
          cursor: pointer;
          margin-right: 3px;
       }
+      .term-links a{
+         color: black;
+         text-decoration: none;
+      }
+
+      .term-links-mobile a{
+         font-size: 0.69rem;
+         color: black;
+         text-decoration: none;
+         margin-right: 10px;
+      }
+      .term-links{
+         display: flex;
+         gap: 20px
+      }
+      .term-links-mobile{
+         display: none;
+      }
+      @media (max-width: 1135px) {
+         .nav-bar{
+            width: 90%;
+         }
+         .term-links{
+            display: none;
+         }
+         .term-links-mobile{
+            display: block;
+         }
+      }
    </style>
    <div class="footer">
       <div class="app-info">
@@ -658,12 +687,26 @@
             <img src="/static/app_assets/open_fund_logo.png" alt="OpenFund logo">
             <p>OpenFund</p>
          </div>
+         <div class="term-links">
+            <a href="/privacy_policy">Privacy</a>
+            <a href="/terms">Terms</a>
+            <a href="/document">Document</a>
+            <a href="/blog">Blog</a>
+            <a href="/help_center">Help Center</a>
+         </div>
          <div class="community-links">
             <i class="fa-brands fa-square-x-twitter"></i>
             <i class="fa-brands fa-telegram"></i>
             <i class="fa-brands fa-facebook"></i>
             <i class="fa-solid fa-envelope"></i>
          </div>
+      </div>
+      <div class="term-links-mobile">
+         <a href="/privacy_policy">Privacy</a>
+         <a href="/terms">Terms</a>
+         <a href="/document">Document</a>
+         <a href="/blog">Blog</a>
+         <a href="/help_center">Help Center</a>
       </div>
    </div>
 
