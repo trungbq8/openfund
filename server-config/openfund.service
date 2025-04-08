@@ -1,0 +1,15 @@
+[Unit]
+Description=Gunicorn instance to serve OpenFund
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/root/openfund/
+Environment="PATH=/root/openfund/env/bin"
+ExecStart=/root/openfund/env/bin/gunicorn --workers 9 --bind 0.0.0.0:5555 app:app
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

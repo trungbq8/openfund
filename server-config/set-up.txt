@@ -6,9 +6,44 @@ chmod +x deploy.sh
 30 4 1 * * sudo certbot renew --quiet
 
 # DDNS
-Using https://freedns.afraid.org
-curl -s "https://freedns.afraid.org/dynamic/update.php?bTRRTzFqM04yY1JwWFJlSEpSVXVOT2g4O>
-curl -s "https://freedns.afraid.org/dynamic/update.php?bTRRTzFqM04yY1JwWFJlSEpSVXVOT2g4O>
-curl -s "https://freedns.afraid.org/dynamic/update.php?bTRRTzFqM04yY1JwWFJlSEpSVXVOT2g4O>
-curl -s "https://freedns.afraid.org/dynamic/update.php?bTRRTzFqM04yY1JwWFJlSEpSVXVOT2g4O>
+Using dynu
+#!/bin/bash
+username="trungbq8"
+password="LNSV@111"
+hostname1="boxgateway.ddnsgeek.com"
+hostname2="fastgateway.ddnsgeek.com"
+hostname3="servergw.ddnsgeek.com"
+hostname4="webhookgithub.ddnsgeek.com"
+hostname5="openfund.live"
 
+curl -4 "https://api.dynu.com/nic/update?hostname=$hostname1&myip=$(curl -s https://ipinfo.io/ip)&username=$username&password=$password"
+curl -4 "https://api.dynu.com/nic/update?hostname=$hostname2&myip=$(curl -s https://ipinfo.io/ip)&username=$username&password=$password"
+curl -4 "https://api.dynu.com/nic/update?hostname=$hostname3&myip=$(curl -s https://ipinfo.io/ip)&username=$username&password=$password"
+curl -4 "https://api.dynu.com/nic/update?hostname=$hostname4&myip=$(curl -s https://ipinfo.io/ip)&username=$username&password=$password"
+curl -4 "https://api.dynu.com/nic/update?hostname=$hostname5&myip=$(curl -s https://ipinfo.io/ip)&username=$username&password=$password"
+
+# Set up static local IP for servers
+192.168.1.99
+192.168.1.100
+192.168.1.233
+
+# Forward port
+80, 443 -> 80, 433 - 192.168.1.233 (nginx installed in, proxy pass to servers)
+5432 -> 5432 - 192.168.1.233 (postgreSQL)
+22 -> 22, 192.168.1.233
+222 -> 22, 192.168.1.99
+2222 -> 22 -> 22, 192.168.1.100
+
+# Nginx - certbot
+sudo apt update
+sudo apt install certbot python3-certbot-nginx
+sudo apt install nginx
+
+# Python virtual Environment
+python3 -m venv env
+source env/bin/activate
+deactivate
+
+# ssl
+sudo certbot --nginx -d webhookgithub.ddnsgeek.com
+sudo certbot delete --cert-name webhookgithub.mooo.com
