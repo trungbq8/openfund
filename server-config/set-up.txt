@@ -42,7 +42,7 @@ www -> https://openfund.live
 5432 -> 5432 - 192.168.1.233 (postgreSQL)
 22 -> 22, 192.168.1.233
 222 -> 22, 192.168.1.99
-2222 -> 22 -> 22, 192.168.1.100
+2222 -> 22, 192.168.1.100
 
 # Nginx - certbot
 sudo apt update
@@ -59,3 +59,7 @@ sudo certbot delete --cert-name webhookgithub.mooo.com
 python3 -m venv env
 source env/bin/activate
 deactivate
+
+# Generate ssh key
+ssh-keygen -t rsa -b 4096 -C "email@example.com"
+cat ~/.ssh/id_rsa.pub
