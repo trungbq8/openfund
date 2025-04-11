@@ -87,6 +87,10 @@
          border-radius: 20px;
          font-size: 1.2rem;
       }
+      .nav-bar-select .link a, .link-mobile a{
+         color: black;
+         text-decoration: black;
+      }
       .nav-bar-select .link:hover{
          background-color: rgb(188, 200, 204);
       }
@@ -218,7 +222,7 @@
       /* hero */
       .hero{
          width: 100%;
-         min-height: 580px;
+         min-height: 80vh;
          background-image: url(/static/app_assets/hero-background.png);
          background-size: cover;
          background-position: center;
@@ -351,9 +355,9 @@
          <p>OpenFund</p>
       </div>
       <div class="nav-bar-select">
-         <div class="link">Invest</div>
-         <div class="link">Blog</div>
-         <div class="link">Document</div>
+         <div class="link"><a href="/invest">Invest</a></div>
+         <div class="link"><a href="/blog">Blog</a></div>
+         <div class="link"><a href="/document">Document</a></div>
       </div>
       <div class="authenticate">
          <button class="connect-wallet" id="connect-btn">
@@ -426,11 +430,11 @@
          }
       </style>
       <div class="nav-bar-mobile hidden">
-         <div class="link-mobile">Invest</div>
+         <div class="link-mobile"><a href="/invest">Invest</a></div>
          <hr>
-         <div class="link-mobile">Blog</div>
+         <div class="link-mobile"><a href="/blog">Blog</a></div>
          <hr>
-         <div class="link-mobile">Document</div>
+         <div class="link-mobile"><a href="/document">Document</a></div>
          <button class="connect-wallet-mobile" id="connect-btn-mobile">
             Connect wallet<i class="fa-solid fa-wallet"></i>
          </button>

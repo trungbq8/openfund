@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1, user-scalable=no">
+	<title>OpenFund - Invest</title>
+	<link rel="icon" href="/static/app_assets/open_fund_logo.png">
+	<link rel="stylesheet" href="/static/css/style.css">
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+<body>
+	<style>
+		* {
+			-webkit-tap-highlight-color: transparent;
+			-webkit-user-select: none;
+		}
+		body{
+			margin: 0;
+			font-family: "Poppins";
+			overflow-x: hidden;
+			display:flex;
+			flex-direction: column;
+			align-items: center;
+		}
+		button{
+			font-family: "Poppins";
+		}
+		button:active{
+			transform: scale(0.9);
+		}
+		.hidden {
+			display: none!important;
+		}
+		.overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			background: rgba(0, 0, 0, 0.1);
+			backdrop-filter: blur(10px);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			z-index: 999999;
+			opacity: 1;
+			transition: visibility 0.3s, opacity 0.3s ease-in-out;
+		}
+		/* nav bar style */
+		.nav-bar{
+			position: fixed;
+			width: 80%;
+			height: 80px;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			top: 60px;
+			border: solid 1px rgb(200, 200, 200);
+			border-radius: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0px 20px;
+			box-sizing: border-box;
+			box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+			z-index: 99999;
+			
+			backdrop-filter: blur(10px);
+		}
+		.app-logo{
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			font-size: 1.8rem;
+			font-weight: bold;
+			cursor: pointer;
+		}
+		.nav-bar-select{
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+		
+		.nav-bar-select .link{
+			cursor: pointer;
+			padding: 5px 10px;
+			border-radius: 20px;
+			font-size: 1.2rem;
+		}
+		.nav-bar-select .link a, .link-mobile a{
+			color: black;
+			text-decoration: black;
+		}
+		.nav-bar-select .link:hover{
+			background-color: rgb(188, 200, 204);
+		}
+		.app-logo img{
+			width: 40px;
+			height: 40px;
+		}
+		.authenticate{
+			display: flex;
+			align-items: center;
+			font-size: 30px;
+			gap: 10px
+		}
+		.connect-wallet{
+			cursor: pointer;
+			padding: 5px;
+			width: 45px;
+			height: 45px;
+			background-color: transparent;
+			border-radius: 15px;
+			font-size: 1.2rem;
+			border: solid 1px;
+		}
+		.menu-btn{
+			cursor: pointer;
+			padding: 5px;
+			width: 45px;
+			height: 45px;
+			background-color: transparent;
+			border-radius: 15px;
+			font-size: 1.2rem;
+			border: 0;
+			display: none;
+			align-items: center;
+			justify-content: center;
+
+		}
+		
+		.sign-in-up{
+			border: 0;
+			border-radius: 20px;
+			background-color: rgb(0, 1, 69);
+			padding: 8px 20px;
+			color: white;
+			cursor: pointer;
+			font-size: 1.2rem;
+		}
+		.sign-in-up:hover, .connect-wallet:hover, .menu-btn:hover, .close-connect-wallet-btn:hover, .wallet_intergrated:hover{
+			background-color: rgb(188, 200, 204);
+			transition: background-color 0.2s ease-in-out;
+		}
+
+		@media (max-width: 880px) {
+			.menu-btn{
+				display: flex;
+			}
+			.nav-bar-select, .authenticate{
+				display: none;
+			}
+		}
+
+		/* connect wallet box style */
+		.connect-wallet-box{
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			z-index: 99999999;
+			border-radius: 10px;
+			border: solid 1px rgb(200, 200, 200);
+			box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+			width: 300px;
+			height: 400px;
+			background-color: white;
+			background-image: url(/static/app_assets/connect_wallet_background.png);
+			background-size: cover;
+			
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			padding: 20px;
+		}
+
+		.close-connect-wallet-btn{
+			cursor: pointer;
+			padding: 5px;
+			width: 45px;
+			height: 45px;
+			background-color: transparent;
+			border-radius: 15px;
+			font-size: 1.2rem;
+			border: 0;
+			position: absolute;
+			top: 5px;
+			right: 5px;
+		}
+		.connect-wallet-box h1{
+			margin: 0.3rem 0 0 0;
+			font-size: 1.2rem;
+		}
+		.connect-wallet-box p{
+			margin: 0 0 5px 0;
+			font-size: 0.6rem;
+		}
+		.wallet_intergrated{
+			width: 100%;
+			height: 40px;
+			margin-bottom: 10px;
+			border-radius: 10px;
+			border: solid 1px rgb(200, 200, 200) ;
+			background-color: transparent;
+
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			font-weight: bold;
+		}
+		.wallet-icon-logo{
+			width: 20px;
+			height: 20px;
+			margin-right: 5px;
+			border-radius: 5px;
+		}
+		.connect-wallet-box p{
+			font-size: 0.8rem;
+			text-align: justify;
+		}
+	</style>
+	<!-- nav bar -->
+	<div class="nav-bar">
+		<div class="app-logo">
+			<img src="/static/app_assets/open_fund_logo.png" alt="OpenFund logo">
+			<p>OpenFund</p>
+		</div>
+		<div class="nav-bar-select">
+			<div class="link"><a href="/invest">Invest</a></div>
+			<div class="link"><a href="/blog">Blog</a></div>
+			<div class="link"><a href="/document">Document</a></div>
+		</div>
+		<div class="authenticate">
+			<button class="connect-wallet" id="connect-btn">
+				<i class="fa-solid fa-wallet"></i>
+			</button>
+			<button class="sign-in-up">Log In/Sign Up</button>
+		</div>
+		<button class="menu-btn">
+			<i class="fa-solid fa-bars"></i>
+		</button>
+
+	<style>
+		.nav-bar-mobile{
+			position: absolute;
+			width: 85%;
+			border: solid 1px rgb(185, 185, 185);
+			top: 78px;
+			left: 50%;
+			border-bottom-left-radius: 20px;
+			border-bottom-right-radius: 20px;
+			transform: translate(-50%);
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			padding: 30px;
+			box-sizing: border-box;
+			box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+			z-index: 99999;
+			background-color: white;
+		}
+		.nav-bar-mobile hr{
+			width: 10px;
+		}
+		.connect-wallet-mobile {
+			margin-top: 15px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 5px;
+			cursor: pointer;
+			padding: 15px 20px;
+			height: 45px;
+			background-color: transparent;
+			border-radius: 15px;
+			font-size: 0.8rem;
+			border: solid 1px;
+			width: 200px;
+		}
+		.connect-wallet-mobile i{
+			font-size: 1.2rem;
+		}
+		.sign-in-up-mobile {
+			margin-top: 10px;
+			border: 0;
+			border-radius: 15px;
+			background-color: rgb(0, 1, 69);
+			padding: 15px 20px;
+			color: white;
+			cursor: pointer;
+			font-size: 0.8rem;
+			width: 200px;
+		}
+		.link-mobile{
+			cursor: pointer;
+			padding: 5px 10px;
+			border-radius: 20px;
+		}
+		.link-mobile:hover{
+			background-color: rgb(188, 200, 204);
+		}
+	</style>
+		<div class="nav-bar-mobile hidden">
+			<div class="link-mobile"><a href="/invest">Invest</a></div>
+			<hr>
+			<div class="link-mobile"><a href="/blog">Blog</a></div>
+			<hr>
+			<div class="link-mobile"><a href="/document">Document</a></div>
+			<button class="connect-wallet-mobile" id="connect-btn-mobile">
+				Connect wallet<i class="fa-solid fa-wallet"></i>
+			</button>
+			<button class="sign-in-up-mobile">Log In/Sign Up</button>
+		</div>
+	</div>
+	<!-- end nav bar -->
+	<!-- connect wallet -->
+	<div class="overlay hidden" id="overlay">
+		<div class="connect-wallet-box hidden" id="connect-wallet-box">
+			<button class="close-connect-wallet-btn" id="close-connect-wallet-btn">
+				<i class="fa-solid fa-xmark"></i>
+			</button>
+			<h1>Connect wallet</h1>
+			<p>(For investors only)</p>
+			<hr style="width: 100px;">
+			<button class="wallet_intergrated"><img class="wallet-icon-logo" src="/static/app_assets/metamask.png" alt="Metamask logo">Metamask</button>
+			<button class="wallet_intergrated"><img class="wallet-icon-logo" src="/static/app_assets/binance_web3.png" alt="Metamask logo">Binance Web3</button>
+			<button class="wallet_intergrated"><img class="wallet-icon-logo" src="/static/app_assets/okx_web3.png" alt="Metamask logo">OKX Web3</button>
+			<button class="wallet_intergrated"><img class="wallet-icon-logo" src="/static/app_assets/trust_wallet.png" alt="Metamask logo">Trust Wallet</button>
+			<button class="wallet_intergrated"><img class="wallet-icon-logo" src="/static/app_assets/coinbase_wallet.png" alt="Metamask logo">Coinbase Wallet</button>
+			<p>By connecting a wallet, you agree to the OpenFund’s <a style="color:black" href="/term-service">Terms of Service</a> and consent to its <a style="color:black" href="/privacy-policy">Privacy Policy</a>.</p>
+		</div>
+	</div>
+</body>
+	<script>
+		//connect
+		const connect_wallet_btn = document.getElementById("connect-btn");
+		const connect_wallet_btn_mobile = document.getElementById("connect-btn-mobile");
+		const close_wallet_btn = document.getElementById("close-connect-wallet-btn");
+		const connect_box = document.getElementById("connect-wallet-box");
+		const overlay = document.getElementById("overlay");
+
+		connect_wallet_btn.addEventListener("click", function() {
+		connect_box.classList.remove("hidden");
+		overlay.classList.remove("hidden");
+		});
+
+		connect_wallet_btn_mobile.addEventListener("click", function() {
+		connect_box.classList.remove("hidden");
+		overlay.classList.remove("hidden");
+		});
+
+		close_wallet_btn.addEventListener("click", function() {
+		connect_box.classList.add("hidden");
+		overlay.classList.add("hidden");
+		});
+
+		const menuBtn = document.querySelector('.menu-btn');
+		const mobileNav = document.querySelector('.nav-bar-mobile');
+
+		menuBtn.addEventListener('click', () => {
+		mobileNav.classList.toggle('hidden');
+		const icon = document.querySelector(".menu-btn i");
+		if (icon.classList.contains("fa-bars")){
+			icon.classList.replace("fa-bars", "fa-xmark");
+		} else {
+			icon.classList.replace("fa-xmark", "fa-bars");
+		}
+
+		});
+	</script>
+</html>
