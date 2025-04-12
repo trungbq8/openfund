@@ -27,7 +27,8 @@ CREATE TABLE project (
     investment_end_time TIMESTAMP NOT NULL,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     listing_status VARCHAR(20) CHECK (listing_status IN ('pending', 'accepted')) DEFAULT 'pending',
-    funding_status VARCHAR(20) CHECK (funding_status IN ('not listed', 'created', 'raising', 'voting', 'approved', 'rejected', 'completed')) DEFAULT 'not listed',
+    hidden BOOLEAN DEFAULT false;
+    funding_status VARCHAR(20) CHECK (funding_status IN ('not listed', 'created', 'raising', 'voting', 'failed', 'completed')) DEFAULT 'not listed',
     total_token_supply INT NOT NULL,
     token_to_sell INT NOT NULL,
     token_price DECIMAL(18, 8) NOT NULL,
@@ -42,6 +43,13 @@ CREATE TABLE post (
     content TEXT NOT NULL,
     status VARCHAR(10) CHECK (status IN ('draft', 'posted')) DEFAULT 'draft',
     FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE
+);
+
+CREATE TABLE blog_post (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    status VARCHAR(10) CHECK (status IN ('draft', 'posted')) DEFAULT 'draft',
 );
 
 CREATE TABLE post_photo (
