@@ -250,23 +250,6 @@
          });
       });
 
-      //connect
-      const connect_wallet_btn = document.getElementById("connect-raiser-wallet");
-      const close_wallet_btn = document.getElementById("close-connect-wallet-btn");
-      const connect_box = document.getElementById("connect-wallet-box");
-      const overlay = document.getElementById("overlay");
-      const loading_spinner = document.getElementById("loading-spinner");
-
-      connect_wallet_btn.addEventListener("click", function() {
-         connect_box.classList.remove("hidden");
-         overlay.classList.remove("hidden");
-      });
-
-      close_wallet_btn.addEventListener("click", function() {
-         connect_box.classList.add("hidden");
-         overlay.classList.add("hidden");
-      });
-
       let web3;
       let selectedWallet;
       let connectedAccount;
@@ -278,40 +261,331 @@
 
       const walletAddressInput = document.getElementById("wallet-address");
       const submitBtn = document.getElementById("create-account-btn");
+      const connect_wallet_btn = document.getElementById("connect-raiser-wallet");
+      const close_wallet_btn = document.getElementById("close-connect-wallet-btn");
+      const connect_box = document.getElementById("connect-wallet-box");
+      const overlay = document.getElementById("overlay");
+      const loading_spinner = document.getElementById("loading-spinner");
 
-      async function signMessage(account, message) {
-         try {
-            const signedMsg = await window.ethereum.request({
-               method: 'personal_sign',
-               params: [message, account]
-            });
-            return signedMsg;
-         } catch (error) {
-            console.error('Error signing message:', error);
-            return null;
-         }
-      }
+      // Connect and close wallet buttons
+      connect_wallet_btn.addEventListener("click", function() {
+         connect_box.classList.remove("hidden");
+         overlay.classList.remove("hidden");
+      });
 
+      close_wallet_btn.addEventListener("click", function() {
+         connect_box.classList.add("hidden");
+         overlay.classList.add("hidden");
+      });
+
+      // Check if various wallets are installed
       const isMetaMaskInstalled = () => {
          return Boolean(window.ethereum && window.ethereum.isMetaMask);
       };
 
+      const isBinanceWalletInstalled = () => {
+         return Boolean(window.BinanceChain);
+      };
+
+      const isOKXWalletInstalled = () => {
+         return Boolean(window.okxwallet);
+      };
+
+      const isTrustWalletInstalled = () => {
+         return Boolean(window.trustwallet || (window.ethereum && window.ethereum.isTrust));
+      };
+
+      const isCoinbaseWalletInstalled = () => {
+         return Boolean(window.ethereum && window.ethereum.isCoinbaseWallet);
+      };
+
+      // Function to sign message with different wallets
+      async function signMessage(account, message, walletType) {
+         try {
+            let signedMsg;
+            
+            switch (walletType) {
+               case 'metamask':
+                  if (window.ethereum) {
+                     signedMsg = await window.ethereum.request({
+                        method: 'personal_sign',
+                        params: [message, account]
+                     });
+                  }
+                  break;
+                  
+               case 'binance':
+                  if (window.BinanceChain) {
+                     signedMsg = await window.BinanceChain.request({
+                        method: 'personal_sign',
+                        params: [message, account]
+                     });
+                  }
+                  break;
+                  
+               case 'okx':
+                  if (window.okxwallet) {
+                     signedMsg = await window.okxwallet.request({
+                        method: 'personal_sign',
+                        params: [message, account]
+                     });
+                  }
+                  break;
+                  
+               case 'trust':
+                  const trustProvider = window.trustwallet || window.ethereum;
+                  if (trustProvider) {
+                     signedMsg = await trustProvider.request({
+                        method: 'personal_sign',
+                        params: [message, account]
+                     });
+                  }
+                  break;
+                  
+               case 'coinbase':
+                  if (window.ethereum && window.ethereum.isCoinbaseWallet) {
+                     signedMsg = await window.ethereum.request({
+                        method: 'personal_sign',
+                        params: [message, account]
+                     });
+                  }
+                  break;
+            }
+            
+            return signedMsg;
+         } catch (error) {
+            console.error(`Error signing message with ${walletType}:`, error);
+            
+            Toastify({
+               text: `Failed to sign message: ${error.message || 'Unknown error'}`,
+               duration: 3000,
+               gravity: "top",
+               position: "right",
+               backgroundColor: "#FF0000",
+               stopOnFocus: true
+            }).showToast();
+            
+            return null;
+         }
+      }
+
+      async function addSwitchChain(walletType){
+         switch (walletType) {
+            case 'metamask':
+               try{
+                  await window.ethereum.request({
+                     method: 'wallet_switchEthereumChain',
+                     params: [{ chainId: '0xae3f3' }],
+                  });
+               } catch (switchError) {
+                     await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                              chainId: '0xae3f3',
+                              chainName: 'SEI DEVNET',
+                              nativeCurrency: {
+                                 name: 'SEI',
+                                 symbol: 'SEI',
+                                 decimals: 18
+                              },
+                              rpcUrls: ['https://evm-rpc-arctic-1.sei-apis.com'], 
+                              blockExplorerUrls: ['https://seistream.app'] 
+                        }],
+                     });
+               }
+            case 'binance':
+               try{
+                     await window.BinanceChain.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0xae3f3' }],
+                     });
+                  } catch (switchError) {
+                        await window.BinanceChain.request({
+                           method: 'wallet_addEthereumChain',
+                           params: [{
+                                 chainId: '0xae3f3',
+                                 chainName: 'SEI DEVNET',
+                                 nativeCurrency: {
+                                    name: 'SEI',
+                                    symbol: 'SEI',
+                                    decimals: 18
+                                 },
+                                 rpcUrls: ['https://evm-rpc-arctic-1.sei-apis.com'], 
+                                 blockExplorerUrls: ['https://seistream.app'] 
+                           }],
+                        });
+                  }
+            case 'okx':
+               try{
+                        await window.okxwallet.request({
+                           method: 'wallet_switchEthereumChain',
+                           params: [{ chainId: '0xae3f3' }],
+                        });
+                     } catch (switchError) {
+                           await window.okxwallet.request({
+                              method: 'wallet_addEthereumChain',
+                              params: [{
+                                    chainId: '0xae3f3',
+                                    chainName: 'SEI DEVNET',
+                                    nativeCurrency: {
+                                       name: 'SEI',
+                                       symbol: 'SEI',
+                                       decimals: 18
+                                    },
+                                    rpcUrls: ['https://evm-rpc-arctic-1.sei-apis.com'], 
+                                    blockExplorerUrls: ['https://seistream.app'] 
+                              }],
+                           });
+                     }
+            case 'trust':
+               const trustProvider = window.trustwallet || window.ethereum;
+               try{
+                        await trustProvider.request({
+                           method: 'wallet_switchEthereumChain',
+                           params: [{ chainId: '0xae3f3' }],
+                        });
+                     } catch (switchError) {
+                           await trustProvider.request({
+                              method: 'wallet_addEthereumChain',
+                              params: [{
+                                    chainId: '0xae3f3',
+                                    chainName: 'SEI DEVNET',
+                                    nativeCurrency: {
+                                       name: 'SEI',
+                                       symbol: 'SEI',
+                                       decimals: 18
+                                    },
+                                    rpcUrls: ['https://evm-rpc-arctic-1.sei-apis.com'], 
+                                    blockExplorerUrls: ['https://seistream.app'] 
+                              }],
+                           });
+                     }
+            case 'coinbase':
+               try{
+                        await window.ethereum.request({
+                           method: 'wallet_switchEthereumChain',
+                           params: [{ chainId: '0xae3f3' }],
+                        });
+                     } catch (switchError) {
+                           await window.ethereum.request({
+                              method: 'wallet_addEthereumChain',
+                              params: [{
+                                    chainId: '0xae3f3',
+                                    chainName: 'SEI DEVNET',
+                                    nativeCurrency: {
+                                       name: 'SEI',
+                                       symbol: 'SEI',
+                                       decimals: 18
+                                    },
+                                    rpcUrls: ['https://evm-rpc-arctic-1.sei-apis.com'], 
+                                    blockExplorerUrls: ['https://seistream.app'] 
+                              }],
+                           });
+                     }
+                  }
+      }
+
+      async function connectWallet(walletType) {
+         let accounts = [];
+         addSwitchChain(walletType);
+         try {
+            switch (walletType) {
+               case 'metamask':
+                  if (!isMetaMaskInstalled()) {
+                     showWalletError('MetaMask is not installed. Please install MetaMask extension first.');
+                     return null;
+                  }
+                  accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                  break;
+                  
+               case 'binance':
+                  if (!isBinanceWalletInstalled()) {
+                     showWalletError('Binance Wallet is not installed. Please install Binance Wallet extension first.');
+                     return null;
+                  }
+                  accounts = await window.BinanceChain.request({ method: 'eth_requestAccounts' });
+                  break;
+                  
+               case 'okx':
+                  if (!isOKXWalletInstalled()) {
+                     showWalletError('OKX Wallet is not installed. Please install OKX Wallet extension first.');
+                     return null;
+                  }
+                  accounts = await window.okxwallet.request({ method: 'eth_requestAccounts' });
+                  break;
+                  
+               case 'trust':
+                  const trustProvider = window.trustwallet || (window.ethereum && window.ethereum.isTrust ? window.ethereum : null);
+                  if (!trustProvider) {
+                     showWalletError('Trust Wallet is not installed. Please install Trust Wallet extension first.');
+                     return null;
+                  }
+                  accounts = await trustProvider.request({ method: 'eth_requestAccounts' });
+                  break;
+                  
+               case 'coinbase':
+                  if (!isCoinbaseWalletInstalled()) {
+                     showWalletError('Coinbase Wallet is not installed. Please install Coinbase Wallet extension first.');
+                     return null;
+                  }
+                  accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                  break;
+            }
+            
+            return accounts.length > 0 ? accounts[0] : null;
+         } catch (error) {
+            console.error(`Error connecting to ${walletType}:`, error);
+            
+            Toastify({
+               text: `Failed to connect to ${formatWalletName(walletType)}: ${error.message || 'User rejected the request'}`,
+               duration: 3000,
+               gravity: "top",
+               position: "right",
+               backgroundColor: "#FF0000",
+               stopOnFocus: true
+            }).showToast();
+            
+            return null;
+         }
+      }
+
+      function formatWalletName(walletType) {
+         const names = {
+            'metamask': 'MetaMask',
+            'binance': 'Binance Wallet',
+            'okx': 'OKX Wallet',
+            'trust': 'Trust Wallet',
+            'coinbase': 'Coinbase Wallet'
+         };
+         
+         return names[walletType] || walletType;
+      }
+
+      function showWalletError(message) {
+         Toastify({
+            text: message,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "#FF0000",
+            stopOnFocus: true
+         }).showToast();
+      }
+
+      // Add event listeners for wallet buttons
       document.querySelectorAll('.wallet_intergrated').forEach(button => {
          button.addEventListener('click', async function() {
             const walletType = this.getAttribute('data-wallet');
             selectedWallet = walletType;
             
-            if (walletType === 'metamask') {
-               if (!isMetaMaskInstalled()) {
-                  alert('Please install MetaMask to continue!');
-                  return;
-               }
+            // Show loading spinner
+            loading_spinner.classList.remove("hidden");
+            
+            try {
+               // Connect to the selected wallet
+               connectedAccount = await connectWallet(walletType);
                
-               try {
-                  // Request accounts from MetaMask
-                  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                  connectedAccount = accounts[0];
-                  
+               if (connectedAccount) {
                   // Set the wallet address in the input field
                   walletAddressInput.value = connectedAccount;
                   
@@ -319,31 +593,38 @@
                   message = `Sign this message to verify your wallet ownership with OpenFund. Nonce: ${nonce}`;
                   
                   // Request signature from user
-                  signature = await signMessage(connectedAccount, message);
+                  signature = await signMessage(connectedAccount, message, walletType);
                   
-                  // Close the wallet connection modal
-                  connect_box.classList.add("hidden");
-                  overlay.classList.add("hidden");
-                  
-               } catch (error) {
-                  console.error('Error connecting to MetaMask:', error);
-                  walletAddressInput.value = '';
-                  
-                  // Close the wallet connection modal
-                  connect_box.classList.add("hidden");
-                  overlay.classList.add("hidden");
+                  if (signature) {
+                     Toastify({
+                        text: `Successfully connected to ${formatWalletName(walletType)}`,
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#4BB543",
+                        stopOnFocus: true
+                     }).showToast();
+                  } else {
+                     walletAddressInput.value = '';
+                  }
                }
-            } else {
+            } catch (error) {
+               console.error(`Error with ${walletType}:`, error);
+               walletAddressInput.value = '';
+            } finally {
+               // Hide loading spinner
+               loading_spinner.classList.add("hidden");
+               
+               // Close the wallet connection modal
                connect_box.classList.add("hidden");
                overlay.classList.add("hidden");
             }
          });
       });
-      
+
+      // Submit button event listener
       submitBtn.addEventListener('click', async function(e) {
          e.preventDefault();
-         loading_spinner.classList.remove("hidden");
-         overlay.classList.remove("hidden");
          
          const firstName = document.getElementById('first_name').value.trim();
          const lastName = document.getElementById('last_name').value.trim();
@@ -351,7 +632,79 @@
          const password = document.getElementById('password').value;
          const confirmPassword = document.getElementById('confirm-password').value;
          const walletAddress = document.getElementById('wallet-address').value.trim();
+         const agreePolicy = document.querySelector('.agree-policy-check').checked;
+         
+         // Validate form
+         if (!firstName || !lastName || !email || !password || !confirmPassword || !walletAddress) {
+            Toastify({
+               text: "Please fill in all required fields",
+               duration: 3000,
+               gravity: "top",
+               position: "right",
+               backgroundColor: "#FF0000",
+               stopOnFocus: true
+            }).showToast();
+            return;
+         }
+         
+         // Validate password match
+         if (password !== confirmPassword) {
+            Toastify({
+               text: "Passwords do not match",
+               duration: 3000,
+               gravity: "top",
+               position: "right",
+               backgroundColor: "#FF0000",
+               stopOnFocus: true
+            }).showToast();
+            return;
+         }
+         
+         // Validate email format
+         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+         if (!emailRegex.test(email)) {
+            Toastify({
+               text: "Please enter a valid email address",
+               duration: 3000,
+               gravity: "top",
+               position: "right",
+               backgroundColor: "#FF0000",
+               stopOnFocus: true
+            }).showToast();
+            return;
+         }
+         
+         // Check if wallet is connected
+         if (!signature) {
+            Toastify({
+               text: "Please connect your wallet first",
+               duration: 3000,
+               gravity: "top",
+               position: "right",
+               backgroundColor: "#FF0000",
+               stopOnFocus: true
+            }).showToast();
+            return;
+         }
+         
+         // Check if user agreed to policy
+         if (!agreePolicy) {
+            Toastify({
+               text: "Please agree to the Privacy & Policy",
+               duration: 3000,
+               gravity: "top",
+               position: "right",
+               backgroundColor: "#FF0000",
+               stopOnFocus: true
+            }).showToast();
+            return;
+         }
+         
+         // Show loading spinner and overlay
+         loading_spinner.classList.remove("hidden");
+         overlay.classList.remove("hidden");
          submitBtn.disabled = true;
+         
          try {
             const response = await fetch('/sign-up', {
                method: 'POST',
@@ -364,6 +717,7 @@
                   email: email,
                   password: password,
                   wallet_address: walletAddress,
+                  wallet_type: selectedWallet,
                   signature: signature,
                })
             });
@@ -379,6 +733,7 @@
                   backgroundColor: "#4BB543",
                   stopOnFocus: true
                }).showToast();
+               
                setTimeout(() => {
                   window.location.href = '/login';
                }, 3000);
@@ -394,12 +749,60 @@
             }
          } catch (error) {
             console.error('Error:', error);
+            
+            Toastify({
+               text: "An error occurred. Please try again later.",
+               duration: 3000,
+               gravity: "top",
+               position: "right",
+               backgroundColor: "#FF0000",
+               stopOnFocus: true
+            }).showToast();
          } finally {
             submitBtn.disabled = false;
             loading_spinner.classList.add("hidden");
             overlay.classList.add("hidden");
          }
       });
+
+      // Add event listener for network change
+      if (window.ethereum) {
+         window.ethereum.on('accountsChanged', function (accounts) {
+            // If user disconnected their wallet or switched accounts
+            if (accounts.length === 0 || (connectedAccount && accounts[0] !== connectedAccount)) {
+               // Reset wallet address and signature
+               walletAddressInput.value = '';
+               signature = null;
+               connectedAccount = null;
+               
+               Toastify({
+                  text: "Wallet disconnected or account changed. Please reconnect.",
+                  duration: 3000,
+                  gravity: "top",
+                  position: "right",
+                  backgroundColor: "#FF0000",
+                  stopOnFocus: true
+               }).showToast();
+            }
+         });
+         
+         window.ethereum.on('chainChanged', function () {
+            // If user changed networks
+            Toastify({
+               text: "Network changed. Please reconnect your wallet.",
+               duration: 3000,
+               gravity: "top",
+               position: "right",
+               backgroundColor: "#FF0000",
+               stopOnFocus: true
+            }).showToast();
+            
+            // Reset wallet address and signature
+            walletAddressInput.value = '';
+            signature = null;
+            connectedAccount = null;
+         });
+      }
    </script>   
 </body>
 </html>
