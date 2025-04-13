@@ -9,7 +9,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
-app.secret_key = secrets.token_hex(16)
+app.secret_key = "secretkey"
 
 w3 = Web3(Web3.HTTPProvider('https://evm-rpc-arctic-1.sei-apis.com'))
 
