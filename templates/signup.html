@@ -490,7 +490,6 @@
 
       async function connectWallet(walletType) {
          let accounts = [];
-         addSwitchChain(walletType);
          try {
             switch (walletType) {
                case 'metamask':
@@ -498,6 +497,7 @@
                      showWalletError('MetaMask is not installed. Please install MetaMask extension first.');
                      return null;
                   }
+                  addSwitchChain(walletType);
                   accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                   break;
                   
@@ -506,6 +506,7 @@
                      showWalletError('Binance Wallet is not installed. Please install Binance Wallet extension first.');
                      return null;
                   }
+                  addSwitchChain(walletType);
                   accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                   break;
                   
@@ -514,6 +515,7 @@
                      showWalletError('OKX Wallet is not installed. Please install OKX Wallet extension first.');
                      return null;
                   }
+                  addSwitchChain(walletType);
                   accounts = await window.okxwallet.request({ method: 'eth_requestAccounts' });
                   break;
                   
@@ -523,6 +525,7 @@
                      showWalletError('Trust Wallet is not installed. Please install Trust Wallet extension first.');
                      return null;
                   }
+                  addSwitchChain(walletType);
                   accounts = await trustProvider.request({ method: 'eth_requestAccounts' });
                   break;
                   
@@ -531,6 +534,7 @@
                      showWalletError('Coinbase Wallet is not installed. Please install Coinbase Wallet extension first.');
                      return null;
                   }
+                  addSwitchChain(walletType);
                   accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                   break;
             }
@@ -766,45 +770,6 @@
             overlay.classList.add("hidden");
          }
       });
-
-      // Add event listener for network change
-      if (window.ethereum) {
-         window.ethereum.on('accountsChanged', function (accounts) {
-            // If user disconnected their wallet or switched accounts
-            if (accounts.length === 0 || (connectedAccount && accounts[0] !== connectedAccount)) {
-               // Reset wallet address and signature
-               walletAddressInput.value = '';
-               signature = null;
-               connectedAccount = null;
-               
-               Toastify({
-                  text: "Wallet disconnected or account changed. Please reconnect.",
-                  duration: 3000,
-                  gravity: "top",
-                  position: "right",
-                  backgroundColor: "#FF0000",
-                  stopOnFocus: true
-               }).showToast();
-            }
-         });
-         
-         window.ethereum.on('chainChanged', function () {
-            // If user changed networks
-            Toastify({
-               text: "Network changed. Please reconnect your wallet.",
-               duration: 3000,
-               gravity: "top",
-               position: "right",
-               backgroundColor: "#FF0000",
-               stopOnFocus: true
-            }).showToast();
-            
-            // Reset wallet address and signature
-            walletAddressInput.value = '';
-            signature = null;
-            connectedAccount = null;
-         });
-      }
    </script>   
 </body>
 </html>
