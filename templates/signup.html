@@ -641,7 +641,6 @@
          const walletAddress = document.getElementById('wallet-address').value.trim();
          const agreePolicy = document.querySelector('.agree-policy-check').checked;
          
-         // Validate form
          if (!firstName || !lastName || !email || !password || !confirmPassword || !walletAddress) {
             Toastify({
                text: "Please fill in all required fields",
@@ -654,7 +653,6 @@
             return;
          }
          
-         // Validate password match
          if (password !== confirmPassword) {
             Toastify({
                text: "Passwords do not match",
@@ -684,7 +682,7 @@
          // Check if wallet is connected
          if (!signature) {
             Toastify({
-               text: "Please connect your wallet first",
+               text: "Please connect your wallet",
                duration: 3000,
                gravity: "top",
                position: "right",
@@ -694,7 +692,6 @@
             return;
          }
          
-         // Check if user agreed to policy
          if (!agreePolicy) {
             Toastify({
                text: "Please agree to the Privacy & Policy",
