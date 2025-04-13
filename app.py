@@ -8,7 +8,7 @@ import time
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 app.secret_key = secrets.token_hex(16)
 
 w3 = Web3(Web3.HTTPProvider('https://evm-rpc-arctic-1.sei-apis.com'))
@@ -47,7 +47,7 @@ def signup():
             
          return jsonify({"success": True, "message": "Account created successfully"})
       else:
-         return jsonify({"success": False, "message": f"{nonce}"})
+         return jsonify({"success": False, "message": "Signature not valid"})
    else:
       nonce = secrets.token_hex(16)
       session['nonce'] = nonce
