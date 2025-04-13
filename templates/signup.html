@@ -168,6 +168,12 @@
          z-index: 99999999;
          background-color: transparent;
       }
+      .redirect-auth{
+         display: flex;
+         width: 100%;
+         align-items: center;
+         justify-content: center;
+      }
    </style>
    <div class="loading-spinner hidden" id="loading-spinner">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="40" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="100" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="160" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
@@ -237,7 +243,9 @@
          <div class="create-account-container">
             <button type="submit" class="create-account" id="create-account-btn">Create account</button>
          </div>
-         <p>Already have account? <a href="/login">Login</a></p>
+         <div class="redirect-auth">
+            <p>Already have account? <a href="/login">Login</a></p>
+         </div>
       </div>
    </div>
    <script>
@@ -281,7 +289,6 @@
          overlay.classList.add("hidden");
       });
 
-      // Check if various wallets are installed
       const isMetaMaskInstalled = () => {
          return Boolean(window.ethereum && window.ethereum.isMetaMask);
       };
@@ -302,7 +309,6 @@
          return Boolean(window.ethereum && window.ethereum.isCoinbaseWallet);
       };
 
-      // Function to sign message with different wallets
       async function signMessage(account, message, walletType) {
          try {
             let signedMsg;
@@ -494,7 +500,7 @@
             switch (walletType) {
                case 'metamask':
                   if (!isMetaMaskInstalled()) {
-                     showWalletError('MetaMask is not installed. Please install MetaMask extension first.');
+                     showWalletError('MetaMask is not installed. Please install MetaMask first.');
                      return null;
                   }
                   addSwitchChain(walletType);
@@ -503,7 +509,7 @@
                   
                case 'binance':
                   if (!isBinanceWalletInstalled()) {
-                     showWalletError('Binance Wallet is not installed. Please install Binance Wallet extension first.');
+                     showWalletError('Binance Wallet is not installed. Please install Binance Wallet first.');
                      return null;
                   }
                   addSwitchChain(walletType);
@@ -512,7 +518,7 @@
                   
                case 'okx':
                   if (!isOKXWalletInstalled()) {
-                     showWalletError('OKX Wallet is not installed. Please install OKX Wallet extension first.');
+                     showWalletError('OKX Wallet is not installed. Please install OKX Wallet first.');
                      return null;
                   }
                   addSwitchChain(walletType);
@@ -522,7 +528,7 @@
                case 'trust':
                   const trustProvider = window.trustwallet || (window.ethereum && window.ethereum.isTrust ? window.ethereum : null);
                   if (!trustProvider) {
-                     showWalletError('Trust Wallet is not installed. Please install Trust Wallet extension first.');
+                     showWalletError('Trust Wallet is not installed. Please install Trust Wallet first.');
                      return null;
                   }
                   addSwitchChain(walletType);
@@ -531,7 +537,7 @@
                   
                case 'coinbase':
                   if (!isCoinbaseWalletInstalled()) {
-                     showWalletError('Coinbase Wallet is not installed. Please install Coinbase Wallet extension first.');
+                     showWalletError('Coinbase Wallet is not installed. Please install Coinbase Wallet first.');
                      return null;
                   }
                   addSwitchChain(walletType);
@@ -579,27 +585,21 @@
          }).showToast();
       }
 
-      // Add event listeners for wallet buttons
       document.querySelectorAll('.wallet_intergrated').forEach(button => {
          button.addEventListener('click', async function() {
             const walletType = this.getAttribute('data-wallet');
             selectedWallet = walletType;
             
-            // Show loading spinner
             loading_spinner.classList.remove("hidden");
             
             try {
-               // Connect to the selected wallet
                connectedAccount = await connectWallet(walletType);
                
                if (connectedAccount) {
-                  // Set the wallet address in the input field
                   walletAddressInput.value = connectedAccount;
                   
-                  // Create message to sign
                   message = `Sign this message to verify your wallet ownership with OpenFund. Nonce: ${nonce}`;
                   
-                  // Request signature from user
                   signature = await signMessage(connectedAccount, message, walletType);
                   
                   if (signature) {
@@ -619,17 +619,13 @@
                console.error(`Error with ${walletType}:`, error);
                walletAddressInput.value = '';
             } finally {
-               // Hide loading spinner
                loading_spinner.classList.add("hidden");
-               
-               // Close the wallet connection modal
                connect_box.classList.add("hidden");
                overlay.classList.add("hidden");
             }
          });
       });
 
-      // Submit button event listener
       submitBtn.addEventListener('click', async function(e) {
          e.preventDefault();
          

@@ -46,15 +46,12 @@ def signup():
       wallet_address = data.get('wallet_address')
       signature = data.get("signature")
 
-      # Validate form data
       if not first_name or not last_name or not email or not password or not wallet_address:
          return jsonify({"success": False, "message": "All fields are required!"}), 400
 
-      # Validate email
       if not validate_email(email):
          return jsonify({"success": False, "message": "Invalid email format!"}), 400
 
-      # Validate password strength
       if not validate_password(password):
          return jsonify({"success": False, "message": "Password must be at least 8 characters long and include a special character!"}), 400
 
