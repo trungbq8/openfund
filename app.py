@@ -45,7 +45,7 @@ def signup():
             
          return jsonify({"success": True, "message": "Account created successfully"})
       else:
-         return jsonify({"success": False, "message": f"{recovered_address.lower()}"})
+         return jsonify({"success": False, "message": f"{message}"})
    else:
       nonce = secrets.token_hex(16)
       session['nonce'] = nonce
