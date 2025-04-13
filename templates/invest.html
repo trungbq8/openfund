@@ -13,36 +13,40 @@
 	<!-- nav bar -->
 	<div class="nav-bar">
 		<div class="app-logo" onclick="window.location.href='/'">
-			<img src="/static/app_assets/open_fund_logo.png" alt="OpenFund logo">
-			<p>OpenFund</p>
+		   <img src="/static/app_assets/open_fund_logo.png" alt="OpenFund logo">
+		   <p>OpenFund</p>
 		</div>
 		<div class="nav-bar-select">
-			<div class="link"><a href="/invest">Invest</a></div>
-			<div class="link"><a href="/blog">Blog</a></div>
-			<div class="link"><a href="/document">Document</a></div>
+		   <div class="link" onclick="window.location.href='/invest'">Invest</div>
+			  <div class="link" onclick="window.location.href='/blog'">Blog</div>
+			  <div class="link" onclick="window.location.href='/document'">Document</div>
 		</div>
 		<div class="authenticate">
-			<button class="connect-wallet" id="connect-btn">
-				<i class="fa-solid fa-wallet"></i>
-			</button>
-			<button class="sign-in-up">Log In/Sign Up</button>
+		   <button class="connect-wallet" id="connect-btn">
+			  <i class="fa-solid fa-wallet"></i>
+		   </button>
+		   <button class="sign-in-up" onclick="window.location.href='/login'">Log In/Sign Up</button>
 		</div>
 		<button class="menu-btn">
-			<i class="fa-solid fa-bars"></i>
+		   <i class="fa-solid fa-bars"></i>
 		</button>
-		<div class="nav-bar-mobile hidden">
-			<div class="link-mobile"><a href="/invest">Invest</a></div>
-			<hr>
-			<div class="link-mobile"><a href="/blog">Blog</a></div>
-			<hr>
-			<div class="link-mobile"><a href="/document">Document</a></div>
-			<button class="connect-wallet-mobile" id="connect-btn-mobile">
-				Connect wallet<i class="fa-solid fa-wallet"></i>
-			</button>
-			<button class="sign-in-up-mobile">Log In/Sign Up</button>
+	 </div>
+	 <div class="nav-bar-mobile hidden">
+		<div class="link-mobile" onclick="window.location.href='/invest'">Invest<i class="fa-solid fa-arrow-right"></i></div>
+		<hr>
+		<div class="link-mobile" onclick="window.location.href='/blog'">Blog<i class="fa-solid fa-arrow-right"></i></div>
+		<hr>
+		<div class="link-mobile" onclick="window.location.href='/document'">Document<i class="fa-solid fa-arrow-right"></i></div>
+		<hr>
+		<div class="authenticate-mobile">
+		   <button class="connect-wallet-mobile" id="connect-btn-mobile">
+			  Connect wallet<i class="fa-solid fa-wallet"></i>
+		   </button>
+		   <button class="sign-in-up-mobile" onclick="window.location.href='/login'">Log In/Sign Up</button>
 		</div>
-	</div>
-	<!-- end nav bar -->
+		<button class="close-nav-bar-mobile-btn" id="close-nav-bar-mobile-btn">Close</button>
+	 </div>
+	 <!-- end nav bar -->
 	<!-- connect wallet -->
 	<div class="overlay hidden" id="overlay">
 		<div class="connect-wallet-box hidden" id="connect-wallet-box">
@@ -179,16 +183,15 @@
 
 		const menuBtn = document.querySelector('.menu-btn');
 		const mobileNav = document.querySelector('.nav-bar-mobile');
+		const close_nav_bar_mobile_btn = document.getElementById("close-nav-bar-mobile-btn");
+
 
 		menuBtn.addEventListener('click', () => {
-		mobileNav.classList.toggle('hidden');
-		const icon = document.querySelector(".menu-btn i");
-		if (icon.classList.contains("fa-bars")){
-			icon.classList.replace("fa-bars", "fa-xmark");
-		} else {
-			icon.classList.replace("fa-xmark", "fa-bars");
-		}
+			mobileNav.classList.remove('hidden');
+		});
 
+		close_nav_bar_mobile_btn.addEventListener('click', () => {
+			mobileNav.classList.add('hidden');
 		});
 
 		//select projects

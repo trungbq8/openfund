@@ -2,13 +2,14 @@ CREATE TABLE raiser (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    bio TEXT,
+    x_link VARCHAR(100),
+    website_link VARCHAR(100),
     email VARCHAR(255) UNIQUE NOT NULL,
+    email_confirmed BOOLEAN DEFAULT FALSE,
     hashed_password TEXT NOT NULL,
     salt TEXT NOT NULL,
-    country VARCHAR(100),
+    bio TEXT,
     wallet_address VARCHAR(255) UNIQUE NOT NULL,
-    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     active BOOLEAN DEFAULT TRUE
 );
 
@@ -27,12 +28,23 @@ CREATE TABLE project (
     investment_end_time TIMESTAMP NOT NULL,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     listing_status VARCHAR(20) CHECK (listing_status IN ('pending', 'accepted')) DEFAULT 'pending',
-    hidden BOOLEAN DEFAULT false;
+    hidden BOOLEAN DEFAULT FALSE;
     funding_status VARCHAR(20) CHECK (funding_status IN ('not listed', 'created', 'raising', 'voting', 'failed', 'completed')) DEFAULT 'not listed',
     total_token_supply INT NOT NULL,
     token_to_sell INT NOT NULL,
     token_price DECIMAL(18, 8) NOT NULL,
-    end_time TIMESTAMP NOT NULL,
+    token_address VARCHAR(255) NOT NULL,
+    fund_raised INT NOT NULL,
+    token_sold INT NOT NULL,
+    decimal INT NOT NULL,
+    fund_claimed BOOLEAN DEFAULT FALSE,
+    platform_fee_claimed BOOLEAN DEFAULT FALSE,
+    vote_for_refund INT NOT NULL,
+    vote_for_refund_count INT NOT NULL,
+    investors_count INT NOT NULL,
+    x_link VARCHAR(100),
+    website_link VARCHAR(100),
+    telegram_link VARCHAR(100),
     FOREIGN KEY (raiser_id) REFERENCES raiser(id) ON DELETE CASCADE,
 );
 
@@ -50,13 +62,6 @@ CREATE TABLE blog_post (
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     status VARCHAR(10) CHECK (status IN ('draft', 'posted')) DEFAULT 'draft',
-);
-
-CREATE TABLE post_photo (
-    id SERIAL PRIMARY KEY,
-    project_id INT NOT NULL,
-    photo_url TEXT NOT NULL,
-    FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE
 );
 
 CREATE TABLE post_like (

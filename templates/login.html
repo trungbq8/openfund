@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1, user-scalable=no">
+   <title>OpenFund - Login</title>
+   <link rel="icon" href="/static/app_assets/open_fund_logo.png">
+   <link rel="stylesheet" href="/static/css/style.css">
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+<body>
+   <style>
+      body{
+         padding: 20px;
+         justify-content: center;
+         box-sizing: border-box;
+      }
+      .sign-up-container{
+         width: 100%;
+         max-width: 800px;
+         height: 400px;
+         border-radius: 20px;
+         display: flex;
+         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+      }
+      .sign-up-image{
+         width: 50%;
+         height: 100%;
+      }
+      .sign-up-image img{
+         width: 100%;
+         height: 100%;
+         object-fit: cover;
+         border-top-left-radius: 20px;
+         border-bottom-left-radius: 20px;
+      }
+      .sign-up-content{
+         padding: 10px 26px;
+         width: 50%;
+         box-sizing: border-box;
+         font-size: 0.86rem;
+      }
+      .sign-up-content p a{
+         color: black;
+      }
+      .sign-up-content h1{
+         font-size: 1.2rem;
+         margin: 10px 0;
+         opacity: 0.86;
+      }
+      .input-group {
+         display: flex;
+         flex-direction: column;
+         margin-bottom: 5px;
+      }
+      input{
+         padding: 5.8px 10px;
+         border-radius: 10px;
+         border: solid 1px rgb(200, 200, 200);
+         font-family: "Poppins";
+      }
+      label {
+         opacity: 0.8;
+         font-size: 0.86rem;
+      }
+      @media (max-width: 960px) {
+         .sign-up-container{
+            flex-direction: column;
+         }
+         .sign-up-image{
+            width: 100%;
+            height: 100px;
+         }
+         .sign-up-image img{
+            border-bottom-left-radius: 0px;
+            border-top-right-radius: 20px;
+         }
+         .sign-up-content{
+            width: 100%;
+         }
+      }
+      .login{
+         margin-top: 5px;
+         padding: 8px 15px;
+         border-radius: 15px;
+         border: solid 1px black;
+         background-color: black;
+         color: white;
+         cursor: pointer;
+      }
+      .login-container{
+         width: 100%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+      }
+      .password-wrapper {
+         position: relative;
+         display: flex;
+         align-items: center;
+      }
+
+      .password-wrapper input {
+         width: 100%;
+         padding-right: 35px;
+      }
+
+      .toggle-password {
+         position: absolute;
+         right: 10px;
+         cursor: pointer;
+         color: gray;
+      }
+
+   </style>
+   <div class="sign-up-container">
+      <div class="sign-up-image">
+         <img src="/static/app_assets/sign-in-up.png">
+      </div>
+      <div class="sign-up-content">
+         <h1>Login to raiser account</h1>
+         <div class="input-group">
+            <label for="email">Email</label>
+            <input name="email" id="email" type="email">
+         </div>
+         <div class="input-group">
+            <label for="password">Password</label>
+            <div class="password-wrapper">
+               <input name="password" id="password" type="password">
+               <i class="fa-solid fa-eye-slash toggle-password" id="togglePassword"></i>
+            </div>
+         </div>
+         <div class="login-container">
+            <button class="login">Login</button>
+         </div>
+         <p>Don't have account? <a href="/sign-up">Register</a></p>
+      </div>
+   </div>
+   <script>
+      const togglePassword = document.getElementById('togglePassword');
+      const passwordInput = document.getElementById('password');
+
+      togglePassword.addEventListener('click', () => {
+         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+         passwordInput.setAttribute('type', type);
+
+         togglePassword.classList.toggle('fa-eye');
+         togglePassword.classList.toggle('fa-eye-slash');
+      });
+
+   </script>
+</body>
+</html>

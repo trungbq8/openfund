@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1, user-scalable=no">
+   <title>OpenFund - Sign up</title>
+   <link rel="icon" href="/static/app_assets/open_fund_logo.png">
+   <link rel="stylesheet" href="/static/css/style.css">
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+   <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
+   <!-- Toastify CSS -->
+   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+   <!-- Toastify JS -->
+   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+   <body>
+   <style>
+      body{
+         padding: 20px;
+         justify-content: center;
+         box-sizing: border-box;
+      }
+      .sign-up-container{
+         width: 100%;
+         max-width: 800px;
+         border-radius: 20px;
+         display: flex;
+         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+      }
+      .sign-up-image{
+         width: 50%;
+         height: 100%;
+      }
+      .sign-up-image img{
+         width: 100%;
+         height: 100%;
+         object-fit: cover;
+         border-top-left-radius: 20px;
+         border-bottom-left-radius: 20px;
+      }
+      .sign-up-content{
+         padding: 10px 26px;
+         width: 50%;
+         box-sizing: border-box;
+         font-size: 0.86rem;
+      }
+      .sign-up-content p a{
+         color: black;
+      }
+      .sign-up-content h1{
+         font-size: 1.2rem;
+         margin: 10px 0;
+         opacity: 0.86;
+      }
+      .input-group {
+         display: flex;
+         flex-direction: column;
+         margin-bottom: 5px;
+      }
+      input{
+         padding: 5.8px 10px;
+         border-radius: 10px;
+         border: solid 1px rgb(200, 200, 200);
+         font-family: "Poppins";
+      }
+      label {
+         opacity: 0.8;
+         font-size: 0.86rem;
+      }
+      .name-field{
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+      }
+      .name-field .input-group{
+         width: 49%;
+      }
+      .wallet-address-field{
+         display: flex;
+         align-items: end;
+         justify-content: space-between;
+      }
+      .wallet-address-field .input-group{
+         width: 65%;
+      }
+      .connect-raiser-wallet{
+         margin-bottom: 5px;
+         padding: 5.8px 10px;
+         border-radius: 10px;
+         border: solid 1px rgb(88, 88, 88);
+         width: 33%;
+         background-color: white;
+         cursor: pointer;
+      }
+      .connect-raiser-wallet:hover{
+         background-color: rgb(188, 200, 204);
+      }
+      @media (max-width: 960px) {
+         .sign-up-container{
+            flex-direction: column;
+         }
+         .sign-up-image{
+            width: 100%;
+            height: 100px;
+         }
+         .sign-up-image img{
+            border-bottom-left-radius: 0px;
+            border-top-right-radius: 20px;
+         }
+         .sign-up-content{
+            width: 100%;
+         }
+      }
+      .agree-policy{
+         display: flex;
+         font-size: 0.86rem;
+         gap: 5px;
+      }
+      .agree-policy p{
+         margin: 5px 0;
+      }
+      .agree-policy p a{
+         color: black;
+      }
+      .create-account{
+         margin-top: 5px;
+         padding: 8px 10px;
+         border-radius: 15px;
+         border: solid 1px black;
+         background-color: black;
+         color: white;
+         cursor: pointer;
+      }
+      .create-account-container{
+         width: 100%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+      }
+      .password-wrapper {
+         position: relative;
+         display: flex;
+         align-items: center;
+      }
+
+      .password-wrapper input {
+         width: 100%;
+         padding-right: 35px;
+      }
+
+      .toggle-password {
+         position: absolute;
+         right: 10px;
+         cursor: pointer;
+         color: gray;
+      }
+      .loading-spinner{
+         position: fixed;
+         top: 50%;
+         left: 50%;
+         height: 100px;
+         width: 100px;
+         transform: translate(-50%, -50%);
+         z-index: 99999999;
+         background-color: transparent;
+      }
+   </style>
+   <div class="loading-spinner hidden" id="loading-spinner">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="40" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="100" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="160" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
+   </div>
+   <!-- connect wallet -->
+   <div class="overlay hidden" id="overlay">
+      <div class="connect-wallet-box hidden" id="connect-wallet-box">
+         <button class="close-connect-wallet-btn" id="close-connect-wallet-btn">
+            <i class="fa-solid fa-xmark"></i>
+         </button>
+         <h1>Connect wallet</h1>
+         <hr style="width: 100px;">
+         <button class="wallet_intergrated" data-wallet="metamask"><img class="wallet-icon-logo" src="/static/app_assets/metamask.png" alt="Metamask logo">Metamask</button>
+         <button class="wallet_intergrated" data-wallet="binance"><img class="wallet-icon-logo" src="/static/app_assets/binance_web3.png" alt="Metamask logo">Binance Web3</button>
+         <button class="wallet_intergrated" data-wallet="okx"><img class="wallet-icon-logo" src="/static/app_assets/okx_web3.png" alt="Metamask logo">OKX Web3</button>
+         <button class="wallet_intergrated" data-wallet="trust"><img class="wallet-icon-logo" src="/static/app_assets/trust_wallet.png" alt="Metamask logo">Trust Wallet</button>
+         <button class="wallet_intergrated" data-wallet="coinbase"><img class="wallet-icon-logo" src="/static/app_assets/coinbase_wallet.png" alt="Metamask logo">Coinbase Wallet</button>
+         <p>By connecting a wallet, you agree to the OpenFund’s <a style="color:black" href="/term-service">Terms of Service</a> and consent to its <a style="color:black" href="/privacy-policy">Privacy Policy</a>.</p>
+      </div>
+   </div>
+   <!-- end connect wallet -->
+   <div class="sign-up-container">
+      <div class="sign-up-image">
+         <img src="/static/app_assets/sign-in-up.png">
+      </div>
+      <div class="sign-up-content">
+         <h1>Create raiser account</h1>
+         <div class="name-field">
+            <div class="input-group">
+               <label for="first_name">First name</label>
+               <input name="first_name" id="first_name" required>
+            </div>
+            <div class="input-group">
+               <label for="last_name">Last name</label>
+               <input name="last_name" id="last_name" required>
+            </div>
+         </div>
+         <div class="input-group">
+            <label for="email">Email</label>
+            <input name="email" id="email" type="email" required>
+         </div>
+         <div class="input-group">
+            <label for="password">Password</label>
+            <div class="password-wrapper">
+               <input name="password" id="password" type="password" required>
+               <i class="fa-solid fa-eye-slash toggle-password" data-target="password"></i>
+            </div>
+         </div>
+         <div class="input-group">
+            <label for="confirm-password">Confirm password</label>
+            <div class="password-wrapper">
+               <input name="confirm-password" id="confirm-password" type="password" required>
+               <i class="fa-solid fa-eye-slash toggle-password" data-target="confirm-password"></i>
+            </div>
+         </div>
+         <div class="wallet-address-field">
+            <div class="input-group">
+               <label for="wallet-address">Wallet Address</label>
+               <input name="wallet-address" id="wallet-address" readonly required>
+            </div>
+            <button class="connect-raiser-wallet" id="connect-raiser-wallet">Connect</button>
+         </div>
+         <div class="agree-policy">
+            <input type="checkbox" class="agree-policy-check">
+            <p>I agree to the <a href="/privacy-policy">Privacy & Policy</a></p>
+         </div>
+         <div class="create-account-container">
+            <button type="submit" class="create-account" id="create-account-btn">Create account</button>
+         </div>
+         <p>Already have account? <a href="/login">Login</a></p>
+      </div>
+   </div>
+   <script>
+      document.querySelectorAll('.toggle-password').forEach(icon => {
+         icon.addEventListener('click', () => {
+            const targetId = icon.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+   
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+         });
+      });
+
+      //connect
+      const connect_wallet_btn = document.getElementById("connect-raiser-wallet");
+      const close_wallet_btn = document.getElementById("close-connect-wallet-btn");
+      const connect_box = document.getElementById("connect-wallet-box");
+      const overlay = document.getElementById("overlay");
+      const loading_spinner = document.getElementById("loading-spinner");
+
+      connect_wallet_btn.addEventListener("click", function() {
+         connect_box.classList.remove("hidden");
+         overlay.classList.remove("hidden");
+      });
+
+      close_wallet_btn.addEventListener("click", function() {
+         connect_box.classList.add("hidden");
+         overlay.classList.add("hidden");
+      });
+
+      let web3;
+      let selectedWallet;
+      let connectedAccount;
+      let signature;
+      let message;
+      let nonce;
+
+      nonce = "{{ nonce }}";
+
+      const walletAddressInput = document.getElementById("wallet-address");
+      const submitBtn = document.getElementById("create-account-btn");
+
+      async function signMessage(account, message) {
+         try {
+            const signedMsg = await window.ethereum.request({
+               method: 'personal_sign',
+               params: [message, account]
+            });
+            return signedMsg;
+         } catch (error) {
+            console.error('Error signing message:', error);
+            return null;
+         }
+      }
+
+      const isMetaMaskInstalled = () => {
+         return Boolean(window.ethereum && window.ethereum.isMetaMask);
+      };
+
+      document.querySelectorAll('.wallet_intergrated').forEach(button => {
+         button.addEventListener('click', async function() {
+            const walletType = this.getAttribute('data-wallet');
+            selectedWallet = walletType;
+            
+            if (walletType === 'metamask') {
+               if (!isMetaMaskInstalled()) {
+                  alert('Please install MetaMask to continue!');
+                  return;
+               }
+               
+               try {
+                  // Request accounts from MetaMask
+                  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                  connectedAccount = accounts[0];
+                  
+                  // Set the wallet address in the input field
+                  walletAddressInput.value = connectedAccount;
+                  
+                  // Create message to sign
+                  message = `Sign this message to verify your wallet ownership with OpenFund. Nonce: ${nonce}`;
+                  
+                  // Request signature from user
+                  signature = await signMessage(connectedAccount, message);
+                  
+                  // Close the wallet connection modal
+                  connect_box.classList.add("hidden");
+                  overlay.classList.add("hidden");
+                  
+               } catch (error) {
+                  console.error('Error connecting to MetaMask:', error);
+                  walletAddressInput.value = '';
+                  
+                  // Close the wallet connection modal
+                  connect_box.classList.add("hidden");
+                  overlay.classList.add("hidden");
+               }
+            } else {
+               connect_box.classList.add("hidden");
+               overlay.classList.add("hidden");
+            }
+         });
+      });
+      
+      submitBtn.addEventListener('click', async function(e) {
+         e.preventDefault();
+         loading_spinner.classList.remove("hidden");
+         overlay.classList.remove("hidden");
+         
+         const firstName = document.getElementById('first_name').value.trim();
+         const lastName = document.getElementById('last_name').value.trim();
+         const email = document.getElementById('email').value.trim();
+         const password = document.getElementById('password').value;
+         const confirmPassword = document.getElementById('confirm-password').value;
+         const walletAddress = document.getElementById('wallet-address').value.trim();
+         submitBtn.disabled = true;
+         try {
+            const response = await fetch('/sign-up', {
+               method: 'POST',
+               headers: {
+                  'Content-Type': 'application/json'
+               },
+               body: JSON.stringify({
+                  first_name: firstName,
+                  last_name: lastName,
+                  email: email,
+                  password: password,
+                  wallet_address: walletAddress,
+                  signature: signature,
+               })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+               Toastify({
+                  text: data.message,
+                  duration: 3000,
+                  gravity: "top",
+                  position: "right",
+                  backgroundColor: "#4BB543",
+                  stopOnFocus: true
+               }).showToast();
+               setTimeout(() => {
+                  window.location.href = '/login';
+               }, 3000);
+            } else {
+               console.log("An error occur")
+               Toastify({
+                  text: data.message,
+                  duration: 3000,
+                  gravity: "top",
+                  position: "right",
+                  backgroundColor: "#FF0000",
+                  stopOnFocus: true
+               }).showToast();
+            }
+         } catch (error) {
+            console.error('Error:', error);
+         } finally {
+            submitBtn.disabled = false;
+            loading_spinner.classList.add("hidden");
+            overlay.classList.add("hidden");
+         }
+      });
+   </script>   
+</body>
+</html>
