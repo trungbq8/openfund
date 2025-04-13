@@ -16,6 +16,9 @@
 
    <body>
    <style>
+      html{
+         height: 100%;
+      }
       body{
          padding: 20px;
          justify-content: center;
@@ -284,7 +287,7 @@
       };
 
       const isBinanceWalletInstalled = () => {
-         return Boolean(window.BinanceChain);
+         return Boolean(window.ethereum);
       };
 
       const isOKXWalletInstalled = () => {
@@ -315,8 +318,8 @@
                   break;
                   
                case 'binance':
-                  if (window.BinanceChain) {
-                     signedMsg = await window.BinanceChain.request({
+                  if (window.ethereum) {
+                     signedMsg = await window.ethereum.request({
                         method: 'personal_sign',
                         params: [message, account]
                      });
@@ -389,18 +392,18 @@
                                  decimals: 18
                               },
                               rpcUrls: ['https://evm-rpc-arctic-1.sei-apis.com'], 
-                              blockExplorerUrls: ['https://seistream.app'] 
+                              blockExplorerUrls: ['https://seitrace.com/?chain=arctic-1'] 
                         }],
                      });
                }
             case 'binance':
                try{
-                     await window.BinanceChain.request({
+                     await window.ethereum.request({
                         method: 'wallet_switchEthereumChain',
                         params: [{ chainId: '0xae3f3' }],
                      });
                   } catch (switchError) {
-                        await window.BinanceChain.request({
+                        await window.ethereum.request({
                            method: 'wallet_addEthereumChain',
                            params: [{
                                  chainId: '0xae3f3',
@@ -503,7 +506,7 @@
                      showWalletError('Binance Wallet is not installed. Please install Binance Wallet extension first.');
                      return null;
                   }
-                  accounts = await window.BinanceChain.request({ method: 'eth_requestAccounts' });
+                  accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                   break;
                   
                case 'okx':
@@ -700,7 +703,6 @@
             return;
          }
          
-         // Show loading spinner and overlay
          loading_spinner.classList.remove("hidden");
          overlay.classList.remove("hidden");
          submitBtn.disabled = true;
