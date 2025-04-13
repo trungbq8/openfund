@@ -51,6 +51,7 @@ def signup():
    else:
       nonce = secrets.token_hex(16)
       session['nonce'] = nonce
+      session.modified = True
       return render_template("signup.html", nonce=nonce)
 
 @app.route("/login")
