@@ -8,7 +8,7 @@ import time
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+CORS(app)
 app.secret_key = "secretkey"
 
 w3 = Web3(Web3.HTTPProvider('https://evm-rpc-arctic-1.sei-apis.com'))
@@ -51,7 +51,6 @@ def signup():
    else:
       nonce = secrets.token_hex(16)
       session['nonce'] = nonce
-      session.modified = True
       return render_template("signup.html", nonce=nonce)
 
 @app.route("/login")
