@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1, user-scalable=no">
+   <title>OpenFund - Account Settings</title>
+   <link rel="icon" href="/static/app_assets/open_fund_logo.png">
+   <link rel="stylesheet" href="/static/css/style.css">
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+   <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
+   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<body>
+   <style>
+      html{
+         height: 100%;
+      }
+      body{
+         padding: 20px;
+         justify-content: center;
+         box-sizing: border-box;
+      }
+      .account-setting-box{
+         width: 100%;
+         height: 90%;
+         max-width: 600px;
+         display: flex;
+         flex-direction: column;
+         border-radius: 20px;
+         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+         padding: 20px;
+         box-sizing: border-box;
+         overflow-y: auto;
+         overflow-x: hidden;
+      }
+      .account-setting-box h2{
+         font-size: 1rem;
+         margin: 5px 0;
+      }
+      #user-email{
+         font-size: 0.69rem;
+      }
+      .user-info-box{
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+      }
+      .save-btn{
+         background-color: black;
+         border: solid 1px black;
+         border-radius: 10px;
+         padding: 5.8px 10px;
+         color: white;
+         cursor: pointer;
+      }
+      .user-info{
+         width: 100%;
+         display: flex;
+         align-items: center;
+         justify-content: start;
+         gap: 10px
+      }
+      .user-image{
+         width: 60px;
+         height: 60px;
+         border-radius: 50%;
+
+         position: relative;
+      }
+      .user-image img{
+         width: 100%;
+      }
+      .user-name-email{
+         display: flex;
+         flex-direction: column;
+         align-items: start;
+         justify-content: center;
+      }
+      .user-name-email p{
+         margin: 0;
+      }
+      .divide-section{
+         width: 100%;
+         border: solid 0.5px black;
+         background-color: black;
+         height: 0.5px;
+         opacity: 0.1;
+         margin: 10px 0;
+      }
+      .input-group {
+         display: flex;
+         flex-direction: column;
+         margin-bottom: 5px;
+      }
+      .input-group-horizon{
+         display: flex;
+         align-items: center;
+         gap: 5px;
+         margin-bottom: 10px;
+         justify-content: space-between;
+      }
+      input{
+         padding: 5.8px 10px;
+         border-radius: 10px;
+         border: solid 1px rgb(200, 200, 200);
+         font-family: "Poppins";
+         flex: 1;
+         min-width: 0;
+      }
+      .send-email-verirication{
+         background-color: white;
+         border: solid 1px black;
+         border-radius: 10px;
+         padding: 5.8px 10px;
+         cursor: pointer;
+      }
+      label {
+         opacity: 0.8;
+         width: 86px;
+      }
+      .name-field{
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+      }
+      .name-field .input-group{
+         width: 49%;
+      }
+      .password-wrapper {
+         position: relative;
+         display: flex;
+         align-items: center;
+         flex: 1
+      }
+      .password-wrapper input {
+         width: 100%;
+         padding-right: 35px;
+      }
+
+      .toggle-password {
+         position: absolute;
+         right: 10px;
+         cursor: pointer;
+         color: gray;
+      }
+      .edit-icon{
+         display: flex;
+         align-items: center;
+         justify-content: center;
+
+         position: absolute;
+         bottom: 2px;
+         right: 2px;
+         background-color: white;
+         width: 20px;
+         height: 20px;
+         font-size: 12px;
+         border-radius: 50%;
+         box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+         cursor: pointer;
+      }
+      .wysiwyg-container {
+         margin-top: 10px;
+         width: 100%;
+      }
+      .editor-toolbar {
+         display: flex;
+         flex-wrap: wrap;
+         gap: 5px;
+         background-color: #f5f5f5;
+         padding: 8px;
+         border-radius: 8px 8px 0 0;
+         border: 1px solid #ddd;
+      }
+      .toolbar-btn {
+         background-color: white;
+         border: 1px solid #ccc;
+         border-radius: 4px;
+         padding: 4px 8px;
+         cursor: pointer;
+         font-size: 14px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+      }
+      .toolbar-btn:hover {
+         background-color: #e9e9e9;
+      }
+      .toolbar-btn.active {
+         background-color: #e0e0e0;
+         border-color: #aaa;
+      }
+      .toolbar-group {
+         display: flex;
+         gap: 3px;
+         border-right: 1px solid #ddd;
+         padding-right: 5px;
+      }
+      .toolbar-group:last-child {
+         border-right: none;
+      }
+      .editor-content {
+         width: 100%;
+         min-height: 200px;
+         border: 1px solid #ddd;
+         border-top: none;
+         padding: 10px;
+         font-family: 'Poppins', sans-serif;
+         overflow-y: auto;
+         border-radius: 0 0 8px 8px;
+         outline: none;
+         box-sizing: border-box;
+      }
+      .preview-toggle {
+         margin-top: 10px;
+         display: flex;
+         justify-content: center;
+      }
+      .preview-toggle button {
+         background-color: rgb(0, 0, 0);
+         border: 1px solid rgb(0, 0, 0);
+         border-radius: 10px;
+         padding: 5.8px 10px;
+         cursor: pointer;
+         color: white
+      }
+      .preview-toggle button.active {
+         background-color: #ffffff;
+         border-color: #000000;
+         color: #000000;
+      }
+      .preview-container {
+         width: 100%;
+         min-height: 200px;
+         border: 1px solid #ddd;
+         padding: 10px;
+         margin-top: 10px;
+         border-radius: 8px;
+         font-family: 'Poppins', sans-serif;
+         display: none;
+         box-sizing: border-box;
+      }
+      .preview-container.active {
+         display: block;
+      }
+      .file-input {
+         display: none;
+      }
+      .image-upload-status {
+         margin-top: 5px;
+         color: #666;
+         font-size: 12px;
+      }
+      .editor-content img {
+         width: 100%;
+         height: auto;
+         max-width: 100%;
+      }
+   </style>
+   <div class="account-setting-box">
+      <div class="user-info-box">
+         <div class="user-info">
+            <div class="user-image">
+               <img src="/static/app_assets/open_fund_logo.png">
+               <div class="edit-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+            </div>
+            <div class="user-name-email">
+               <p id="user-name">Donald Trump</p>
+               <p id="user-email">trump@trump.com</p>
+            </div>
+         </div>
+         <button class="save-btn" id="save-btn">Save</button>
+      </div>
+      <div class="divide-section"></div>
+      <div class="name-field">
+         <div class="input-group">
+            <label for="first_name">First name</label>
+            <input name="first_name" id="first_name" required>
+         </div>
+         <div class="input-group">
+            <label for="last_name">Last name</label>
+            <input name="last_name" id="last_name" required>
+         </div>
+      </div>
+      <div class="input-group-horizon">
+         <label for="email">Email</label>
+         <input name="email" id="email" type="email" required>
+         <i style="color: green;" class="fa-solid fa-circle-check"></i>
+         <button class="send-email-verirication" id="send-email-verirication">Verify</button>
+      </div>
+      <div class="input-group-horizon">
+         <label for="x_link">X (Twitter)</label>
+         <input name="x_link" id="x_link">
+      </div>
+      <div class="input-group-horizon">
+         <label for="website_link">Website</label>
+         <input name="website_link" id="website_link">
+      </div>
+      <div class="divide-section"></div>
+      <h2>Change password</h2>
+      <div class="input-group-horizon">
+         <label for="current-password" style="width: 150px;">Current password</label>
+         <div class="password-wrapper">
+            <input name="current-password" id="current-password" type="password" required>
+            <i class="fa-solid fa-eye-slash toggle-password" data-target="current-password"></i>
+         </div>
+      </div>
+      <div class="input-group-horizon">
+         <label for="new-password" style="width: 150px;">New password</label>
+         <div class="password-wrapper">
+            <input name="new-password" id="new-password" type="password" required>
+            <i class="fa-solid fa-eye-slash toggle-password" data-target="new-password"></i>
+         </div>
+      </div>
+      <div class="divide-section"></div>
+      <h2>Bio</h2>
+      
+      <!-- WYSIWYG Editor -->
+      <div class="wysiwyg-container">
+         <div class="editor-toolbar">
+            <div class="toolbar-group">
+               <button class="toolbar-btn" data-command="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+               <button class="toolbar-btn" data-command="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+               <button class="toolbar-btn" data-command="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
+               <button class="toolbar-btn" data-command="strikeThrough" title="Strike through"><i class="fa-solid fa-strikethrough"></i></button>
+            </div>
+            <div class="toolbar-group">
+               <button class="toolbar-btn" data-command="justifyLeft" title="Align left"><i class="fa-solid fa-align-left"></i></button>
+               <button class="toolbar-btn" data-command="justifyCenter" title="Align center"><i class="fa-solid fa-align-center"></i></button>
+               <button class="toolbar-btn" data-command="justifyRight" title="Align right"><i class="fa-solid fa-align-right"></i></button>
+               <button class="toolbar-btn" data-command="justifyFull" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
+            </div>
+            <div class="toolbar-group">
+               <button class="toolbar-btn" data-command="insertUnorderedList" title="Bullet list"><i class="fa-solid fa-list-ul"></i></button>
+               <button class="toolbar-btn" data-command="insertOrderedList" title="Numbered list"><i class="fa-solid fa-list-ol"></i></button>
+            </div>
+            <div class="toolbar-group">
+               <button class="toolbar-btn" data-command="h1" title="Heading 1">H1</button>
+               <button class="toolbar-btn" data-command="h2" title="Heading 2">H2</button>
+               <button class="toolbar-btn" data-command="h3" title="Heading 3">H3</button>
+               <button class="toolbar-btn" data-command="p" title="Paragraph">P</button>
+            </div>
+            <div class="toolbar-group">
+               <button class="toolbar-btn" data-command="createLink" title="Insert link"><i class="fa-solid fa-link"></i></button>
+               <button class="toolbar-btn" data-command="unlink" title="Remove link"><i class="fa-solid fa-unlink"></i></button>
+               <button class="toolbar-btn" id="image-upload-btn" title="Upload image"><i class="fa-solid fa-image"></i></button>
+               <input type="file" id="image-upload" class="file-input" accept="image/*">
+            </div>
+         </div>
+         <div class="editor-content" id="editor-content" contenteditable="true"></div>
+         <div class="image-upload-status" id="image-upload-status"></div>
+         <div class="preview-toggle">
+            <button id="toggle-preview">Preview</button>
+         </div>
+         <div class="preview-container" id="preview-container"></div>
+      </div>
+   </div>
+
+   <script>
+      let bioHtmlContent = '';
+      
+      document.addEventListener('DOMContentLoaded', function() {
+         document.querySelectorAll('.toggle-password').forEach(icon => {
+            icon.addEventListener('click', function() {
+               const targetId = this.getAttribute('data-target');
+               const passwordInput = document.getElementById(targetId);
+               
+               if (passwordInput.type === 'password') {
+                  passwordInput.type = 'text';
+                  this.classList.remove('fa-eye-slash');
+                  this.classList.add('fa-eye');
+               } else {
+                  passwordInput.type = 'password';
+                  this.classList.remove('fa-eye');
+                  this.classList.add('fa-eye-slash');
+               }
+            });
+         });
+         
+         // WYSIWYG Editor
+         const editor = document.getElementById('editor-content');
+         const previewContainer = document.getElementById('preview-container');
+         const previewToggle = document.getElementById('toggle-preview');
+         const imageUploadBtn = document.getElementById('image-upload-btn');
+         const imageUploadInput = document.getElementById('image-upload');
+         const imageUploadStatus = document.getElementById('image-upload-status');
+         const saveBtn = document.getElementById('save-btn');
+         
+         editor.addEventListener('focus', function() {
+            if (!window.getSelection().toString()) {
+               document.execCommand('formatBlock', false, 'p');
+            }
+         });
+         
+         document.querySelectorAll('.toolbar-btn[data-command]').forEach(button => {
+            button.addEventListener('click', function() {
+               const command = this.getAttribute('data-command');
+               
+               if (command === 'h1' || command === 'h2' || command === 'h3' || command === 'p') {
+                  document.execCommand('formatBlock', false, command);
+               } else if (command === 'createLink') {
+                  const url = prompt('Enter the link URL:', 'https://');
+                  if (url) document.execCommand(command, false, url);
+               } else {
+                  document.execCommand(command, false, null);
+               }
+               
+               editor.focus();
+               updatePreview();
+               saveBioContent();
+            });
+         });
+         
+         previewToggle.addEventListener('click', function() {
+            previewContainer.classList.toggle('active');
+            if (previewContainer.classList.contains('active')) {
+               previewToggle.textContent = 'Close preview';
+               previewToggle.classList.add('active');
+               updatePreview();
+            } else {
+               previewToggle.textContent = 'Preview';
+               previewToggle.classList.remove('active');
+            }
+         });
+         
+         function updatePreview() {
+            previewContainer.innerHTML = editor.innerHTML;
+         }
+         
+         // Image upload - modified to set image width to 100%
+         imageUploadBtn.addEventListener('click', function() {
+            imageUploadInput.click();
+         });
+         
+         imageUploadInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+               const file = this.files[0];
+               uploadImage(file);
+               updatePreview();
+            }
+         });
+         
+         function uploadImage(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            imageUploadStatus.textContent = 'Uploading...';
+            
+            fetch('/upload-image', {
+               method: 'POST',
+               body: formData
+            })
+            .then(response => {
+               if (!response.ok) {
+                  throw new Error('Network response was not ok');
+               }
+               return response.json();
+            })
+            .then(data => {
+               if (data.success) {
+                  document.execCommand('insertImage', false, data.file_url);
+                  
+                  setTimeout(() => {
+                     const images = editor.querySelectorAll('img');
+                     const lastImage = images[images.length - 1];
+                     if (lastImage) {
+                        lastImage.style.width = '100%';
+                        lastImage.style.height = 'auto';
+                     }
+                  }, 100);
+                  
+                  imageUploadStatus.textContent = 'Image uploaded successfully';
+               } else {
+                  throw new Error(data.message || 'Error uploading image');
+               }
+               
+               setTimeout(() => {
+                  imageUploadStatus.textContent = '';
+               }, 3000);
+               updatePreview();
+               saveBioContent();
+            })
+            .catch(error => {
+               console.error('Error:', error);
+               imageUploadStatus.textContent = 'Error uploading image: ' + error.message;
+               
+               setTimeout(() => {
+                  imageUploadStatus.textContent = '';
+               }, 3000);
+               
+               updatePreview();
+               saveBioContent();
+            });
+         }
+         
+         editor.addEventListener('input', function() {
+            updatePreview();
+            saveBioContent();
+         });
+         
+         function saveBioContent() {
+            bioHtmlContent = editor.innerHTML;
+            console.log('Bio HTML content saved:', bioHtmlContent);
+         }
+         
+         saveBtn.addEventListener('click', function() {
+            saveBioContent();
+            Toastify({
+               text: "Settings saved successfully!",
+               duration: 3000,
+               gravity: "bottom",
+               position: "center",
+               backgroundColor: "black",
+            }).showToast();
+         });
+         // Initialize
+         editor.innerHTML = '<p>Bio not set...</p>';
+         saveBioContent();
+      });
+   </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, session
+from flask import Flask, render_template, jsonify, request, session, url_for
 from web3 import Web3
 import eth_account
 from eth_account.messages import encode_defunct
@@ -7,20 +7,50 @@ import secrets
 import time
 from flask_cors import CORS
 import re
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 CORS(app)
 app.secret_key = "secretkey"
 
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
 w3 = Web3(Web3.HTTPProvider('https://evm-rpc-arctic-1.sei-apis.com'))
 
-@app.route("/")
-def home():
-   return render_template("index.html")
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
 
-@app.route("/invest")
-def invest():
-   return render_template("invest.html")
+@app.route("/upload-image", methods=['POST'])
+def upload_image():
+    if 'file' not in request.files:
+        return jsonify({"success": False, "message": "No file part"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"success": False, "message": "No selected file"}), 400
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        timestamp = str(int(time.time()))
+        unique_filename = f"{timestamp}_{filename}"
+        
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+        file.save(file_path)
+        
+        file_url = url_for('static', filename=f'uploads/{unique_filename}', _external=True)
+        
+        return jsonify({
+            "success": True, 
+            "message": "File uploaded successfully",
+            "file_url": file_url
+        })
+    else:
+        return jsonify({
+            "success": False, 
+            "message": f"File type not allowed"
+        }), 400
 
 def validate_email(email):
     """Validate email format"""
@@ -66,7 +96,6 @@ def signup():
          print(f"Email: {email}")
          print(f"Password: {password}")
          print(f"Wallet Address: {wallet_address}")
-         print("======================")
             
          return jsonify({"success": True, "message": "Account created successfully"})
       else:
@@ -76,9 +105,21 @@ def signup():
       session['nonce'] = nonce
       return render_template("signup.html", nonce=nonce)
 
+@app.route("/")
+def home():
+   return render_template("index.html")
+
+@app.route("/invest")
+def invest():
+   return render_template("invest.html")
+
 @app.route("/login")
 def login():
    return render_template("login.html")
+
+@app.route("/edit-account")
+def edit_account():
+   return render_template("edit-account.html")
 
 @app.route("/test")
 def test():

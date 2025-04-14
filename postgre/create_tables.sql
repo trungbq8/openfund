@@ -10,7 +10,8 @@ CREATE TABLE raiser (
     salt TEXT NOT NULL,
     bio TEXT,
     wallet_address VARCHAR(255) UNIQUE NOT NULL,
-    active BOOLEAN DEFAULT TRUE
+    active BOOLEAN DEFAULT TRUE,
+    logo_url TEXT
 );
 
 CREATE TABLE investor (
@@ -54,6 +55,7 @@ CREATE TABLE post (
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     status VARCHAR(10) CHECK (status IN ('draft', 'posted')) DEFAULT 'draft',
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE
 );
 
@@ -61,6 +63,7 @@ CREATE TABLE blog_post (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(10) CHECK (status IN ('draft', 'posted')) DEFAULT 'draft',
 );
 
