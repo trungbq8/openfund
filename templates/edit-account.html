@@ -65,11 +65,13 @@
          width: 60px;
          height: 60px;
          border-radius: 50%;
-
+         overflow: hidden;
          position: relative;
       }
       .user-image img{
          width: 100%;
+         height: 100%;
+         object-fit: cover;
       }
       .user-name-email{
          display: flex;
@@ -88,11 +90,6 @@
          opacity: 0.1;
          margin: 10px 0;
       }
-      .input-group {
-         display: flex;
-         flex-direction: column;
-         margin-bottom: 5px;
-      }
       .input-group-horizon{
          display: flex;
          align-items: center;
@@ -101,14 +98,10 @@
          justify-content: space-between;
       }
       input{
-         padding: 5.8px 10px;
-         border-radius: 10px;
-         border: solid 1px rgb(200, 200, 200);
-         font-family: "Poppins";
          flex: 1;
          min-width: 0;
       }
-      .send-email-verirication{
+      .send-email-verirication, .change-wallet{
          background-color: white;
          border: solid 1px black;
          border-radius: 10px;
@@ -119,14 +112,6 @@
          opacity: 0.8;
          width: 86px;
       }
-      .name-field{
-         display: flex;
-         align-items: center;
-         justify-content: space-between;
-      }
-      .name-field .input-group{
-         width: 49%;
-      }
       .password-wrapper {
          position: relative;
          display: flex;
@@ -136,13 +121,6 @@
       .password-wrapper input {
          width: 100%;
          padding-right: 35px;
-      }
-
-      .toggle-password {
-         position: absolute;
-         right: 10px;
-         cursor: pointer;
-         color: gray;
       }
       .edit-icon{
          display: flex;
@@ -172,6 +150,8 @@
          padding: 8px;
          border-radius: 8px 8px 0 0;
          border: 1px solid #ddd;
+         align-items: center;
+         justify-content: center;
       }
       .toolbar-btn {
          background-color: white;
@@ -258,11 +238,31 @@
          max-width: 100%;
       }
    </style>
+   <div class="loading-spinner hidden" id="loading-spinner">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="40" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="100" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="160" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
+   </div>
+   <!-- connect wallet -->
+   <div class="overlay hidden" id="overlay">
+      <div class="connect-wallet-box hidden" id="connect-wallet-box">
+         <button class="close-connect-wallet-btn" id="close-connect-wallet-btn">
+            <i class="fa-solid fa-xmark"></i>
+         </button>
+         <h1>Connect wallet</h1>
+         <hr style="width: 100px;">
+         <button class="wallet_intergrated" data-wallet="metamask"><img class="wallet-icon-logo" src="/static/app_assets/metamask.png" alt="Metamask logo">Metamask</button>
+         <button class="wallet_intergrated" data-wallet="binance"><img class="wallet-icon-logo" src="/static/app_assets/binance_web3.png" alt="Metamask logo">Binance Web3</button>
+         <button class="wallet_intergrated" data-wallet="okx"><img class="wallet-icon-logo" src="/static/app_assets/okx_web3.png" alt="Metamask logo">OKX Web3</button>
+         <button class="wallet_intergrated" data-wallet="trust"><img class="wallet-icon-logo" src="/static/app_assets/trust_wallet.png" alt="Metamask logo">Trust Wallet</button>
+         <button class="wallet_intergrated" data-wallet="coinbase"><img class="wallet-icon-logo" src="/static/app_assets/coinbase_wallet.png" alt="Metamask logo">Coinbase Wallet</button>
+         <p>By connecting a wallet, you agree to the OpenFund’s <a style="color:black" href="/term-service">Terms of Service</a> and consent to its <a style="color:black" href="/privacy-policy">Privacy Policy</a>.</p>
+      </div>
+   </div>
+   <!-- end connect wallet -->
    <div class="account-setting-box">
       <div class="user-info-box">
          <div class="user-info">
             <div class="user-image">
-               <img src="/static/app_assets/open_fund_logo.png">
+               <img src="{{ user_data.logo_url or 'https://openfund.live/static/app_assets/user_default.png'}}">
                <div class="edit-icon"><i class="fa-solid fa-pen-to-square"></i></div>
             </div>
             <div class="user-name-email">
@@ -273,20 +273,21 @@
          <button class="save-btn" id="save-btn">Save</button>
       </div>
       <div class="divide-section"></div>
+      <h2>Basic information</h2>
       <div class="name-field">
          <div class="input-group">
             <label for="first_name">First name</label>
-            <input name="first_name" id="first_name" required>
+            <input name="first_name" id="first_name" required maxlength="15">
          </div>
          <div class="input-group">
             <label for="last_name">Last name</label>
-            <input name="last_name" id="last_name" required>
+            <input name="last_name" id="last_name" required maxlength="15">
          </div>
       </div>
       <div class="input-group-horizon">
          <label for="email">Email</label>
          <input name="email" id="email" type="email" required>
-         <i style="color: green;" class="fa-solid fa-circle-check"></i>
+         <i style="color: green;" class="fa-solid fa-circle-check" id="email-verification-check"></i>
          <button class="send-email-verirication" id="send-email-verirication">Verify</button>
       </div>
       <div class="input-group-horizon">
@@ -296,6 +297,13 @@
       <div class="input-group-horizon">
          <label for="website_link">Website</label>
          <input name="website_link" id="website_link">
+      </div>
+      <div class="divide-section"></div>
+      <h2>Funding wallet</h2>
+      <div class="input-group-horizon">
+         <label for="funding_wallet">Address</label>
+         <input name="funding_wallet" id="funding_wallet" readonly>
+         <button class="change-wallet" id="change-wallet">Change</button>
       </div>
       <div class="divide-section"></div>
       <h2>Change password</h2>
@@ -316,7 +324,6 @@
       <div class="divide-section"></div>
       <h2>Bio</h2>
       
-      <!-- WYSIWYG Editor -->
       <div class="wysiwyg-container">
          <div class="editor-toolbar">
             <div class="toolbar-group">
@@ -357,10 +364,7 @@
       </div>
    </div>
 
-   <script>
-      let bioHtmlContent = '';
-      
-      document.addEventListener('DOMContentLoaded', function() {
+   <script>      
          document.querySelectorAll('.toggle-password').forEach(icon => {
             icon.addEventListener('click', function() {
                const targetId = this.getAttribute('data-target');
@@ -428,7 +432,6 @@
             previewContainer.innerHTML = editor.innerHTML;
          }
          
-         // Image upload - modified to set image width to 100%
          imageUploadBtn.addEventListener('click', function() {
             imageUploadInput.click();
          });
@@ -506,18 +509,208 @@
          
          saveBtn.addEventListener('click', function() {
             saveBioContent();
-            Toastify({
-               text: "Settings saved successfully!",
-               duration: 3000,
-               gravity: "bottom",
-               position: "center",
-               backgroundColor: "black",
-            }).showToast();
          });
-         // Initialize
-         editor.innerHTML = '<p>Bio not set...</p>';
-         saveBioContent();
-      });
+
+      //Connect
+      const walletAddressInput = document.getElementById("funding_wallet");
+      const connect_wallet_btn = document.getElementById("change-wallet");
+
+      const firstNameInput = document.getElementById('first_name');
+      const lastNameInput = document.getElementById('last_name');
+      const emailInput = document.getElementById('email');
+      const xLinkInput = document.getElementById('x_link');
+      const websiteLinkInput = document.getElementById('website_link');
+      const fundingWalletInput = document.getElementById('funding_wallet');
+      const currentPasswordInput = document.getElementById('current-password');
+      const newPasswordInput = document.getElementById('new-password');
+      const sendVerificationBtn = document.getElementById('send-email-verirication');
+      const changeWalletBtn = document.getElementById('change-wallet');
+      const userNameDisplay = document.getElementById('user-name');
+      const userEmailDisplay = document.getElementById('user-email');
+      const userImageElement = document.querySelector('.user-image img');
+      const editImageIcon = document.querySelector('.user-image .edit-icon');
+      const loadingSpinner = document.getElementById('loading-spinner');
+      const emailVerificationCheck = document.getElementById('email-verification-check');
+      let user_image_url;
+      let nonce;
+      nonce = "{{ nonce }}";
+      
+      // Load user data
+      function loadUserData() {
+         firstNameInput.value = "{{ user_data.first_name }}" || '';
+         lastNameInput.value = "{{ user_data.last_name }}" || '';
+         emailInput.value = "{{ user_data.email }}" || '';
+         xLinkInput.value = "{{ user_data.x_link }}" || '';
+         websiteLinkInput.value = "{{ user_data.website_link }}" || '';
+         fundingWalletInput.value = "{{ user_data.wallet_address }}" || '';
+         
+         userNameDisplay.textContent = `${firstNameInput.value} ${lastNameInput.value}`;
+         userEmailDisplay.textContent = "{{ user_data.email }}" || '';
+         
+         if ("{{ user_data.bio }}") {
+            editor.innerHTML = decodeHTMLEntities("{{ user_data.bio }}");
+            bioHtmlContent = editor.innerHTML;
+            updatePreview();
+         }
+         
+         // Update verification button status
+         if ({{ user_data.email_verified | tojson }}) {
+            sendVerificationBtn.style.display = "none";
+         } else {
+            emailVerificationCheck.style.display = "none";
+         }
+      }
+      
+      // Send verification email
+      if (sendVerificationBtn) {
+         sendVerificationBtn.addEventListener('click', function() {
+            if (sendVerificationBtn.disabled) return;
+            
+            loadingSpinner.classList.remove('hidden');
+            overlay.classList.remove("hidden");
+            
+            fetch('/send-verification-email', {
+               method: 'POST',
+               headers: {
+                  'Content-Type': 'application/json'
+               }
+            })
+            .then(response => response.json())
+            .then(data => {
+               loadingSpinner.classList.add('hidden');
+               overlay.classList.add("hidden");
+               
+               if (data.success) {
+                  showToastMessage(data.message, true)
+               } else {
+                  showToastMessage(data.message || "Error sending verification email", false);
+               }
+            })
+            .catch(error => {
+               loadingSpinner.classList.add('hidden');
+               overlay.classList.add("hidden");
+               console.error('Error:', error);
+               showToastMessage("Error sending verification email", false);
+            });
+         });
+      }
+      
+      // Handle profile image upload
+      if (editImageIcon) {
+         // Create a hidden file input for image upload
+         const imageFileInput = document.createElement('input');
+         imageFileInput.type = 'file';
+         imageFileInput.accept = 'image/*';
+         imageFileInput.style.display = 'none';
+         document.body.appendChild(imageFileInput);
+         
+         editImageIcon.addEventListener('click', function() {
+               imageFileInput.click();
+         });
+         
+         imageFileInput.addEventListener('change', function(e) {
+               if (this.files && this.files[0]) {
+                  const file = this.files[0];
+                  
+                  // Create FormData for upload
+                  const formData = new FormData();
+                  formData.append('file', file);
+                  
+                  loadingSpinner.classList.remove('hidden');
+                  overlay.classList.remove("hidden");
+                  
+                  // Upload image
+                  fetch('/upload-image', {
+                     method: 'POST',
+                     body: formData
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                     loadingSpinner.classList.add('hidden');
+                     overlay.classList.add("hidden");
+                     
+                     if (data.success) {
+                           userImageElement.src = data.file_url;
+                           user_image_url = data.file_url;
+                           } else {
+                           throw new Error(data.message || "Error uploading image");
+                     }
+                  })
+                  .catch(error => {
+                     loadingSpinner.classList.add('hidden');
+                     overlay.classList.add("hidden");
+                     console.error('Error:', error);
+                     showToastMessage(error.message || "Error uploading image", false);
+                  });
+               }
+         });
+      }
+      
+      // Save account changes
+      if (saveBtn) {
+         saveBtn.addEventListener('click', function() {
+            const data = {
+               first_name: firstNameInput.value.trim(),
+               last_name: lastNameInput.value.trim(),
+               email: emailInput.value.trim(),
+               x_link: xLinkInput.value.trim(),
+               website_link: websiteLinkInput.value.trim(),
+               bio_content: bioHtmlContent,
+               wallet_address: fundingWalletInput.value.trim(),
+               user_image_url: user_image_url
+            };
+               
+            // Add password fields only if they are filled
+            if (currentPasswordInput.value && newPasswordInput.value) {
+               data.current_password = currentPasswordInput.value;
+               data.new_password = newPasswordInput.value;
+            }
+               
+            loadingSpinner.classList.remove('hidden');
+            overlay.classList.remove("hidden");
+               
+            fetch('/edit-account', {
+               method: 'POST',
+               headers: {
+                  'Content-Type': 'application/json'
+               },
+               body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+               loadingSpinner.classList.add('hidden');
+               overlay.classList.add("hidden");
+               
+               if (data.success) {
+                  // Update display elements
+                  userNameDisplay.textContent = `${firstNameInput.value} ${lastNameInput.value}`;
+                  userEmailDisplay.textContent = emailInput.value;
+                  
+                  // Clear password fields
+                  currentPasswordInput.value = '';
+                  newPasswordInput.value = '';
+                  
+                  showToastMessage(data.message || "Settings saved successfully!", true);
+               } else {
+                  showToastMessage(data.message || "Error saving settings", false);
+               }
+            })
+            .catch(error => {
+               loadingSpinner.classList.add('hidden');
+               overlay.classList.add("hidden");
+               console.error('Error:', error);
+               showToastMessage("Error saving settings", false);
+            });
+         });
+      }
+      function decodeHTMLEntities(text) {
+         const textArea = document.createElement('textarea');
+         textArea.innerHTML = text;
+         return textArea.value;
+      }
+      loadUserData();
    </script>
+   <script src="/static/script/connect.js"></script>
+   <script src="/static/script/main.js"></script>
 </body>
 </html>

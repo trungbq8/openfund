@@ -11,7 +11,6 @@
    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
    <body>
    <style>
       html{
@@ -22,43 +21,6 @@
          justify-content: center;
          box-sizing: border-box;
       }
-      .sign-up-container{
-         width: 100%;
-         max-width: 800px;
-         border-radius: 20px;
-         display: flex;
-         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-      }
-      .sign-up-image{
-         width: 50%;
-         height: 100%;
-      }
-      .sign-up-image img{
-         width: 100%;
-         height: 100%;
-         object-fit: cover;
-         border-top-left-radius: 20px;
-         border-bottom-left-radius: 20px;
-      }
-      .sign-up-content{
-         padding: 10px 26px;
-         width: 50%;
-         box-sizing: border-box;
-         font-size: 0.86rem;
-      }
-      .sign-up-content p a{
-         color: black;
-      }
-      .sign-up-content h1{
-         font-size: 1.2rem;
-         margin: 10px 0;
-         opacity: 0.86;
-      }
-      .input-group {
-         display: flex;
-         flex-direction: column;
-         margin-bottom: 5px;
-      }
       input{
          padding: 5.8px 10px;
          border-radius: 10px;
@@ -68,14 +30,6 @@
       label {
          opacity: 0.8;
          font-size: 0.86rem;
-      }
-      .name-field{
-         display: flex;
-         align-items: center;
-         justify-content: space-between;
-      }
-      .name-field .input-group{
-         width: 49%;
       }
       .wallet-address-field{
          display: flex;
@@ -149,23 +103,6 @@
          width: 100%;
          padding-right: 35px;
       }
-
-      .toggle-password {
-         position: absolute;
-         right: 10px;
-         cursor: pointer;
-         color: gray;
-      }
-      .loading-spinner{
-         position: fixed;
-         top: 50%;
-         left: 50%;
-         height: 100px;
-         width: 100px;
-         transform: translate(-50%, -50%);
-         z-index: 99999999;
-         background-color: transparent;
-      }
       .redirect-auth{
          display: flex;
          width: 100%;
@@ -202,11 +139,11 @@
          <div class="name-field">
             <div class="input-group">
                <label for="first_name">First name</label>
-               <input name="first_name" id="first_name" required>
+               <input name="first_name" id="first_name" required maxlength="15">
             </div>
             <div class="input-group">
                <label for="last_name">Last name</label>
-               <input name="last_name" id="last_name" required>
+               <input name="last_name" id="last_name" required maxlength="15">
             </div>
          </div>
          <div class="input-group">
@@ -242,7 +179,7 @@
             <button type="submit" class="create-account" id="create-account-btn">Create account</button>
          </div>
          <div class="redirect-auth">
-            <p>Already have account? <a href="/login">Login</a></p>
+            <p>Already have account? <a href="/log-in">Login</a></p>
          </div>
       </div>
    </div>
@@ -261,262 +198,9 @@
       });
 
       //Connect wallet
-      let web3;
-      let selectedWallet;
-      let connectedAccount;
-      let signature;
-      let message;
-      let nonce;
-
-      nonce = "{{ nonce }}";
-
       const walletAddressInput = document.getElementById("wallet-address");
       const createAccountBtn = document.getElementById("create-account-btn");
       const connect_wallet_btn = document.getElementById("connect-raiser-wallet");
-      const close_wallet_btn = document.getElementById("close-connect-wallet-btn");
-      const connect_box = document.getElementById("connect-wallet-box");
-      const overlay = document.getElementById("overlay");
-      const loading_spinner = document.getElementById("loading-spinner");
-
-      connect_wallet_btn.addEventListener("click", function() {
-         connect_box.classList.remove("hidden");
-         overlay.classList.remove("hidden");
-      });
-
-      close_wallet_btn.addEventListener("click", function() {
-         connect_box.classList.add("hidden");
-         overlay.classList.add("hidden");
-      });
-
-      const isMetaMaskInstalled = () => {
-         return Boolean(window.ethereum && window.ethereum.isMetaMask);
-      };
-
-      const isBinanceWalletInstalled = () => {
-         return Boolean(window.ethereum);
-      };
-
-      const isOKXWalletInstalled = () => {
-         return Boolean(window.okxwallet);
-      };
-
-      const isTrustWalletInstalled = () => {
-         return Boolean(window.trustwallet || (window.ethereum && window.ethereum.isTrust));
-      };
-
-      const isCoinbaseWalletInstalled = () => {
-         return Boolean(window.ethereum && window.ethereum.isCoinbaseWallet);
-      };
-
-      async function signMessage(account, message, walletType) {
-         try {
-            let signedMsg;
-            
-            switch (walletType) {
-                  case 'metamask':
-                  case 'binance':
-                  case 'coinbase':
-                     provider = window.ethereum;
-                     break;
-                  case 'okx':
-                     provider = window.okxwallet;
-                     break;
-                  case 'trust':
-                     provider = window.trustwallet || window.ethereum;
-                     break;
-                  default:
-                     throw new Error('Unsupported wallet type');
-            }
-            
-            if (!provider) {
-                  throw new Error(`${formatWalletName(walletType)} provider not found`);
-            }
-
-            signedMsg = await window.ethereum.request({
-               method: 'personal_sign',
-               params: [message, account]
-            });
-            
-            return signedMsg;
-         } catch (error) {
-            console.error(`Error signing message with ${walletType}:`, error);
-            showToastMessage(`Failed to sign message: ${error.message || 'Unknown error'}`, false);
-            return null;
-         }
-      }
-
-      async function addSwitchChain(walletType) {
-         try {
-            let provider;
-            
-            switch (walletType) {
-                  case 'metamask':
-                  case 'binance':
-                  case 'coinbase':
-                     provider = window.ethereum;
-                     break;
-                  case 'okx':
-                     provider = window.okxwallet;
-                     break;
-                  case 'trust':
-                     provider = window.trustwallet || window.ethereum;
-                     break;
-                  default:
-                     throw new Error('Unsupported wallet type');
-            }
-            
-            if (!provider) {
-                  throw new Error(`${formatWalletName(walletType)} provider not found`);
-            }
-            
-            try {
-                  await provider.request({
-                     method: 'wallet_switchEthereumChain',
-                     params: [{ chainId: '0xae3f3' }],
-                  });
-                  return true;
-            } catch (switchError) {
-                  await provider.request({
-                     method: 'wallet_addEthereumChain',
-                     params: [{
-                        chainId: '0xae3f3',
-                        chainName: 'SEI DEVNET',
-                        nativeCurrency: {
-                              name: 'SEI',
-                              symbol: 'SEI',
-                              decimals: 18
-                        },
-                        rpcUrls: ['https://evm-rpc-arctic-1.sei-apis.com'],
-                        blockExplorerUrls: ['https://seitrace.com/?chain=arctic-1']
-                     }],
-                  });
-                  
-                  await provider.request({
-                     method: 'wallet_switchEthereumChain',
-                     params: [{ chainId: '0xae3f3' }],
-                  });
-                  return true;
-            }
-         } catch (error) {
-            console.error(`Error adding/switching chain for ${walletType}:`, error);
-            showToastMessage(`Failed to set up SEI DEVNET: ${error.message || 'Unknown error'}`, false);
-            return false;
-         }
-      }
-
-      async function connectWallet(walletType) {
-         let accounts = [];
-         try {
-            switch (walletType) {
-               case 'metamask':
-                  if (!isMetaMaskInstalled()) {
-                     showToastMessage('MetaMask is not installed. Please install MetaMask first.', false);
-                     return null;
-                  }
-                  accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                  break;
-                  
-               case 'binance':
-                  if (!isBinanceWalletInstalled()) {
-                     showToastMessage('Binance Wallet is not installed. Please install Binance Wallet first.', false);
-                     return null;
-                  }
-                  accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                  break;
-                  
-               case 'okx':
-                  if (!isOKXWalletInstalled()) {
-                     showToastMessage('OKX Wallet is not installed. Please install OKX Wallet first.', false);
-                     return null;
-                  }
-                  accounts = await window.okxwallet.request({ method: 'eth_requestAccounts' });
-                  break;
-                  
-               case 'trust':
-                  const trustProvider = window.trustwallet || (window.ethereum && window.ethereum.isTrust ? window.ethereum : null);
-                  if (!trustProvider) {
-                     showToastMessage('Trust Wallet is not installed. Please install Trust Wallet first.', false);
-                     return null;
-                  }
-                  accounts = await trustProvider.request({ method: 'eth_requestAccounts' });
-                  break;
-                  
-               case 'coinbase':
-                  if (!isCoinbaseWalletInstalled()) {
-                     showToastMessage('Coinbase Wallet is not installed. Please install Coinbase Wallet first.', false);
-                     return null;
-                  }
-                  accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                  break;
-            }
-            
-            return accounts.length > 0 ? accounts[0] : null;
-         } catch (error) {
-            console.error(`Error connecting to ${walletType}:`, error);
-            showToastMessage(`Failed to connect to ${formatWalletName(walletType)}: ${error.message || 'User rejected the request'}`, false);
-            return null;
-         }
-      }
-
-      function formatWalletName(walletType) {
-         const names = {
-            'metamask': 'MetaMask',
-            'binance': 'Binance Wallet',
-            'okx': 'OKX Wallet',
-            'trust': 'Trust Wallet',
-            'coinbase': 'Coinbase Wallet'
-         };
-         
-         return names[walletType] || walletType;
-      }
-
-      function showToastMessage(message, success) {
-         Toastify({
-            text: message,
-            duration: 3000,
-            gravity: "top",
-            position: "right",
-            stopOnFocus: true,
-            style: {
-               background: success ? "#4BB543" : "#FF0000"
-            }
-         }).showToast();
-      }
-
-      document.querySelectorAll('.wallet_intergrated').forEach(button => {
-         button.addEventListener('click', async function() {
-            const walletType = this.getAttribute('data-wallet');
-            selectedWallet = walletType;
-            
-            loading_spinner.classList.remove("hidden");
-            
-            try {
-               connectedAccount = await connectWallet(walletType);
-               
-               if (connectedAccount) {
-                  walletAddressInput.value = connectedAccount;
-                  
-                  message = `Sign this message to verify your wallet ownership with OpenFund. Nonce: ${nonce}`;
-                  
-                  const chainSwitched = await addSwitchChain(walletType);
-                  signature = await signMessage(connectedAccount, message, walletType);
-                  
-                  if (signature) {
-                     showToastMessage(`Successfully connected to ${formatWalletName(walletType)}`, true);
-                  } else {
-                     walletAddressInput.value = '';
-                  }
-               }
-            } catch (error) {
-               console.error(`Error with ${walletType}:`, error);
-               walletAddressInput.value = '';
-            } finally {
-               loading_spinner.classList.add("hidden");
-               connect_box.classList.add("hidden");
-               overlay.classList.add("hidden");
-            }
-         });
-      });
 
       createAccountBtn.addEventListener('click', async function(e) {
          e.preventDefault();
@@ -526,7 +210,7 @@
          const email = document.getElementById('email').value.trim();
          const password = document.getElementById('password').value;
          const confirmPassword = document.getElementById('confirm-password').value;
-         const walletAddress = document.getElementById('wallet-address').value.trim();
+         const walletAddress = connectedAccount;
          const agreePolicy = document.querySelector('.agree-policy-check').checked;
          
          if (!firstName || !lastName || !email || !password || !confirmPassword || !walletAddress) {
@@ -591,6 +275,11 @@
             overlay.classList.add("hidden");
          }
       });
+
+      let nonce;
+      nonce = "{{ nonce }}";
    </script>   
+   <script src="/static/script/connect.js"></script>
+   <script src="/static/script/main.js"></script>
 </body>
 </html>

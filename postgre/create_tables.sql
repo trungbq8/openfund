@@ -1,7 +1,7 @@
 CREATE TABLE raiser (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100),
     x_link VARCHAR(100),
     website_link VARCHAR(100),
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE project (
     investment_end_time TIMESTAMP NOT NULL,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     listing_status VARCHAR(20) CHECK (listing_status IN ('pending', 'accepted')) DEFAULT 'pending',
-    hidden BOOLEAN DEFAULT FALSE;
+    hidden BOOLEAN DEFAULT FALSE,
     funding_status VARCHAR(20) CHECK (funding_status IN ('not listed', 'created', 'raising', 'voting', 'failed', 'completed')) DEFAULT 'not listed',
     total_token_supply INT NOT NULL,
     token_to_sell INT NOT NULL,
@@ -46,41 +46,32 @@ CREATE TABLE project (
     x_link VARCHAR(100),
     website_link VARCHAR(100),
     telegram_link VARCHAR(100),
-    FOREIGN KEY (raiser_id) REFERENCES raiser(id) ON DELETE CASCADE,
+    description TEXT NOT NULL,
+    FOREIGN KEY (raiser_id) REFERENCES raiser(id) ON DELETE CASCADE
 );
 
 CREATE TABLE post (
     id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(10) CHECK (status IN ('draft', 'posted')) DEFAULT 'draft'
+);
+
+CREATE TABLE project_like (
+    id SERIAL PRIMARY KEY,
     project_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    content TEXT NOT NULL,
-    status VARCHAR(10) CHECK (status IN ('draft', 'posted')) DEFAULT 'draft',
-    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE
-);
-
-CREATE TABLE blog_post (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    content TEXT NOT NULL,
-    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(10) CHECK (status IN ('draft', 'posted')) DEFAULT 'draft',
-);
-
-CREATE TABLE post_like (
-    id SERIAL PRIMARY KEY,
-    post_id INT NOT NULL,
     investor_id INT NOT NULL,
-    FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE,
+    FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE,
     FOREIGN KEY (investor_id) REFERENCES investor(id) ON DELETE CASCADE
 );
 
-CREATE TABLE post_comment (
+CREATE TABLE project_comment (
     id SERIAL PRIMARY KEY,
-    post_id INT NOT NULL,
+    project_id INT NOT NULL,
     comment_text TEXT NOT NULL,
     investor_id INT NOT NULL,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE CASCADE,
+    FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE,
     FOREIGN KEY (investor_id) REFERENCES investor(id) ON DELETE CASCADE
 );
