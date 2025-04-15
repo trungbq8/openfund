@@ -147,11 +147,37 @@ def signup():
 
 @app.route("/")
 def home():
-   return render_template("index.html")
+   nonce = secrets.token_hex(16)
+   session['nonce'] = nonce
+   if 'investor_wallet_address' in session:
+      investor_connected = True
+      investor_wallet_address = session.get('investor_wallet_address')
+   else:
+      investor_connected = False
+      investor_wallet_address = ""
+
+   if 'raiser_id' in session:
+      raiser_logged_in = True
+   else:
+      raiser_logged_in = False
+   return render_template("index.html", nonce=nonce, investor_connected=investor_connected, investor_wallet_address=investor_wallet_address, raiser_logged_in=raiser_logged_in)
 
 @app.route("/invest")
 def invest():
-   return render_template("invest.html")
+   nonce = secrets.token_hex(16)
+   session['nonce'] = nonce
+   if 'investor_wallet_address' in session:
+      investor_connected = True
+      investor_wallet_address = session.get('investor_wallet_address')
+   else:
+      investor_connected = False
+      investor_wallet_address = ""
+
+   if 'raiser_id' in session:
+      raiser_logged_in = True
+   else:
+      raiser_logged_in = False
+   return render_template("invest.html", nonce=nonce, investor_connected=investor_connected, investor_wallet_address=investor_wallet_address, raiser_logged_in=raiser_logged_in)
 
 @app.route("/log-in", methods=['GET', 'POST'])
 def login():
@@ -211,6 +237,7 @@ def edit_account():
       new_password = data.get('new_password')
       wallet_address = data.get('wallet_address')
       user_image_url = data.get('user_image_url')
+      signature = data.get("signature")
       
       try:
          conn = get_db_connection()
@@ -225,7 +252,6 @@ def edit_account():
          
          current_email, current_last_name, stored_password_hash, salt, current_wallet = user_data
          
-         # Check if email is being changed, and if it's already in use by another account
          if email and email != current_email:
                if not validate_email(email):
                   return jsonify({"success": False, "message": "Invalid email format"}), 400
@@ -236,16 +262,19 @@ def edit_account():
                   conn.close()
                   return jsonify({"success": False, "message": "Email already in use"}), 400
          
-         # Validate names if provided
          if len(first_name) > 15 or len(first_name) == 0:
             return jsonify({"success": False, "message": "First name must be not null and 15 characters maximum"}), 400
          
          if last_name and len(last_name) > 15:
             return jsonify({"success": False, "message": "Last name must be 15 characters maximum"}), 400
          
-         # Handle password change if requested
+         if x_link and (not x_link.startswith("https://") or "." not in x_link):
+            return jsonify({"success": False, "message": "Please provide a valid X url"}), 400
+
+         if website_link and (not website_link.startswith("https://") or "." not in website_link):
+            return jsonify({"success": False, "message": "Please provide a valid website url"}), 400
+                  
          if current_password and new_password:
-               # Verify current password
                combined_pw = f"{salt}{current_password}"
                hashed_current_password = hashlib.sha256(combined_pw.encode('utf-8')).hexdigest()
                
@@ -254,56 +283,61 @@ def edit_account():
                   conn.close()
                   return jsonify({"success": False, "message": "Current password is incorrect"}), 400
                
-               # Validate new password
                if not validate_password(new_password):
                   cur.close()
                   conn.close()
                   return jsonify({"success": False, "message": "New password must be at least 8 characters long and include a special character"}), 400
                
-               # Generate new password hash
                new_salt = secrets.token_bytes(20)
                combined_new_pw = f"{new_salt}{new_password}"
                hashed_new_password = hashlib.sha256(combined_new_pw.encode('utf-8')).hexdigest()
                
-               # Update password
                cur.execute("""
                   UPDATE raiser SET hashed_password = %s, salt = %s WHERE id = %s
                """, (hashed_new_password, str(new_salt), session['raiser_id']))
          
-         # Update user information
          update_fields = []
          params = []
          
          if first_name:
-               update_fields.append("first_name = %s")
-               params.append(first_name)
+            update_fields.append("first_name = %s")
+            params.append(first_name)
          
          if current_last_name != last_name:
-               update_fields.append("last_name = %s")
-               params.append(last_name)
+            update_fields.append("last_name = %s")
+            params.append(last_name)
          
          if email and email != current_email:
-               update_fields.append("email = %s")
-               params.append(email)
+            update_fields.append("email = %s")
+            params.append(email)
          
-         if x_link is not None:  # Allow empty string to clear the field
-               update_fields.append("x_link = %s")
-               params.append(x_link)
+         if x_link is not None:
+            update_fields.append("x_link = %s")
+            params.append(x_link)
          
-         if website_link is not None:  # Allow empty string to clear the field
-               update_fields.append("website_link = %s")
-               params.append(website_link)
+         if website_link is not None:
+            update_fields.append("website_link = %s")
+            params.append(website_link)
          
-         if bio_content is not None:  # Allow empty string to clear the field
-               update_fields.append("bio = %s")
-               params.append(bio_content)
+         if bio_content is not None:
+            update_fields.append("bio = %s")
+            params.append(bio_content)
          
          if wallet_address and wallet_address.lower() != current_wallet:
+            nonce = session.get('nonce')
+            message = f"Sign this message to verify your wallet ownership with OpenFund. Nonce: {nonce}"
+            message_hash = encode_defunct(text=message)
+            
+            recovered_address = eth_account.Account.recover_message(message_hash, signature=signature)
+            if recovered_address.lower() == wallet_address.lower():
                update_fields.append("wallet_address = %s")
                params.append(wallet_address.lower())
+            else:
+               return jsonify({"success": False, "message": "Connect signature not valid"})
+               
          if user_image_url:
-               update_fields.append("logo_url = %s")
-               params.append(user_image_url.lower())
+            update_fields.append("logo_url = %s")
+            params.append(user_image_url.lower())
 
          if update_fields:
                query = "UPDATE raiser SET " + ", ".join(update_fields) + " WHERE id = %s"
@@ -321,6 +355,8 @@ def edit_account():
          return jsonify({"success": False, "message": "An error occurred while updating your account"}), 500
    else:
       try:
+         nonce = secrets.token_hex(16)
+         session['nonce'] = nonce
          conn = get_db_connection()
          cur = conn.cursor()
          
@@ -350,7 +386,8 @@ def edit_account():
                   "wallet_address": wallet_address,
                   "email_verified": email_verified,
                   "logo_url": logo_url
-               }
+               },
+               nonce=nonce
          )
          
       except psycopg2.Error as e:
@@ -361,21 +398,25 @@ def edit_account():
 def send_verification_email():
    if 'raiser_id' not in session:
       return jsonify({"success": False, "message": "Not logged in"}), 401
-   
+   data = request.json
+   email = data.get("email")
    try:
       conn = get_db_connection()
       cur = conn.cursor()
       
-      # Get user email
-      cur.execute("SELECT email, email_confirmed FROM raiser WHERE id = %s", (session['raiser_id'],))
-      result = cur.fetchone()
-      
-      if not result:
+      cur.execute("SELECT id FROM raiser WHERE email = %s AND id != %s", (email, session['raiser_id']))
+      if cur.fetchone():
          cur.close()
          conn.close()
-         return jsonify({"success": False, "message": "User not found"}), 404
+         return jsonify({"success": False, "message": "Email already in use"}), 400
       
-      email, email_verified = result
+      cur.execute("SELECT email_confirmed FROM raiser WHERE email = %s AND id = %s", (email, session['raiser_id']))
+      result = cur.fetchone()
+      if result:
+         email_verified = result[0]
+         print(email_verified)
+      else:
+         email_verified = False
       
       if email_verified:
          cur.close()
@@ -394,10 +435,30 @@ def send_verification_email():
       print(f"Database error: {e}")
       return jsonify({"success": False, "message": "An error occurred"}), 500
 
+@app.route('/investor-connect', methods=["POST"])
+def investor_connect():
+   data = request.json
+   wallet_address = data.get('wallet_address')
+   signature = data.get("signature")
+   nonce = session.get('nonce')
+   message = f"Sign this message to verify your wallet ownership with OpenFund. Nonce: {nonce}"
+   message_hash = encode_defunct(text=message)
+   
+   recovered_address = eth_account.Account.recover_message(message_hash, signature=signature)
+   if recovered_address.lower() == wallet_address.lower():
+      session['investor_wallet_address'] = wallet_address.lower()
+      return jsonify({"success": True, "message": "Connect wallet successfully!"}), 200
+   return jsonify({"success": False, "message": "Signature not valid"}), 500
+
 @app.route('/log-out')
 def logout():
     session.pop('raiser_id', None)
     return redirect(url_for('login'))
+
+@app.route('/disconnect')
+def disconnect():
+    session.pop('investor_wallet_address', None)
+    return redirect(request.referrer)
 
 @app.route("/test")
 def test():

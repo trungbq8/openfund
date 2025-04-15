@@ -8,44 +8,66 @@
 	<link rel="stylesheet" href="/static/css/style.css">
 	<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 <body>
+	<div class="loading-spinner hidden" id="loading-spinner">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="40" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="100" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="160" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
+   </div>
 	<!-- nav bar -->
 	<div class="nav-bar">
-		<div class="app-logo" onclick="window.location.href='/'">
-		   <img src="/static/app_assets/open_fund_logo.png" alt="OpenFund logo">
-		   <p>OpenFund</p>
-		</div>
-		<div class="nav-bar-select">
-		   <div class="link" onclick="window.location.href='/invest'">Invest</div>
-			  <div class="link" onclick="window.location.href='/blog'">Blog</div>
-			  <div class="link" onclick="window.location.href='/document'">Document</div>
-		</div>
-		<div class="authenticate">
-		   <button class="connect-wallet" id="connect-btn">
-			  <i class="fa-solid fa-wallet"></i>
-		   </button>
-		   <button class="sign-in-up" onclick="window.location.href='/sign-up'">Log In/Sign Up</button>
-		</div>
-		<button class="menu-btn">
-		   <i class="fa-solid fa-bars"></i>
-		</button>
-	 </div>
-	 <div class="nav-bar-mobile hidden">
-		<div class="link-mobile" onclick="window.location.href='/invest'">Invest<i class="fa-solid fa-arrow-right"></i></div>
-		<hr>
-		<div class="link-mobile" onclick="window.location.href='/blog'">Blog<i class="fa-solid fa-arrow-right"></i></div>
-		<hr>
-		<div class="link-mobile" onclick="window.location.href='/document'">Document<i class="fa-solid fa-arrow-right"></i></div>
-		<hr>
-		<div class="authenticate-mobile">
-		   <button class="connect-wallet-mobile" id="connect-btn-mobile">
-			  Connect wallet<i class="fa-solid fa-wallet"></i>
-		   </button>
-		   <button class="sign-in-up-mobile" onclick="window.location.href='/sign-up'">Log In/Sign Up</button>
-		</div>
-		<button class="close-nav-bar-mobile-btn" id="close-nav-bar-mobile-btn">Close</button>
-	 </div>
+      <div class="app-logo" onclick="window.location.href='/'">
+         <img src="/static/app_assets/open_fund_logo.png" alt="OpenFund logo">
+         <p>OpenFund</p>
+      </div>
+      <div class="nav-bar-select">
+         <div class="link" onclick="window.location.href='/invest'">Invest</div>
+			<div class="link" onclick="window.location.href='/blog'">Blog</div>
+			<div class="link" onclick="window.location.href='/document'">Document</div>
+      </div>
+      <div class="authenticate">
+         <button class="sign-in-up" onclick="window.location.href='/sign-up'" id="sign-in-up-btn">Log In/Sign Up</button>
+         <button class="connect-wallet" id="connect-btn">
+            <i class="fa-solid fa-wallet"></i>
+            <div class="investor_connected_check hidden" id="investor_connected_check" style="background-color: white; color: rgb(0, 1, 69); font-size: 15px; position: absolute; bottom: -3px; right: -3px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"><i class="fa-solid fa-circle-check"></i></div>
+         </button>
+         <button class="raiser-account hidden" id="raiser-account">
+            <i class="fa-solid fa-user"></i>
+         </button>
+      </div>
+      <button class="menu-btn">
+         <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="investor-account-manage hidden" id="investor-account-manage">
+         <p>Investor account</p>
+         <input name="investor-wallet-address" id="investor-wallet-address" style="text-align: center; font-size: 12px; padding: 0; border: 0;" readonly required>
+         <div class="investor-account-manage-btn" onclick="window.location.href='/profile'">Profile</div>
+         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+         <div class="investor-account-manage-btn" id="investor-disconnect-btn">Disconnect</div>
+      </div>
+      <div class="raiser-account-manage hidden" id="raiser-account-manage">
+         <p>Raiser account</p>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/profile'">Profile</div>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+         <div class="raiser-account-manage-btn" id="raiser-log-out-btn" onclick="window.location.href='/log-out'">Log out</div>
+      </div>
+   </div>
+	<div class="nav-bar-mobile hidden">
+      <div class="link-mobile" onclick="window.location.href='/invest'">Invest<i class="fa-solid fa-arrow-right"></i></div>
+      <hr>
+      <div class="link-mobile" onclick="window.location.href='/blog'">Blog<i class="fa-solid fa-arrow-right"></i></div>
+      <hr>
+      <div class="link-mobile" onclick="window.location.href='/document'">Document<i class="fa-solid fa-arrow-right"></i></div>
+      <hr>
+      <div class="authenticate-mobile">
+         <button class="connect-wallet-mobile" id="connect-btn-mobile">
+            Connect wallet<i class="fa-solid fa-wallet"></i>
+         </button>
+         <button class="sign-in-up-mobile" onclick="window.location.href='/sign-up'" id="sign-in-up-mobile-btn">Log In/Sign Up</button>
+      </div>
+      <button class="close-nav-bar-mobile-btn" id="close-nav-bar-mobile-btn">Close</button>
+   </div>
 	 <!-- end nav bar -->
 	<!-- connect wallet -->
 	<div class="overlay hidden" id="overlay">
@@ -56,12 +78,12 @@
 			<h1>Connect wallet</h1>
 			<p>(For investors only)</p>
 			<hr style="width: 100px;">
-			<button class="wallet_intergrated"><img class="wallet-icon-logo" src="/static/app_assets/metamask.png" alt="Metamask logo">Metamask</button>
-			<button class="wallet_intergrated"><img class="wallet-icon-logo" src="/static/app_assets/binance_web3.png" alt="Metamask logo">Binance Web3</button>
-			<button class="wallet_intergrated"><img class="wallet-icon-logo" src="/static/app_assets/okx_web3.png" alt="Metamask logo">OKX Web3</button>
-			<button class="wallet_intergrated"><img class="wallet-icon-logo" src="/static/app_assets/trust_wallet.png" alt="Metamask logo">Trust Wallet</button>
-			<button class="wallet_intergrated"><img class="wallet-icon-logo" src="/static/app_assets/coinbase_wallet.png" alt="Metamask logo">Coinbase Wallet</button>
-			<p>By connecting a wallet, you agree to the OpenFund’s <a style="color:black" href="/term-service">Terms of Service</a> and consent to its <a style="color:black" href="/privacy-policy">Privacy Policy</a>.</p>
+			<button class="wallet_intergrated" data-wallet="metamask"><img class="wallet-icon-logo" src="/static/app_assets/metamask.png" alt="Metamask logo">Metamask</button>
+         <button class="wallet_intergrated" data-wallet="binance"><img class="wallet-icon-logo" src="/static/app_assets/binance_web3.png" alt="Metamask logo">Binance Web3</button>
+         <button class="wallet_intergrated" data-wallet="okx"><img class="wallet-icon-logo" src="/static/app_assets/okx_web3.png" alt="Metamask logo">OKX Web3</button>
+         <button class="wallet_intergrated" data-wallet="trust"><img class="wallet-icon-logo" src="/static/app_assets/trust_wallet.png" alt="Metamask logo">Trust Wallet</button>
+         <button class="wallet_intergrated" data-wallet="coinbase"><img class="wallet-icon-logo" src="/static/app_assets/coinbase_wallet.png" alt="Metamask logo">Coinbase Wallet</button>
+         <p>By connecting a wallet, you agree to the OpenFund’s <a style="color:black" href="/term-service">Terms of Service</a> and consent to its <a style="color:black" href="/privacy-policy">Privacy Policy</a>.</p>
 		</div>
 	</div>
 	<style>
@@ -160,25 +182,11 @@
 </body>
 	<script>
 		//connect
-		const connect_wallet_btn = document.getElementById("connect-btn");
 		const connect_wallet_btn_mobile = document.getElementById("connect-btn-mobile");
-		const close_wallet_btn = document.getElementById("close-connect-wallet-btn");
-		const connect_box = document.getElementById("connect-wallet-box");
-		const overlay = document.getElementById("overlay");
-
-		connect_wallet_btn.addEventListener("click", function() {
-		connect_box.classList.remove("hidden");
-		overlay.classList.remove("hidden");
-		});
 
 		connect_wallet_btn_mobile.addEventListener("click", function() {
-		connect_box.classList.remove("hidden");
-		overlay.classList.remove("hidden");
-		});
-
-		close_wallet_btn.addEventListener("click", function() {
-		connect_box.classList.add("hidden");
-		overlay.classList.add("hidden");
+			connect_box.classList.remove("hidden");
+			overlay.classList.remove("hidden");
 		});
 
 		const menuBtn = document.querySelector('.menu-btn');
@@ -228,5 +236,15 @@
 			}
 		}
 		updateProjectList('active')
+
+		let nonce;
+      nonce = "{{ nonce }}";
+      let isInvstorConnecting = true;
+      const investor_wallet_connected = {{ investor_connected | tojson }};
+      const raiser_loggedin = {{ raiser_logged_in | tojson }};
+      const shortWallet = "{{ investor_wallet_address }}".slice(0, 6) + '...' + "{{ investor_wallet_address }}".slice(-4);
 	</script>
+	<script src="/static/script/connect.js"></script>
+   <script src="/static/script/main.js"></script>
+	<script src="/static/script/nav-bar.js"></script>
 </html>

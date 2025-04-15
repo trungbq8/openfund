@@ -202,6 +202,11 @@
       const createAccountBtn = document.getElementById("create-account-btn");
       const connect_wallet_btn = document.getElementById("connect-raiser-wallet");
 
+      connect_wallet_btn.addEventListener("click", function() {
+         connect_box.classList.remove("hidden");
+         overlay.classList.remove("hidden");
+      });
+
       createAccountBtn.addEventListener('click', async function(e) {
          e.preventDefault();
          
@@ -213,21 +218,13 @@
          const walletAddress = connectedAccount;
          const agreePolicy = document.querySelector('.agree-policy-check').checked;
          
-         if (!firstName || !lastName || !email || !password || !confirmPassword || !walletAddress) {
-            showToastMessage("Please fill in all required fields", false);
-         }
-         
-         if (password !== confirmPassword) {
+         if (password && confirmPassword && password !== confirmPassword) {
             showToastMessage("Passwords do not match", false);
          }
          
          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-         if (!emailRegex.test(email)) {
+         if (email && !emailRegex.test(email)) {
             showToastMessage("Please enter a valid email address", false);
-         }
-         
-         if (!signature) {
-            showToastMessage("Please connect your wallet", false);
          }
          
          if (!agreePolicy) {
@@ -278,6 +275,7 @@
 
       let nonce;
       nonce = "{{ nonce }}";
+      let isInvstorConnecting = false;
    </script>   
    <script src="/static/script/connect.js"></script>
    <script src="/static/script/main.js"></script>

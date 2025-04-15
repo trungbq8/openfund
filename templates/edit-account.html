@@ -66,7 +66,6 @@
          height: 60px;
          border-radius: 50%;
          overflow: hidden;
-         position: relative;
       }
       .user-image img{
          width: 100%;
@@ -141,6 +140,9 @@
       .wysiwyg-container {
          margin-top: 10px;
          width: 100%;
+      }
+      .user-image-wrapper {
+         position: relative;
       }
       .editor-toolbar {
          display: flex;
@@ -261,8 +263,10 @@
    <div class="account-setting-box">
       <div class="user-info-box">
          <div class="user-info">
-            <div class="user-image">
-               <img src="{{ user_data.logo_url or 'https://openfund.live/static/app_assets/user_default.png'}}">
+            <div class="user-image-wrapper">
+               <div class="user-image">
+                  <img src="{{ user_data.logo_url or 'https://openfund.live/static/app_assets/user_default.png'}}">
+               </div>
                <div class="edit-icon"><i class="fa-solid fa-pen-to-square"></i></div>
             </div>
             <div class="user-name-email">
@@ -498,6 +502,9 @@
          }
          
          editor.addEventListener('input', function() {
+            if (!window.getSelection().toString()) {
+               document.execCommand('formatBlock', false, 'p');
+            }
             updatePreview();
             saveBioContent();
          });
@@ -506,14 +513,15 @@
             bioHtmlContent = editor.innerHTML;
             console.log('Bio HTML content saved:', bioHtmlContent);
          }
-         
-         saveBtn.addEventListener('click', function() {
-            saveBioContent();
-         });
 
       //Connect
       const walletAddressInput = document.getElementById("funding_wallet");
       const connect_wallet_btn = document.getElementById("change-wallet");
+
+      connect_wallet_btn.addEventListener("click", function() {
+         connect_box.classList.remove("hidden");
+         overlay.classList.remove("hidden");
+      });
 
       const firstNameInput = document.getElementById('first_name');
       const lastNameInput = document.getElementById('last_name');
@@ -528,13 +536,20 @@
       const userNameDisplay = document.getElementById('user-name');
       const userEmailDisplay = document.getElementById('user-email');
       const userImageElement = document.querySelector('.user-image img');
-      const editImageIcon = document.querySelector('.user-image .edit-icon');
+      const editImageIcon = document.querySelector('.user-image-wrapper .edit-icon');
       const loadingSpinner = document.getElementById('loading-spinner');
       const emailVerificationCheck = document.getElementById('email-verification-check');
       let user_image_url;
       let nonce;
       nonce = "{{ nonce }}";
+      let isInvstorConnecting = false;
       
+      function decodeHTMLEntities(text) {
+         const textArea = document.createElement('textarea');
+         textArea.innerHTML = text;
+         return textArea.value;
+      }
+
       // Load user data
       function loadUserData() {
          firstNameInput.value = "{{ user_data.first_name }}" || '';
@@ -547,7 +562,7 @@
          userNameDisplay.textContent = `${firstNameInput.value} ${lastNameInput.value}`;
          userEmailDisplay.textContent = "{{ user_data.email }}" || '';
          
-         if ("{{ user_data.bio }}") {
+         if ("{{ user_data.bio }}" != "") {
             editor.innerHTML = decodeHTMLEntities("{{ user_data.bio }}");
             bioHtmlContent = editor.innerHTML;
             updatePreview();
@@ -573,7 +588,10 @@
                method: 'POST',
                headers: {
                   'Content-Type': 'application/json'
-               }
+               },
+               body: JSON.stringify({
+                  email: emailInput.value.trim()
+               })
             })
             .then(response => response.json())
             .then(data => {
@@ -649,6 +667,7 @@
       // Save account changes
       if (saveBtn) {
          saveBtn.addEventListener('click', function() {
+            saveBioContent();
             const data = {
                first_name: firstNameInput.value.trim(),
                last_name: lastNameInput.value.trim(),
@@ -656,8 +675,9 @@
                x_link: xLinkInput.value.trim(),
                website_link: websiteLinkInput.value.trim(),
                bio_content: bioHtmlContent,
-               wallet_address: fundingWalletInput.value.trim(),
-               user_image_url: user_image_url
+               wallet_address: connectedAccount,
+               user_image_url: user_image_url,
+               signature: signature,
             };
                
             // Add password fields only if they are filled
@@ -702,11 +722,6 @@
                showToastMessage("Error saving settings", false);
             });
          });
-      }
-      function decodeHTMLEntities(text) {
-         const textArea = document.createElement('textarea');
-         textArea.innerHTML = text;
-         return textArea.value;
       }
       loadUserData();
    </script>

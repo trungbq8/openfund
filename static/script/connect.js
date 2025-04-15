@@ -12,11 +12,6 @@ const connect_box = document.getElementById("connect-wallet-box");
 const overlay = document.getElementById("overlay");
 const loading_spinner = document.getElementById("loading-spinner");
 
-connect_wallet_btn.addEventListener("click", function() {
-   connect_box.classList.remove("hidden");
-   overlay.classList.remove("hidden");
-});
-
 close_wallet_btn.addEventListener("click", function() {
    connect_box.classList.add("hidden");
    overlay.classList.add("hidden");
@@ -228,7 +223,37 @@ document.querySelectorAll('.wallet_intergrated').forEach(button => {
             signature = await signMessage(connectedAccount, message, walletType);
             
             if (signature) {
-               showToastMessage(`Successfully connected to ${formatWalletName(walletType)}`, true);
+               //showToastMessage(`Successfully connected to ${formatWalletName(walletType)}`, true);
+               if(isInvstorConnecting == true){
+                  try {
+                     const response = await fetch('/investor-connect', {
+                        method: 'POST',
+                        headers: {
+                           'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                           wallet_address: connectedAccount,
+                           signature: signature,
+                        })
+                     });
+                     
+                     const data = await response.json();
+                     setTimeout(() => {
+                        window.location.reload();
+                     }, 1000);
+                     if (data.success) {
+                        showToastMessage(data.message, true);
+                     } else {
+                        showToastMessage(data.message, false);
+                     }
+                  } catch (error) {
+                     console.error('Error:', error);
+                     showToastMessage("An error occurred. Please try again later.", false);
+                  } finally {
+                     loading_spinner.classList.add("hidden");
+                     overlay.classList.add("hidden");
+                  }
+               }
             } else {
                walletAddressInput.value = '';
             }
