@@ -61,4 +61,6 @@ if (investor_wallet_connected) {
 if (raiser_loggedin) {
    raiser_account_btn.classList.remove('hidden');
    sign_in_up_btn.classList.add('hidden');
+} else {
+   investor_account_manage.style.right = "-50px";
 }
