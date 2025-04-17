@@ -238,14 +238,14 @@ document.querySelectorAll('.wallet_intergrated').forEach(button => {
                      });
                      
                      const data = await response.json();
-                     setTimeout(() => {
-                        window.location.reload();
-                     }, 1000);
                      if (data.success) {
                         showToastMessage(data.message, true);
                      } else {
                         showToastMessage(data.message, false);
                      }
+                     setTimeout(() => {
+                        window.location.reload();
+                     }, 1000);
                   } catch (error) {
                      console.error('Error:', error);
                      showToastMessage("An error occurred. Please try again later.", false);

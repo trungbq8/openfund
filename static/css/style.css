@@ -110,7 +110,7 @@ a{
    padding: 5px;
    width: 45px;
    height: 45px;
-   background-color: transparent;
+   background-color: rgb(220, 220, 220);
    border-radius: 15px;
    font-size: 1.2rem;
    border: solid 1px rgb(0, 1, 69);
@@ -295,7 +295,7 @@ a{
    justify-content: center;
    gap: 8px
 }
-.investor-account-manage, .raiser-account-manage{
+.investor-account-manage, .raiser-account-manage, .investor-account-manage-mobile, .raiser-account-manage-mobile{
    position: absolute;
    width: 180px;
    top: 63px;
@@ -310,14 +310,26 @@ a{
    flex-direction: column;
    padding: 15px 15px;
    align-items: center;
-   height: 215px;
+   height: 169px;
    box-sizing: border-box;
+}
+.investor-account-manage-mobile{
+   top: 220px;
+   left: 50%;
+   transform: translateX(-88%);
+   overflow: hidden;
+}
+.raiser-account-manage-mobile{
+   top: 220px;
+   right: 50%;
+   transform: translateX(90%);
+   height: 200px;
 }
 .raiser-account-manage{
    right: -50px;
    height: 200px
 }
-.investor-account-manage p, .raiser-account-manage p{
+.investor-account-manage p, .raiser-account-manage p, .investor-account-manage-mobile p, .raiser-account-manage-mobile p{
    font-size: 12px;
    margin: 0;
    opacity: 0.6;
@@ -346,7 +358,7 @@ a{
 .investor-account-manage-btn:active, .raiser-account-manage-btn:active{
    transform: scale(0.9);
 }
-#investor-disconnect-btn:hover, #raiser-logout-btn:hover{
+#investor-disconnect-btn:hover, #raiser-log-out-btn:hover, #investor-disconnect-btn-mobile:hover, #raiser-log-out-btn-mobile:hover{
    background-color: rgb(214, 58, 58);
    border: rgb(214, 58, 58);
    color: white;
@@ -359,7 +371,7 @@ a{
    padding: 5px;
    width: 45px;
    height: 45px;
-   background-color: transparent;
+   background-color: rgb(220, 220, 220);
    border-radius: 15px;
    font-size: 1.2rem;
    border: solid 1px rgb(0, 1, 69);

@@ -42,13 +42,12 @@
       <div class="investor-account-manage hidden" id="investor-account-manage">
          <p>Investor account</p>
          <input name="investor-wallet-address" id="investor-wallet-address" style="text-align: center; font-size: 12px; padding: 0; border: 0;" readonly required>
-         <div class="investor-account-manage-btn" onclick="window.location.href='/profile'">Profile</div>
          <div class="investor-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
          <div class="investor-account-manage-btn" id="investor-disconnect-btn">Disconnect</div>
       </div>
       <div class="raiser-account-manage hidden" id="raiser-account-manage">
          <p>Raiser account</p>
-         <div class="raiser-account-manage-btn" onclick="window.location.href='/profile'">Profile</div>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile'">Profile</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
          <div class="raiser-account-manage-btn" id="raiser-log-out-btn" onclick="window.location.href='/log-out'">Log out</div>
       </div>
@@ -65,6 +64,19 @@
             Connect wallet<i class="fa-solid fa-wallet"></i>
          </button>
          <button class="sign-in-up-mobile" onclick="window.location.href='/sign-up'" id="sign-in-up-mobile-btn">Log In/Sign Up</button>
+         <button class="sign-in-up-mobile" id="raiser-account-mobile-btn">Raiser Account</button>
+      </div>
+      <div class="investor-account-manage-mobile hidden" id="investor-account-manage-mobile">
+         <p>Investor account</p>
+         <input name="investor-wallet-address hidden" id="investor-wallet-address-mobile" style="text-align: center; font-size: 12px; padding: 0; border: 0;" readonly required>
+         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+         <div class="investor-account-manage-btn" id="investor-disconnect-btn-mobile">Disconnect</div>
+      </div>
+      <div class="raiser-account-manage-mobile hidden" id="raiser-account-manage-mobile">
+         <p>Raiser account</p>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile'">Profile</div>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+         <div class="raiser-account-manage-btn" id="raiser-log-out-btn-mobile" onclick="window.location.href='/log-out'">Log out</div>
       </div>
       <button class="close-nav-bar-mobile-btn" id="close-nav-bar-mobile-btn">Close</button>
    </div>
@@ -269,12 +281,6 @@
    </div>
 
    <script>
-      const connect_wallet_btn_mobile = document.getElementById("connect-btn-mobile");
-      connect_wallet_btn_mobile.addEventListener("click", function() {
-         connect_box.classList.remove("hidden");
-         overlay.classList.remove("hidden");
-      });
-
       // faq
       document.addEventListener("DOMContentLoaded", function () {
          const faqs = document.querySelectorAll(".faq");

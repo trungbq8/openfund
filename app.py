@@ -137,7 +137,7 @@ def signup():
 
          except psycopg2.Error as e:
             print(e)
-            return jsonify({"success": False, "message": "Email already in use!"}), 500
+            return jsonify({"success": False, "message": "Email or wallet address already in use!"}), 500
       else:
          return jsonify({"success": False, "message": "Signature not valid"})
    else:
@@ -158,9 +158,11 @@ def home():
 
    if 'raiser_id' in session:
       raiser_logged_in = True
+      raiser_id = session.get('raiser_id')
    else:
       raiser_logged_in = False
-   return render_template("index.html", nonce=nonce, investor_connected=investor_connected, investor_wallet_address=investor_wallet_address, raiser_logged_in=raiser_logged_in)
+      raiser_id = ""
+   return render_template("index.html", nonce=nonce, investor_connected=investor_connected, investor_wallet_address=investor_wallet_address, raiser_logged_in=raiser_logged_in, raiser_id = raiser_id)
 
 @app.route("/invest")
 def invest():
@@ -175,9 +177,11 @@ def invest():
 
    if 'raiser_id' in session:
       raiser_logged_in = True
+      raiser_id = session.get('raiser_id')
    else:
       raiser_logged_in = False
-   return render_template("invest.html", nonce=nonce, investor_connected=investor_connected, investor_wallet_address=investor_wallet_address, raiser_logged_in=raiser_logged_in)
+      raiser_id = ""
+   return render_template("invest.html", nonce=nonce, investor_connected=investor_connected, investor_wallet_address=investor_wallet_address, raiser_logged_in=raiser_logged_in, raiser_id = raiser_id)
 
 @app.route("/log-in", methods=['GET', 'POST'])
 def login():
@@ -252,15 +256,22 @@ def edit_account():
          
          current_email, current_last_name, stored_password_hash, salt, current_wallet = user_data
          
+         if wallet_address and wallet_address != current_wallet:
+            cur.execute("SELECT id FROM raiser WHERE wallet_address = %s AND id != %s", (wallet_address, session['raiser_id']))
+            if cur.fetchone():
+               cur.close()
+               conn.close()
+               return jsonify({"success": False, "message": "Wallet address linked to a different account"}), 400
+            
          if email and email != current_email:
-               if not validate_email(email):
-                  return jsonify({"success": False, "message": "Invalid email format"}), 400
-               
-               cur.execute("SELECT id FROM raiser WHERE email = %s AND id != %s", (email, session['raiser_id']))
-               if cur.fetchone():
-                  cur.close()
-                  conn.close()
-                  return jsonify({"success": False, "message": "Email already in use"}), 400
+            if not validate_email(email):
+               return jsonify({"success": False, "message": "Invalid email format"}), 400
+            
+            cur.execute("SELECT id FROM raiser WHERE email = %s AND id != %s", (email, session['raiser_id']))
+            if cur.fetchone():
+               cur.close()
+               conn.close()
+               return jsonify({"success": False, "message": "Email already in use"}), 400
          
          if len(first_name) > 15 or len(first_name) == 0:
             return jsonify({"success": False, "message": "First name must be not null and 15 characters maximum"}), 400
@@ -455,14 +466,81 @@ def logout():
     session.pop('raiser_id', None)
     return redirect(url_for('login'))
 
+@app.route('/raiser-profile')
+def profile():
+   nonce = secrets.token_hex(16)
+   session['nonce'] = nonce
+   if 'investor_wallet_address' in session:
+      investor_connected = True
+      investor_wallet_address = session.get('investor_wallet_address')
+   else:
+      investor_connected = False
+      investor_wallet_address = ""
+
+   if 'raiser_id' in session:
+      raiser_logged_in = True
+      raiser_id = session.get('raiser_id')
+   else:
+      raiser_logged_in = False
+      raiser_id = ""
+   try:
+      conn = get_db_connection()
+      cur = conn.cursor()
+      
+      cur.execute("""
+            SELECT first_name, last_name, email, x_link, website_link, bio, wallet_address, logo_url 
+            FROM raiser WHERE id = %s
+      """, (session['raiser_id'],))
+      
+      user_data = cur.fetchone()
+      if not user_data:
+         cur.close()
+         conn.close()
+         return redirect(url_for('not-found'))
+      
+      first_name, last_name, email, x_link, website_link, bio, wallet_address, logo_url = user_data
+
+      cur.execute("""
+         SELECT COUNT(*) FROM project 
+         WHERE raiser_id = %s AND listing_status = 'accepted'
+      """, (session['raiser_id'],))
+      number_projects = cur.fetchone()[0]
+
+      cur.close()
+      conn.close()
+      
+      return render_template(
+         "raiser-profile.html",
+         user_data={
+            "first_name": first_name,
+            "last_name": last_name,
+            "email": email,
+            "x_link": x_link or "",
+            "website_link": website_link or "",
+            "bio": bio or "",
+            "wallet_address": wallet_address,
+            "logo_url": logo_url,
+            "number_projects": number_projects
+         },
+         nonce=nonce, 
+         investor_connected=investor_connected, 
+         investor_wallet_address=investor_wallet_address, 
+         raiser_logged_in=raiser_logged_in,
+         raiser_id = raiser_id
+      )
+   
+   except psycopg2.Error as e:
+      print(f"Database error: {e}")
+      return redirect(url_for('home'))
+
 @app.route('/disconnect')
 def disconnect():
     session.pop('investor_wallet_address', None)
     return redirect(request.referrer)
 
-@app.route("/test")
-def test():
-    return render_template("test.html")
+@app.route("/not-found")
+def not_found():
+    return render_template("404.html")
 
 if __name__ == "__main__":
    app.run(host="0.0.0.0", port=5555)

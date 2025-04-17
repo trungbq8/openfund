@@ -711,6 +711,9 @@
                   newPasswordInput.value = '';
                   
                   showToastMessage(data.message || "Settings saved successfully!", true);
+                  setTimeout(() => {
+                        window.location.href = '/raiser-profile';
+                  }, 1000);
                } else {
                   showToastMessage(data.message || "Error saving settings", false);
                }

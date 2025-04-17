@@ -1,5 +1,7 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE raiser (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100),
     x_link VARCHAR(100),
@@ -15,15 +17,24 @@ CREATE TABLE raiser (
 );
 
 CREATE TABLE investor (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     wallet_address VARCHAR(255) UNIQUE NOT NULL,
     username VARCHAR(100) UNIQUE NOT NULL,
     logo_url TEXT
 );
 
+CREATE TABLE investment (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    investor_address VARCHAR(255) NOT NULL,
+    amount INT NOT NULL,
+    token_received INT NOT NULL,
+    FOREIGN KEY (investor_address) REFERENCES investor(wallet_address) ON DELETE CASCADE,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE project (
-    id SERIAL PRIMARY KEY,
-    raiser_id INT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    raiser_id UUID NOT NULL,
     name VARCHAR(255) NOT NULL,
     logo_url TEXT,
     investment_end_time TIMESTAMP NOT NULL,
@@ -51,7 +62,7 @@ CREATE TABLE project (
 );
 
 CREATE TABLE post (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -59,18 +70,18 @@ CREATE TABLE post (
 );
 
 CREATE TABLE project_like (
-    id SERIAL PRIMARY KEY,
-    project_id INT NOT NULL,
-    investor_id INT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID NOT NULL,
+    investor_id UUID NOT NULL,
     FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE,
     FOREIGN KEY (investor_id) REFERENCES investor(id) ON DELETE CASCADE
 );
 
 CREATE TABLE project_comment (
-    id SERIAL PRIMARY KEY,
-    project_id INT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id UUID NOT NULL,
     comment_text TEXT NOT NULL,
-    investor_id INT NOT NULL,
+    investor_id UUID NOT NULL,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE,
     FOREIGN KEY (investor_id) REFERENCES investor(id) ON DELETE CASCADE

@@ -63,3 +63,12 @@ deactivate
 # Generate ssh key
 ssh-keygen -t rsa -b 4096 -C "email@example.com"
 cat ~/.ssh/id_rsa.pub
+
+# Not modify deploy.sh. If modify, mannually update chmod in linux server
+
+# Environment variables
+Add config.env to file .gitignore
+git rm --cached config.env
+git commit -m "Ignore config.env from repo"
+git push origin main
+Manually nano config.env in linux server

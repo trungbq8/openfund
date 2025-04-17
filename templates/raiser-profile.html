@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1, user-scalable=no">
-	<title>OpenFund - Invest</title>
+	<title>OpenFund - Raiser profile</title>
 	<link rel="icon" href="/static/app_assets/open_fund_logo.png">
 	<link rel="stylesheet" href="/static/css/style.css">
 	<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -99,41 +99,41 @@
 		</div>
 	</div>
 	<style>
-		.token-launch-banner{
+		.investor-profile-banner{
 			width: 100%;
 			height: 50vh;
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			flex-direction: column;
 			padding-top: 50px;
-			background-image: url(/static/app_assets/token-launch-banner.png);
+			background-image: url(/static/app_assets/profile-banner.png);
 			background-size: cover;
 		}
-		.token-launch-banner h1{
-			font-size: clamp(3rem, 5vw, 5rem);
-			margin: 0;
-			color: white;
-		}
-		.token-launch-banner p{
-			font-size: clamp(0.8rem, 2vw, 2rem);
-			margin: 0;
-			color: white;
-		}
-		.project-select{
+		.option-select{
 			width: 100%;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			background-color: rgb(245, 245, 245);
 		}
-		.select-project-btn{
+		.select-option-btn{
 			border: solid 1px rgb(0, 1, 69);
 			background-color: white;
 			border-radius: 20px;
 			padding: 10px 15px;
 			cursor: pointer;
 			margin: 20px 5px;
+		}
+		.introduction{
+			width: 100%;
+			display: flex;
+			padding: 30px 20px;
+			align-items: center;
+			justify-content: center;
+		}
+		.introduction-box{
+			width: 100%;
+			max-width: 800px;
 		}
 		.project-list{
 			width: 100%;
@@ -143,20 +143,81 @@
 			justify-content: center;
 		}
 		.project{
-			width: clamp(330px, 90%, 1200px);
+			width: clamp(330px, 90%, 800px);
 			border: solid 1px black;
 			border-radius: 30px;
 			height: 300px
 		}
+      .raiser-profile-box{
+         width: 100%;
+         max-width: 500px;
+         border: solid 1px black;
+         border-radius: 20px;
+         padding: 15px;
+         height: 150px;
+         margin: 0 20px;
+         background-color: transparent;
+         display: flex;
+         align-items: center;
+         justify-content: start;
+         gap: 10px;
+         box-sizing: border-box;
+			border: solid 1px rgb(200, 200, 200);
+    		box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+			backdrop-filter: blur(7px);
+      }
+      .user-image-box{
+         width: 100px;
+         height: 100px;
+         border-radius: 50%;
+         border: solid 1px black;
+         overflow: hidden;
+      }
+      .user-image-box img{
+         width: 100%;
+         height: 100%;
+         object-fit: cover;
+      }
+      .user-name-email-wallet{
+         flex: 1;
+      }
+      .user-name-email-wallet p{
+         margin: 0;
+         font-size: clamp(0.69rem, 2.9vw, 1rem);
+      }
+      .other-info{
+         display: flex;
+         align-items: center;
+         gap: 3px
+      }
 	</style>
-	<div class="token-launch-banner">
-		<h1>Invest</h1>
-		<p>Get tokens before they list on other exchanges.</p>
+	<div class="investor-profile-banner">
+		<div class="raiser-profile-box">
+         <div class="user-image-box">
+            <img src="{{ user_data.logo_url or 'https://openfund.live/static/app_assets/user_default.png'}}">
+         </div>
+         <div class="user-name-email-wallet">
+            <p id="user-name" style="font-weight: bold; font-size: clamp(1rem, 4vw, 1.2rem);">Donal Donald Trump</p>
+            <p id="user-email" style="opacity: 0.69">trump@trump.com</p>
+            <div class="user-wallet-wrapper"><p id="user-wallet" style="opacity: 0.69; padding: 1px 3px; border: solid 1px black; border-radius: 10px;display: inline-block; white-space: nowrap; margin-right: 3px;">0x0000...0000</p><i class="fa-solid fa-copy" style="cursor: pointer; font-size: clamp(0.69rem, 2.9vw, 1rem);"></i></div>
+            <div class="other-info">
+               <i id="x-link" class="fa-brands fa-square-x-twitter" onclick="window.location.href='{{ user_data.x_link }}'" style="font-size: clamp(0.8rem, 3vw, 1rem);
+    cursor: pointer;"></i>
+               <i id="website-link" class="fa-solid fa-globe"  onclick="window.location.href='{{ user_data.website_link }}'" style="font-size: clamp(0.75rem, 2vw, 0.9rem);
+    cursor: pointer;"></i>
+            <hr style="margin: 0;"><p id="number-of-projects" style="font-size: clamp(0.75rem, 2vw, 0.9rem);">0</p><p style="font-size: clamp(0.75rem, 2vw, 0.9rem);">projects</p>
+            </div>
+         </div>
+      </div>
 	</div>
-	<div class="project-select">
-		<button class="select-project-btn" id="select-active-project-btn" onclick="updateProjectList('active')">Active</button>
-		<button class="select-project-btn" id="select-completed-project-btn" onclick="updateProjectList('completed')">Completed</button>
-		<button class="select-project-btn" id="select-invested-project-btn" onclick="updateProjectList('invested')">Invested</button>
+	<div class="option-select">
+		<button class="select-option-btn" id="select-introduction-btn" onclick="updateOptionDisplay('introduction')">Introduction</button>
+		<button class="select-option-btn" id="select-all-project-btn" onclick="updateOptionDisplay('projects')">Projects</button>
+	</div>
+	<div class="introduction">
+		<div class="introduction-box" id="introduction-area">
+
+		</div>
 	</div>
 	<div class="project-list">
 		<div class="project">
@@ -209,39 +270,56 @@
 		});
 
 		//select projects
-		const select_active_project_btn = document.getElementById("select-active-project-btn");
-		const select_completed_project_btn = document.getElementById("select-completed-project-btn");
-		const select_invested_project_btn = document.getElementById("select-invested-project-btn");
+		const select_introduction_btn = document.getElementById("select-introduction-btn");
+		const select_all_project_btn = document.getElementById("select-all-project-btn");
 
-		function updateProjectList(selected){
-			if (selected == 'active'){
-				select_active_project_btn.style.backgroundColor = "rgb(0, 1, 69)";
-				select_active_project_btn.style.color = "white";
-				select_completed_project_btn.style.backgroundColor = "white";
-				select_completed_project_btn.style.color = "black"
-				select_invested_project_btn.style.backgroundColor = "white";
-				select_invested_project_btn.style.color = "black"
+		function updateOptionDisplay(selected){
+			if (selected == 'introduction'){
+				select_introduction_btn.style.backgroundColor = "rgb(0, 1, 69)";
+				select_introduction_btn.style.color = "white";
+				select_all_project_btn.style.backgroundColor = "white";
+				select_all_project_btn.style.color = "black"
 			}
 
-			if (selected == 'completed'){
-				select_completed_project_btn.style.backgroundColor = "rgb(0, 1, 69)";
-				select_completed_project_btn.style.color = "white";
-				select_active_project_btn.style.backgroundColor = "white";
-				select_active_project_btn.style.color = "black"
-				select_invested_project_btn.style.backgroundColor = "white";
-				select_invested_project_btn.style.color = "black"
-			}
-
-			if (selected == 'invested'){
-				select_invested_project_btn.style.backgroundColor = "rgb(0, 1, 69)";
-				select_invested_project_btn.style.color = "white";
-				select_active_project_btn.style.backgroundColor = "white";
-				select_active_project_btn.style.color = "black"
-				select_completed_project_btn.style.backgroundColor = "white";
-				select_completed_project_btn.style.color = "black"
+			if (selected == 'projects'){
+				select_all_project_btn.style.backgroundColor = "rgb(0, 1, 69)";
+				select_all_project_btn.style.color = "white";
+				select_introduction_btn.style.backgroundColor = "white";
+				select_introduction_btn.style.color = "black"
 			}
 		}
-		updateProjectList('active')
+		updateOptionDisplay('introduction')
+
+		const userNameDisplay = document.getElementById('user-name');
+      const userEmailDisplay = document.getElementById('user-email');
+		const userWalletDisplay = document.getElementById('user-wallet');
+		const userNumberProject = document.getElementById('number-of-projects');
+		const userXLink = document.getElementById('x-link');
+		const userWebsiteLink = document.getElementById('website-link');
+      const userImageElement = document.querySelector('.user-image-box img');
+		const introduction_area = document.getElementById("introduction-area");
+		
+		function decodeHTMLEntities(text) {
+         const textArea = document.createElement('textarea');
+         textArea.innerHTML = text;
+         return textArea.value;
+      }
+
+		// Load user data
+      function loadUserData() {
+         const firstNameInput = "{{ user_data.first_name }}" || '';
+         const lastNameInput = "{{ user_data.last_name }}" || '';
+         userWalletDisplay.textContent = "{{ user_data.wallet_address }}".slice(0, 6) + '...' + "{{ user_data.wallet_address }}".slice(-4);
+         
+         userNameDisplay.textContent = `${firstNameInput} ${lastNameInput}`;
+         userEmailDisplay.textContent = "{{ user_data.email }}" || '';
+         
+         if ("{{ user_data.bio }}" != "") {
+            introduction_area.innerHTML = decodeHTMLEntities("{{ user_data.bio }}");
+         }
+      }
+
+		loadUserData()
 
 		let nonce;
       nonce = "{{ nonce }}";
