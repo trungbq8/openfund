@@ -289,6 +289,10 @@
          </div>
       </div>
       <div class="input-group-horizon">
+         <label for="username">Username</label>
+         <input name="username" id="username" required>
+      </div>
+      <div class="input-group-horizon">
          <label for="email">Email</label>
          <input name="email" id="email" type="email" required>
          <i style="color: green;" class="fa-solid fa-circle-check" id="email-verification-check"></i>
@@ -296,11 +300,11 @@
       </div>
       <div class="input-group-horizon">
          <label for="x_link">X (Twitter)</label>
-         <input name="x_link" id="x_link">
+         <input name="x_link" id="x_link" placeholder="https://x.com/">
       </div>
       <div class="input-group-horizon">
          <label for="website_link">Website</label>
-         <input name="website_link" id="website_link">
+         <input name="website_link" id="website_link" placeholder="https://example.com">
       </div>
       <div class="divide-section"></div>
       <h2>Funding wallet</h2>
@@ -526,6 +530,7 @@
       const firstNameInput = document.getElementById('first_name');
       const lastNameInput = document.getElementById('last_name');
       const emailInput = document.getElementById('email');
+      const usernameInput = document.getElementById('username');
       const xLinkInput = document.getElementById('x_link');
       const websiteLinkInput = document.getElementById('website_link');
       const fundingWalletInput = document.getElementById('funding_wallet');
@@ -555,6 +560,7 @@
          firstNameInput.value = "{{ user_data.first_name }}" || '';
          lastNameInput.value = "{{ user_data.last_name }}" || '';
          emailInput.value = "{{ user_data.email }}" || '';
+         usernameInput.value = "{{ user_data.username }}" || '';
          xLinkInput.value = "{{ user_data.x_link }}" || '';
          websiteLinkInput.value = "{{ user_data.website_link }}" || '';
          fundingWalletInput.value = "{{ user_data.wallet_address }}" || '';
@@ -671,6 +677,7 @@
             const data = {
                first_name: firstNameInput.value.trim(),
                last_name: lastNameInput.value.trim(),
+               username: usernameInput.value.trim(),
                email: emailInput.value.trim(),
                x_link: xLinkInput.value.trim(),
                website_link: websiteLinkInput.value.trim(),
@@ -712,7 +719,7 @@
                   
                   showToastMessage(data.message || "Settings saved successfully!", true);
                   setTimeout(() => {
-                        window.location.href = '/raiser-profile';
+                        window.location.href = '/raiser-profile/{{ raiser_id }}';
                   }, 1000);
                } else {
                   showToastMessage(data.message || "Error saving settings", false);

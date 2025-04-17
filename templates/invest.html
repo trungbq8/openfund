@@ -47,7 +47,7 @@
       </div>
       <div class="raiser-account-manage hidden" id="raiser-account-manage">
          <p>Raiser account</p>
-         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile'">Profile</div>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
          <div class="raiser-account-manage-btn" id="raiser-log-out-btn" onclick="window.location.href='/log-out'">Log out</div>
       </div>
@@ -74,7 +74,7 @@
       </div>
       <div class="raiser-account-manage-mobile hidden" id="raiser-account-manage-mobile">
          <p>Raiser account</p>
-         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile'">Profile</div>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
          <div class="raiser-account-manage-btn" id="raiser-log-out-btn-mobile" onclick="window.location.href='/log-out'">Log out</div>
       </div>
@@ -138,15 +138,167 @@
 		.project-list{
 			width: 100%;
 			display: flex;
-			padding: 30px 0px;
+			padding: 30px 20px;
 			align-items: center;
 			justify-content: center;
+			box-sizing: border-box;
 		}
 		.project{
-			width: clamp(330px, 90%, 1200px);
-			border: solid 1px black;
+			width: clamp(330px, 90%, 800px);
+			border: solid 1px #d8d8d8;
+			background-color: white;
 			border-radius: 30px;
-			height: 300px
+			box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+			overflow: hidden;
+		}
+		.project-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #000145, #d14646);
+            color: white;
+		}
+		
+		.project-name {
+			font-size: 24px;
+			font-weight: 600;
+		}
+		
+		.raiser-name {
+			font-size: 14px;
+			opacity: 0.9;
+		}
+		
+		.end-time {
+			margin-top: 12px;
+			font-size: 14px;
+			opacity: 0.9;
+		}
+		
+		.project-body {
+			padding: 20px;
+		}
+		
+		.info-row {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 15px;
+		}
+		
+		.info-label {
+			color: #6c757d;
+			font-size: 14px;
+		}
+		
+		.info-value {
+			font-weight: 600;
+			font-size: 15px;
+		}
+		
+		.stage-badge {
+			display: inline-block;
+			background-color: #edf2ff;
+			color: #4263eb;
+			padding: 5px 10px;
+			border-radius: 12px;
+			font-size: 12px;
+			font-weight: 600;
+		}
+		
+		.progress-container {
+			margin: 20px 0;
+		}
+		
+		.progress-label {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 5px;
+			font-size: 14px;
+		}
+		
+		.progress-bar {
+			height: 8px;
+			background-color: #e9ecef;
+			border-radius: 4px;
+			overflow: hidden;
+			margin-bottom: 5px;
+		}
+		
+		.progress {
+			height: 100%;
+			background: linear-gradient(135deg, #000145, #d14646);
+			border-radius: 4px;
+			width: 75%; /* This would be dynamic based on actual values */
+		}
+		
+		.token-info {
+			font-size: clamp(8px, 2vw, 12px);
+			color: #6c757d;
+			display: flex;
+			justify-content: space-between;
+		}
+		
+		.refund-container {
+			margin: 20px 0;
+			padding: 15px;
+			background-color: #f8f9fa;
+			border-radius: 8px;
+		}
+		
+		.refund-header {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 15px;
+		}
+		
+		.refund-title {
+			font-weight: 600;
+			font-size: 14px;
+		}
+		
+		.refund-progress-bar {
+			height: 8px;
+			background-color: #e9ecef;
+			border-radius: 4px;
+			overflow: hidden;
+			margin-bottom: 5px;
+		}
+		
+		.refund-progress {
+			height: 100%;
+			background: linear-gradient(90deg, #fd7e14, #ff9800);
+			border-radius: 4px;
+			width: 30%; /* This would be dynamic based on actual values */
+		}
+		
+		.project-actions {
+			margin-top: 20px;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+		
+		.invest-btn {
+			background-color: #000145;
+			color: white;
+			grid-column: span 2;
+			padding: 12px;
+			border: none;
+			border-radius: 8px;
+			font-weight: 600;
+			cursor: pointer;
+		}
+		
+		.request-refund-btn, .claim-refund-btn {
+			background-color: transparent;
+			border: 1px solid #dee2e6;
+			color: #6c757d;
+			padding: 12px;
+			border-radius: 8px;
+			font-weight: 600;
+			cursor: pointer;
+		}
+		
+		.request-refund-btn:hover, .claim-refund-btn:hover {
+			background-color: #f8f9fa;
 		}
 	</style>
 	<div class="token-launch-banner">
@@ -158,9 +310,66 @@
 		<button class="select-project-btn" id="select-completed-project-btn" onclick="updateProjectList('completed')">Completed</button>
 		<button class="select-project-btn" id="select-invested-project-btn" onclick="updateProjectList('invested')">Invested</button>
 	</div>
+	<style>
+	</style>
 	<div class="project-list">
 		<div class="project">
-
+			<div class="project-header">
+            <div class="project-name">Alpha Protocol</div>
+            <div class="raiser-name">BlockChain Ventures</div>
+            <div class="end-time">Project End: April 30, 2025</div>
+        </div>
+        
+        <div class="project-body">
+            <div class="info-row">
+                <span class="info-label">Token Price</span>
+                <span class="info-value">0.0025 USDT</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Funds Raised</span>
+                <span class="info-value">15,000 USDT</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Stage</span>
+                <span class="stage-badge">Funding</span>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Token Sale Progress</span>
+                    <span>80%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress"></div>
+                </div>
+                <div class="token-info">
+                    <span>6,000,000 ALP</span>
+                    <span>8,000,000 ALP</span>
+                </div>
+            </div>
+            
+            <div class="refund-container">
+                <div class="refund-header">
+                    <span class="refund-title">Request for Refund</span>
+                    <span class="refund-title">30%</span>
+                </div>
+                <div class="refund-progress-bar">
+                    <div class="refund-progress"></div>
+                </div>
+                <div class="token-info">
+                    <span>300,000 ALP</span>
+                    <span>1,000,000 ALP</span>
+                </div>
+            </div>
+            
+            <div class="project-actions">
+                <button class="invest-btn">Invest Now</button>
+                <button class="request-refund-btn">Request Refund</button>
+                <button class="claim-refund-btn">Claim Refund</button>
+            </div>
+        </div>
 		</div>
 	</div>
 	<div class="footer">

@@ -11,6 +11,8 @@ from werkzeug.utils import secure_filename
 import psycopg2
 from dotenv import load_dotenv
 import hashlib
+import random
+from unidecode import unidecode
 
 app = Flask(__name__)
 CORS(app)
@@ -72,7 +74,6 @@ def upload_image():
         }), 400
 
 def validate_email(email):
-    """Validate email format"""
     email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     return re.match(email_regex, email) is not None
 
@@ -83,6 +84,15 @@ def validate_password(password):
     if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
         return False
     return True
+
+def validate_username(username):
+    return re.fullmatch(r'^[a-zA-Z0-9_.]+$', username) is not None
+
+def validate_name(name):
+   return re.fullmatch(r"[A-Za-zÀ-ÖØ-öø-ÿ'\- ]+", name) is not None
+
+def capitalize_name(name):
+    return ' '.join(word.capitalize() for word in name.strip().split())
 
 @app.route("/sign-up", methods=['GET', 'POST'])
 def signup():
@@ -106,6 +116,12 @@ def signup():
        
       if not validate_email(email):
          return jsonify({"success": False, "message": "Invalid email format!"}), 400
+      
+      if not validate_name(first_name):
+         return jsonify({"success": False, "message": "Invalid first name!"}), 400
+      
+      if not validate_name(last_name):
+         return jsonify({"success": False, "message": "Invalid last name!"}), 400
 
       if not validate_password(password):
          return jsonify({"success": False, "message": "Password must be at least 8 characters long and include a special character!"}), 400
@@ -123,12 +139,23 @@ def signup():
          try:
             conn = get_db_connection()
             cur = conn.cursor()
+            first = unidecode(first_name).lower().replace(' ', '')
+            last = unidecode(last_name).lower().replace(' ', '')
+            base_username = f"{first}.{last}"           
+            while True:
+               random_suffix = random.randint(10000, 99999)
+               username = f"{base_username}{random_suffix}"
+
+               cur.execute("SELECT id FROM raiser WHERE username = %s", (username,))
+               if not cur.fetchone():
+                  break
+                
             cur.execute(
                 """
-                INSERT INTO raiser (first_name, last_name, email, hashed_password, salt, wallet_address)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO raiser (username, first_name, last_name, email, hashed_password, salt, wallet_address)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
-                (first_name, last_name, email, hashed_password, str(salt), recovered_address.lower())
+                (username, capitalize_name(first_name), capitalize_name(last_name), email, hashed_password, str(salt), recovered_address.lower())
             )
             conn.commit()
             cur.close()
@@ -231,6 +258,7 @@ def edit_account():
    
    if request.method == "POST":
       data = request.json
+      username = data.get('username')
       first_name = data.get('first_name')
       last_name = data.get('last_name')
       email = data.get('email')
@@ -248,13 +276,13 @@ def edit_account():
          cur = conn.cursor()
          
          cur.execute("""
-               SELECT email, last_name, hashed_password, salt, wallet_address FROM raiser 
+               SELECT email, username, last_name, hashed_password, salt, wallet_address FROM raiser 
                WHERE id = %s
          """, (session['raiser_id'],))
          
          user_data = cur.fetchone()
          
-         current_email, current_last_name, stored_password_hash, salt, current_wallet = user_data
+         current_email, current_username, current_last_name, stored_password_hash, salt, current_wallet = user_data
          
          if wallet_address and wallet_address != current_wallet:
             cur.execute("SELECT id FROM raiser WHERE wallet_address = %s AND id != %s", (wallet_address, session['raiser_id']))
@@ -273,16 +301,41 @@ def edit_account():
                conn.close()
                return jsonify({"success": False, "message": "Email already in use"}), 400
          
-         if len(first_name) > 15 or len(first_name) == 0:
-            return jsonify({"success": False, "message": "First name must be not null and 15 characters maximum"}), 400
+         if username and username.lower() != current_username:
+            if not validate_username(username):
+               return jsonify({"success": False, "message": "Username must not include special characters"}), 400
+            
+            cur.execute("SELECT id FROM raiser WHERE username = %s AND id != %s", (username, session['raiser_id']))
+            if cur.fetchone():
+               cur.close()
+               conn.close()
+               return jsonify({"success": False, "message": "Username already in use"}), 400
+         
+         if len(username) > 50:
+            return jsonify({"success": False, "message": "Username must be 50 characters maximum"}), 400
+         
+         if len(username) > 50 or len(username) == 0:
+            return jsonify({"success": False, "message": "Username must not be null"}), 400
+         
+         if first_name and validate_name(first_name) == False:
+            return jsonify({"success": False, "message": "Invalid first name!"}), 400
+         
+         if last_name and validate_name(last_name) == False:
+            return jsonify({"success": False, "message": "Invalid last name!"}), 400
+         
+         if len(first_name) > 15:
+            return jsonify({"success": False, "message": "First name must be 15 characters maximum"}), 400
+         
+         if len(first_name) == 0:
+            return jsonify({"success": False, "message": "First name must not be null"}), 400
          
          if last_name and len(last_name) > 15:
             return jsonify({"success": False, "message": "Last name must be 15 characters maximum"}), 400
          
-         if x_link and (not x_link.startswith("https://") or "." not in x_link):
+         if x_link and (not x_link.startswith("https://x.com/") or "." not in x_link or len(x_link) > 200):
             return jsonify({"success": False, "message": "Please provide a valid X url"}), 400
 
-         if website_link and (not website_link.startswith("https://") or "." not in website_link):
+         if website_link and (not website_link.startswith("https://") or "." not in website_link or len(website_link) > 200):
             return jsonify({"success": False, "message": "Please provide a valid website url"}), 400
                   
          if current_password and new_password:
@@ -312,11 +365,11 @@ def edit_account():
          
          if first_name:
             update_fields.append("first_name = %s")
-            params.append(first_name)
+            params.append(capitalize_name(first_name))
          
          if current_last_name != last_name:
             update_fields.append("last_name = %s")
-            params.append(last_name)
+            params.append(capitalize_name(last_name))
          
          if email and email != current_email:
             update_fields.append("email = %s")
@@ -350,6 +403,10 @@ def edit_account():
             update_fields.append("logo_url = %s")
             params.append(user_image_url.lower())
 
+         if username and username != current_username:
+            update_fields.append("username = %s")
+            params.append(username.lower())
+
          if update_fields:
                query = "UPDATE raiser SET " + ", ".join(update_fields) + " WHERE id = %s"
                params.append(session['raiser_id'])
@@ -372,7 +429,7 @@ def edit_account():
          cur = conn.cursor()
          
          cur.execute("""
-               SELECT first_name, last_name, email, x_link, website_link, bio, wallet_address, email_confirmed, logo_url 
+               SELECT first_name, last_name, username, email, x_link, website_link, bio, wallet_address, email_confirmed, logo_url 
                FROM raiser WHERE id = %s
          """, (session['raiser_id'],))
          
@@ -383,13 +440,14 @@ def edit_account():
          if not user_data:
                return redirect(url_for('login'))
          
-         first_name, last_name, email, x_link, website_link, bio, wallet_address, email_verified, logo_url = user_data
+         first_name, last_name, username, email, x_link, website_link, bio, wallet_address, email_verified, logo_url = user_data
          
          return render_template(
                "edit-account.html",
                user_data={
                   "first_name": first_name,
                   "last_name": last_name,
+                  "username": username,
                   "email": email,
                   "x_link": x_link or "",
                   "website_link": website_link or "",
@@ -398,7 +456,8 @@ def edit_account():
                   "email_verified": email_verified,
                   "logo_url": logo_url
                },
-               nonce=nonce
+               nonce=nonce,
+               raiser_id = session.get('raiser_id')
          )
          
       except psycopg2.Error as e:
@@ -466,8 +525,11 @@ def logout():
     session.pop('raiser_id', None)
     return redirect(url_for('login'))
 
-@app.route('/raiser-profile')
-def profile():
+@app.route('/raiser-profile/<raiser_id_param>')
+def profile(raiser_id_param):
+   if not raiser_id_param:
+      return redirect(url_for('home'))
+   
    nonce = secrets.token_hex(16)
    session['nonce'] = nonce
    if 'investor_wallet_address' in session:
@@ -487,23 +549,36 @@ def profile():
       conn = get_db_connection()
       cur = conn.cursor()
       
+      if '-' not in raiser_id_param:
+         cur.execute("SELECT id FROM raiser WHERE username = %s", (raiser_id_param,))
+         user_data = cur.fetchone()
+         if not user_data:
+            cur.close()
+            conn.close()
+            return redirect(url_for('not_found'))
+         raiser_id_param = user_data[0]
+      else:
+         cur.execute("SELECT username FROM raiser WHERE id = %s", (raiser_id_param,))
+         user_data = cur.fetchone()
+         if not user_data:
+            cur.close()
+            conn.close()
+            return redirect(url_for('not_found'))
+         return redirect(f'/raiser-profile/{user_data[0]}')
+      
       cur.execute("""
             SELECT first_name, last_name, email, x_link, website_link, bio, wallet_address, logo_url 
-            FROM raiser WHERE id = %s
-      """, (session['raiser_id'],))
-      
+            FROM raiser 
+            WHERE id = %s
+            """, (raiser_id_param,))
       user_data = cur.fetchone()
-      if not user_data:
-         cur.close()
-         conn.close()
-         return redirect(url_for('not-found'))
       
       first_name, last_name, email, x_link, website_link, bio, wallet_address, logo_url = user_data
 
       cur.execute("""
          SELECT COUNT(*) FROM project 
          WHERE raiser_id = %s AND listing_status = 'accepted'
-      """, (session['raiser_id'],))
+      """, (raiser_id_param,))
       number_projects = cur.fetchone()[0]
 
       cur.close()

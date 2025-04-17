@@ -47,7 +47,7 @@
       </div>
       <div class="raiser-account-manage hidden" id="raiser-account-manage">
          <p>Raiser account</p>
-         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile'">Profile</div>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
          <div class="raiser-account-manage-btn" id="raiser-log-out-btn" onclick="window.location.href='/log-out'">Log out</div>
       </div>
@@ -74,7 +74,7 @@
       </div>
       <div class="raiser-account-manage-mobile hidden" id="raiser-account-manage-mobile">
          <p>Raiser account</p>
-         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile'">Profile</div>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
          <div class="raiser-account-manage-btn" id="raiser-log-out-btn-mobile" onclick="window.location.href='/log-out'">Log out</div>
       </div>
@@ -127,11 +127,13 @@
 		.introduction{
 			width: 100%;
 			display: flex;
+			flex-direction: column;
 			padding: 30px 20px;
 			align-items: center;
 			justify-content: center;
+			box-sizing: border-box;
 		}
-		.introduction-box{
+		.introduction-box, .disclaimer{
 			width: 100%;
 			max-width: 800px;
 		}
@@ -217,6 +219,9 @@
 	<div class="introduction">
 		<div class="introduction-box" id="introduction-area">
 
+		</div>
+		<div class="disclaimer">
+			<p><b>⚠️ Disclaimer</b><i> All information provided on this profile page has been submitted by the raiser and is not independently verified by our platform. We do not guarantee the accuracy, completeness, or reliability of the content. Investors are encouraged to conduct their own due diligence before making any decisions.</i></p>
 		</div>
 	</div>
 	<div class="project-list">
@@ -316,9 +321,21 @@
          
          if ("{{ user_data.bio }}" != "") {
             introduction_area.innerHTML = decodeHTMLEntities("{{ user_data.bio }}");
+         } else {
+				introduction_area.innerHTML = "<p>Raiser introduction updating...</p>"
+			}
+
+			if ("{{ user_data.x_link }}" == "") {
+            userXLink.style.cursor = "unset";
+				userXLink.style.color = "#868686";
+				userXLink.removeAttribute("onclick");
+         }
+			if ("{{ user_data.website_link }}" == "") {
+            userWebsiteLink.style.cursor = "unset";
+				userWebsiteLink.style.color = "#868686";
+				userWebsiteLink.removeAttribute("onclick");
          }
       }
-
 		loadUserData()
 
 		let nonce;
