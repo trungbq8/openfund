@@ -230,11 +230,10 @@
             isValid = false;
          }
          
-         loading_spinner.classList.remove("hidden");
-         overlay.classList.remove("hidden");
-         createAccountBtn.disabled = true;
-         
          if (isValid){
+            loading_spinner.classList.remove("hidden");
+            overlay.classList.remove("hidden");
+            createAccountBtn.disabled = true;
             try {
                const response = await fetch('/sign-up', {
                   method: 'POST',
