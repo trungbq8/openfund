@@ -218,58 +218,59 @@
          const walletAddress = connectedAccount;
          const agreePolicy = document.querySelector('.agree-policy-check').checked;
          
+         let isValid = true;
+
          if (password && confirmPassword && password !== confirmPassword) {
             showToastMessage("Passwords do not match", false);
-         }
-         
-         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-         if (email && !emailRegex.test(email)) {
-            showToastMessage("Please enter a valid email address", false);
+            isValid = false;
          }
          
          if (!agreePolicy) {
             showToastMessage("Please agree to the Privacy & Policy", false);
+            isValid = false;
          }
          
          loading_spinner.classList.remove("hidden");
          overlay.classList.remove("hidden");
          createAccountBtn.disabled = true;
          
-         try {
-            const response = await fetch('/sign-up', {
-               method: 'POST',
-               headers: {
-                  'Content-Type': 'application/json'
-               },
-               body: JSON.stringify({
-                  first_name: firstName,
-                  last_name: lastName,
-                  email: email,
-                  password: password,
-                  wallet_address: walletAddress,
-                  wallet_type: selectedWallet,
-                  signature: signature,
-               })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-               showToastMessage(data.message, true);
+         if (isValid){
+            try {
+               const response = await fetch('/sign-up', {
+                  method: 'POST',
+                  headers: {
+                     'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                     first_name: firstName,
+                     last_name: lastName,
+                     email: email,
+                     password: password,
+                     wallet_address: walletAddress,
+                     wallet_type: selectedWallet,
+                     signature: signature,
+                  })
+               });
                
-               setTimeout(() => {
-                  window.location.href = '/log-in';
-               }, 3000);
-            } else {
-               showToastMessage(data.message, false);
+               const data = await response.json();
+               
+               if (data.success) {
+                  showToastMessage(data.message, true);
+                  
+                  setTimeout(() => {
+                     window.location.href = '/log-in';
+                  }, 3000);
+               } else {
+                  showToastMessage(data.message, false);
+               }
+            } catch (error) {
+               console.error('Error:', error);
+               showToastMessage("An error occurred. Please try again later.", false);
+            } finally {
+               createAccountBtn.disabled = false;
+               loading_spinner.classList.add("hidden");
+               overlay.classList.add("hidden");
             }
-         } catch (error) {
-            console.error('Error:', error);
-            showToastMessage("An error occurred. Please try again later.", false);
-         } finally {
-            createAccountBtn.disabled = false;
-            loading_spinner.classList.add("hidden");
-            overlay.classList.add("hidden");
          }
       });
 
