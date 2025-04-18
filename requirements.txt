@@ -6,3 +6,4 @@ eth-account
 Werkzeug
 psycopg2
 python-dotenv
+unidecode

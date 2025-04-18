@@ -613,9 +613,14 @@ def disconnect():
     session.pop('investor_wallet_address', None)
     return redirect(request.referrer)
 
+@app.errorhandler(404)
 @app.route("/not-found")
-def not_found():
+def not_found(e):
     return render_template("404.html")
+
+@app.route("/project")
+def project():
+    return render_template("project.html")
 
 if __name__ == "__main__":
    app.run(host="0.0.0.0", port=5555)
