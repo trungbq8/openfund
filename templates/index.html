@@ -42,11 +42,12 @@
       <div class="investor-account-manage hidden" id="investor-account-manage">
          <p>Investor account</p>
          <input name="investor-wallet-address" id="investor-wallet-address" style="text-align: center; font-size: 12px; padding: 0; border: 0;" readonly required>
-         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-profile'">Edit profile</div>
          <div class="investor-account-manage-btn" id="investor-disconnect-btn">Disconnect</div>
       </div>
       <div class="raiser-account-manage hidden" id="raiser-account-manage">
          <p>Raiser account</p>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/submitted-project'">Submitted projects</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
          <div class="raiser-account-manage-btn" id="raiser-log-out-btn" onclick="window.location.href='/log-out'">Log out</div>
@@ -69,11 +70,12 @@
       <div class="investor-account-manage-mobile hidden" id="investor-account-manage-mobile">
          <p>Investor account</p>
          <input name="investor-wallet-address hidden" id="investor-wallet-address-mobile" style="text-align: center; font-size: 12px; padding: 0; border: 0;" readonly required>
-         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-profile'">Edit profile</div>
          <div class="investor-account-manage-btn" id="investor-disconnect-btn-mobile">Disconnect</div>
       </div>
       <div class="raiser-account-manage-mobile hidden" id="raiser-account-manage-mobile">
          <p>Raiser account</p>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/submitted-project'">Submitted projects</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
          <div class="raiser-account-manage-btn" id="raiser-log-out-btn-mobile" onclick="window.location.href='/log-out'">Log out</div>

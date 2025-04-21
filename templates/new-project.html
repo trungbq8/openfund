@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1, user-scalable=no">
+   <title>OpenFund - New Project</title>
+   <link rel="icon" href="/static/app_assets/open_fund_logo.png">
+   <link rel="stylesheet" href="/static/css/style.css">
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+   <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
+   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<body>
+   <style>
+      html{
+         height: 100%;
+      }
+      body{
+         justify-content: center;
+         box-sizing: border-box;
+      }
+      .new-project-box{
+         width: 100%;
+         height: 100%;
+         max-width: 600px;
+         display: flex;
+         flex-direction: column;
+         padding: 20px;
+         box-sizing: border-box;
+         overflow-y: auto;
+         overflow-x: hidden;scrollbar-width: none;
+         -ms-overflow-style: none;
+      }
+      .new-project-box:-webkit-scrollbar {
+         display: none;
+      }
+      .new-project-box h2{
+         font-size: 1rem;
+         margin: 5px 0;
+      }
+      .submit-btn{
+         background-color: black;
+         border: solid 1px black;
+         border-radius: 10px;
+         padding: 5.8px 10px;
+         color: white;
+         cursor: pointer;
+      }
+      .divide-section{
+         width: 100%;
+         border: solid 0.5px black;
+         background-color: black;
+         height: 0.5px;
+         opacity: 0.1;
+         margin: 10px 0;
+      }
+      .input-group-horizon{
+         display: flex;
+         align-items: center;
+         gap: 5px;
+         margin-bottom: 10px;
+         justify-content: space-between;
+      }
+      input{
+         flex: 1;
+         min-width: 0;
+      }
+      label {
+         opacity: 0.8;
+         width: clamp(60px, 20vw, 150px);
+         font-size: clamp(0.6rem, 3vw, 1rem);
+      }
+      .wysiwyg-container {
+         margin-top: 10px;
+         width: 100%;
+      }
+      .editor-toolbar {
+         display: flex;
+         flex-wrap: wrap;
+         gap: 5px;
+         background-color: #f5f5f5;
+         padding: 8px;
+         border-radius: 8px 8px 0 0;
+         border: 1px solid #ddd;
+         align-items: center;
+         justify-content: center;
+      }
+      .toolbar-btn {
+         background-color: white;
+         border: 1px solid #ccc;
+         border-radius: 4px;
+         padding: 4px 8px;
+         cursor: pointer;
+         font-size: 14px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+      }
+      .toolbar-btn:hover {
+         background-color: #e9e9e9;
+      }
+      .toolbar-btn.active {
+         background-color: #e0e0e0;
+         border-color: #aaa;
+      }
+      .toolbar-group {
+         display: flex;
+         gap: 3px;
+         border-right: 1px solid #ddd;
+         padding-right: 5px;
+      }
+      .toolbar-group:last-child {
+         border-right: none;
+      }
+      .editor-content {
+         width: 100%;
+         min-height: 200px;
+         border: 1px solid #ddd;
+         border-top: none;
+         padding: 10px;
+         font-family: 'Poppins', sans-serif;
+         overflow-y: auto;
+         border-radius: 0 0 8px 8px;
+         outline: none;
+         box-sizing: border-box;
+      }
+      .preview-toggle {
+         margin-top: 10px;
+         display: flex;
+         justify-content: center;
+      }
+      .preview-toggle button {
+         background-color: rgb(0, 0, 0);
+         border: 1px solid rgb(0, 0, 0);
+         border-radius: 10px;
+         padding: 5.8px 10px;
+         cursor: pointer;
+         color: white
+      }
+      .preview-toggle button.active {
+         background-color: #ffffff;
+         border-color: #000000;
+         color: #000000;
+      }
+      .preview-container {
+         width: 100%;
+         min-height: 200px;
+         border: 1px solid #ddd;
+         padding: 10px;
+         margin-top: 10px;
+         border-radius: 8px;
+         font-family: 'Poppins', sans-serif;
+         display: none;
+         box-sizing: border-box;
+      }
+      .preview-container.active {
+         display: block;
+      }
+      .file-input {
+         display: none;
+      }
+      .image-upload-status {
+         margin-top: 5px;
+         color: #666;
+         font-size: 12px;
+      }
+      .editor-content img {
+         width: 100%;
+         height: auto;
+         max-width: 100%;
+      }
+      .token-logo-wrapper{
+         width: 30px;
+         height: 30px;
+         border-radius: 50%;
+         overflow: hidden
+      }
+      .token-logo-wrapper img{
+         width: 100%;
+         height: 100%
+      }
+      .upload-token-logo{
+         background-color: white;
+         border: solid 1px black;
+         border-radius: 10px;
+         padding: 5.8px 10px;
+         cursor: pointer;
+      }
+   </style>
+   <div class="loading-spinner hidden" id="loading-spinner">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="40" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="100" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="160" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
+   </div>
+   <div class="overlay hidden" id="overlay"></div>
+   <div class="new-project-box">
+      <h1>New project</h1>
+      <h2>Basic information</h2>
+      <div class="input-group-horizon">
+         <label for="project-name">Project name</label>
+         <input name="project-name" id="project-name" required>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-end-time">End funding time (Your timezone)</label>
+         <input name="project-end-time" id="project-end-time" type="datetime-local" required>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-x-link">X link</label>
+         <input name="project-x-link" id="project-x-link" placeholder="https://x.com/" required>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-website-link">Website link</label>
+         <input name="project-website-link" id="project-website-link" placeholder="https://example.com/" required>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-telegram-link">Telegram link</label>
+         <input name="project-telegram-link" id="project-telegram-link" placeholder="https://t.me/" required>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-whitepaper-link">Whitepaper link</label>
+         <input name="project-whitepaper-link" id="project-whitepaper-link" placeholder="https://example.com/whitepaper.pdf" required>
+      </div>
+      <div class="divide-section"></div>
+      <h2>Token information</h2>
+      <div class="input-group-horizon">
+         <label for="project-token-name">Token name</label>
+         <input name="project-token-name" id="project-token-name" required>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-token-symbol">Symbol</label>
+         <input name="project-token-symbol" id="project-token-symbol" required>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-token-symbol">Token logo</label>
+         <div style="display: flex; align-items: center; justify-content: center; gap: 10px">
+            <div class="token-logo-wrapper">
+               <img src="https://openfund.live/static/app_assets/open_fund_logo.png">
+            </div>
+            <button class="upload-token-logo" id="upload-token-logo">Upload</button>
+         </div>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-token-decimal">Token decimal</label>
+         <input name="project-token-decimal" id="project-token-decimal" type="number" required>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-total-supply">Total supply</label>
+         <input name="project-total-supply" id="project-total-supply" type="number" required>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-token-to-sell">Amount to sell</label>
+         <input name="project-token-to-sell" id="project-token-to-sell" type="number" required>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-token-price">Price (USDT)</label>
+         <input name="project-token-price" id="project-token-price" type="number" step="0.0001" required>
+      </div>
+      <div class="input-group-horizon">
+         <label for="project-token-address">Contract address</label>
+         <input name="project-token-address" id="project-token-address" required>
+      </div>
+      <div class="divide-section"></div>
+      <h2>Project description</h2>
+      <div class="wysiwyg-container">
+         <div class="editor-toolbar">
+            <div class="toolbar-group">
+               <button class="toolbar-btn" data-command="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+               <button class="toolbar-btn" data-command="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+               <button class="toolbar-btn" data-command="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
+               <button class="toolbar-btn" data-command="strikeThrough" title="Strike through"><i class="fa-solid fa-strikethrough"></i></button>
+            </div>
+            <div class="toolbar-group">
+               <button class="toolbar-btn" data-command="justifyLeft" title="Align left"><i class="fa-solid fa-align-left"></i></button>
+               <button class="toolbar-btn" data-command="justifyCenter" title="Align center"><i class="fa-solid fa-align-center"></i></button>
+               <button class="toolbar-btn" data-command="justifyRight" title="Align right"><i class="fa-solid fa-align-right"></i></button>
+               <button class="toolbar-btn" data-command="justifyFull" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
+            </div>
+            <div class="toolbar-group">
+               <button class="toolbar-btn" data-command="insertUnorderedList" title="Bullet list"><i class="fa-solid fa-list-ul"></i></button>
+               <button class="toolbar-btn" data-command="insertOrderedList" title="Numbered list"><i class="fa-solid fa-list-ol"></i></button>
+            </div>
+            <div class="toolbar-group">
+               <button class="toolbar-btn" data-command="h1" title="Heading 1">H1</button>
+               <button class="toolbar-btn" data-command="h2" title="Heading 2">H2</button>
+               <button class="toolbar-btn" data-command="h3" title="Heading 3">H3</button>
+               <button class="toolbar-btn" data-command="p" title="Paragraph">P</button>
+            </div>
+            <div class="toolbar-group">
+               <button class="toolbar-btn" data-command="createLink" title="Insert link"><i class="fa-solid fa-link"></i></button>
+               <button class="toolbar-btn" data-command="unlink" title="Remove link"><i class="fa-solid fa-unlink"></i></button>
+               <button class="toolbar-btn" id="image-upload-btn" title="Upload image"><i class="fa-solid fa-image"></i></button>
+               <input type="file" id="image-upload" class="file-input" accept="image/*">
+            </div>
+         </div>
+         <div class="editor-content" id="editor-content" contenteditable="true"></div>
+         <div class="image-upload-status" id="image-upload-status"></div>
+         <div class="preview-toggle">
+            <button id="toggle-preview">Preview</button>
+         </div>
+         <div class="preview-container" id="preview-container"></div>
+      </div>
+      <div class="agree-policy" style="display: flex; align-items: center; gap: 5px; margin: 5px 0;">
+         <input type="checkbox" class="agree-policy-check" style="flex:none">
+         <p style="margin:0">By submitting new project. I agree to OpenFund's <a href="/privacy-policy">Privacy & Policy.</a></p>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; margin-top: 10px;"><button class="submit-btn" id="submit-btn">Submit for review</button></div>
+   </div>
+   <script>
+      const uploadTokenImage = document.getElementById("upload-token-logo");
+      const loadingSpinner = document.getElementById('loading-spinner');
+      const overlay = document.getElementById("overlay");
+      const submitBtn = document.getElementById('submit-btn');
+      let user_image_url;
+
+      const imageFileInput = document.createElement('input');
+      imageFileInput.type = 'file';
+      imageFileInput.accept = 'image/*';
+      imageFileInput.style.display = 'none';
+      document.body.appendChild(imageFileInput);
+      
+      uploadTokenImage.addEventListener('click', function() {
+            imageFileInput.click();
+      });
+      
+      imageFileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+               const file = this.files[0];
+               
+               const formData = new FormData();
+               formData.append('file', file);
+               
+               loadingSpinner.classList.remove('hidden');
+               overlay.classList.remove("hidden");
+               
+               fetch('/upload-image', {
+                  method: 'POST',
+                  body: formData
+               })
+               .then(response => response.json())
+               .then(data => {
+                  loadingSpinner.classList.add('hidden');
+                  overlay.classList.add("hidden");
+                  
+                  if (data.success) {
+                        document.querySelector(".token-logo-wrapper img").src = data.file_url;
+                        user_image_url = data.file_url;
+                        } else {
+                        throw new Error(data.message || "Error uploading image");
+                  }
+               })
+               .catch(error => {
+                  loadingSpinner.classList.add('hidden');
+                  overlay.classList.add("hidden");
+                  console.error('Error:', error);
+                  showToastMessage(error.message || "Error uploading image", false);
+               });
+            }
+      });
+
+      submitBtn.addEventListener('click', function() {
+         const projectNameInput = document.getElementById("project-name");
+         const projectEndTime = document.getElementById("project-end-time").value;
+         const endTimeDate = new Date(projectEndTime);
+         const unixTimestamp = Math.floor(endTimeDate.getTime() / 1000); 
+         const projectXLinkInput = document.getElementById("project-x-link");
+         const projectWebsiteLinkInput = document.getElementById("project-website-link");
+         const projectTelegramLinkInput = document.getElementById("project-telegram-link");
+         const projectWhitepaperLinkInput = document.getElementById("project-whitepaper-link");
+         const projectTokenNameInput = document.getElementById("project-token-name");
+         const projectTokenSymbolInput = document.getElementById("project-token-symbol");
+         const projectTokenDecimalInput = document.getElementById("project-token-decimal");
+         const projectTokenTotalSupplyInput = document.getElementById("project-total-supply");
+         const projectTokenToSellInput = document.getElementById("project-token-to-sell");
+         const projectTokenPriceInput = document.getElementById("project-token-price");
+         const projectTokenAddressInput = document.getElementById("project-token-address");
+         const agreePolicy = document.querySelector('.agree-policy-check').checked;
+         saveBioContent();
+         if (!agreePolicy) {
+            showToastMessage("Please agree to the Privacy & Policy", false);
+         }
+         else {
+            const data = {
+               project_name: projectNameInput.value.trim(),
+               project_end_time: unixTimestamp,
+               project_x_link: projectXLinkInput.value.trim(),
+               project_website_link: projectWebsiteLinkInput.value.trim(),
+               project_telegram_link: projectTelegramLinkInput.value.trim(),
+               project_whitepaper_link: projectWhitepaperLinkInput.value.trim(),
+               token_name: projectTokenNameInput.value.trim(),
+               symbol: projectTokenSymbolInput.value.trim(),
+               token_logo_url: user_image_url,
+               token_decimal: projectTokenDecimalInput.value.trim(),
+               token_total_supply: projectTokenTotalSupplyInput.value.trim(),
+               token_amount_to_sell: projectTokenToSellInput.value.trim(),
+               token_price: projectTokenPriceInput.value.trim(),
+               token_contract_address: projectTokenAddressInput.value.trim(),
+               project_description: bioHtmlContent,
+            };
+               
+            loadingSpinner.classList.remove('hidden');
+            overlay.classList.remove("hidden");
+               
+            fetch('/new-project', {
+               method: 'POST',
+               headers: {
+                  'Content-Type': 'application/json'
+               },
+               body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+               loadingSpinner.classList.add('hidden');
+               overlay.classList.add("hidden");
+               
+               if (data.success) {
+                  showToastMessage(data.message || "Submit project successfully!", true);
+                  setTimeout(() => {
+                        window.location.href = '/submitted-project';
+                  }, 1000);
+               } else {
+                  showToastMessage(data.message || "Error saving settings", false);
+               }
+            })
+            .catch(error => {
+               loadingSpinner.classList.add('hidden');
+               overlay.classList.add("hidden");
+               console.error('Error:', error);
+               showToastMessage("Error saving settings", false);
+            });
+         }
+      });
+   </script>
+   <script src="/static/script/wysiwyg_editor.js"></script>
+   <script src="/static/script/main.js"></script>
+</body>
+</html>

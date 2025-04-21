@@ -42,11 +42,12 @@
       <div class="investor-account-manage hidden" id="investor-account-manage">
          <p>Investor account</p>
          <input name="investor-wallet-address" id="investor-wallet-address" style="text-align: center; font-size: 12px; padding: 0; border: 0;" readonly required>
-         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-profile'">Edit profile</div>
          <div class="investor-account-manage-btn" id="investor-disconnect-btn">Disconnect</div>
       </div>
       <div class="raiser-account-manage hidden" id="raiser-account-manage">
          <p>Raiser account</p>
+			<div class="raiser-account-manage-btn" onclick="window.location.href='/submitted-project'">Submitted projects</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
          <div class="raiser-account-manage-btn" id="raiser-log-out-btn" onclick="window.location.href='/log-out'">Log out</div>
@@ -69,11 +70,12 @@
       <div class="investor-account-manage-mobile hidden" id="investor-account-manage-mobile">
          <p>Investor account</p>
          <input name="investor-wallet-address hidden" id="investor-wallet-address-mobile" style="text-align: center; font-size: 12px; padding: 0; border: 0;" readonly required>
-         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-profile'">Edit profile</div>
          <div class="investor-account-manage-btn" id="investor-disconnect-btn-mobile">Disconnect</div>
       </div>
       <div class="raiser-account-manage-mobile hidden" id="raiser-account-manage-mobile">
          <p>Raiser account</p>
+			<div class="raiser-account-manage-btn" onclick="window.location.href='/submitted-project'">Submitted projects</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
          <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
          <div class="raiser-account-manage-btn" id="raiser-log-out-btn-mobile" onclick="window.location.href='/log-out'">Log out</div>
@@ -138,13 +140,15 @@
 		.project-list{
 			width: 100%;
 			display: flex;
+			flex-direction: column;
 			padding: 30px 20px;
 			align-items: center;
 			justify-content: center;
 			box-sizing: border-box;
+			gap: 20px
 		}
 		.project{
-			width: clamp(330px, 90%, 800px);
+			width: clamp(330px, 90%, 600px);
 			border: solid 1px #d8d8d8;
 			background-color: white;
 			border-radius: 30px;
@@ -152,9 +156,8 @@
 			overflow: hidden;
 		}
 		.project-header {
-            padding: 20px;
-            background: linear-gradient(135deg, #000145, #d14646);
-            color: white;
+			padding: 20px;
+			border-bottom: solid 1px #d8d8d8;
 		}
 		
 		.project-name {
@@ -175,6 +178,8 @@
 		
 		.project-body {
 			padding: 20px;
+			display: flex;
+			flex-direction: column;
 		}
 		
 		.info-row {
@@ -269,14 +274,7 @@
 			width: 30%;
 		}
 		
-		.project-actions {
-			margin-top: 20px;
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 10px;
-		}
-		
-		.invest-btn {
+		.view-detail-btn {
 			background-color: #000145;
 			color: white;
 			grid-column: span 2;
@@ -285,20 +283,6 @@
 			border-radius: 8px;
 			font-weight: 600;
 			cursor: pointer;
-		}
-		
-		.request-refund-btn, .claim-refund-btn {
-			background-color: transparent;
-			border: 1px solid #dee2e6;
-			color: #6c757d;
-			padding: 12px;
-			border-radius: 8px;
-			font-weight: 600;
-			cursor: pointer;
-		}
-		
-		.request-refund-btn:hover, .claim-refund-btn:hover {
-			background-color: #f8f9fa;
 		}
 	</style>
 	<div class="token-launch-banner">
@@ -317,14 +301,9 @@
 			<div class="project-header">
             <div class="project-name">Alpha Protocol</div>
             <div class="raiser-name">BlockChain Ventures</div>
-            <div class="end-time">Project End: April 30, 2025</div>
         </div>
         
         <div class="project-body">
-            <div class="info-row">
-                <span class="info-label">Token Price</span>
-                <span class="info-value">0.0025 USDT</span>
-            </div>
             
             <div class="info-row">
                 <span class="info-label">Funds Raised</span>
@@ -335,43 +314,43 @@
                 <span class="info-label">Stage</span>
                 <span class="stage-badge">Funding</span>
             </div>
-            
-            <div class="progress-container">
-                <div class="progress-label">
-                    <span>Token Sale Progress</span>
-                    <span>80%</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                </div>
-                <div class="token-info">
-                    <span>6,000,000 ALP</span>
-                    <span>8,000,000 ALP</span>
-                </div>
-            </div>
-            
-            <div class="refund-container">
-                <div class="refund-header">
-                    <span class="refund-title">Request for Refund</span>
-                    <span class="refund-title">30%</span>
-                </div>
-                <div class="refund-progress-bar">
-                    <div class="refund-progress"></div>
-                </div>
-                <div class="token-info">
-                    <span>300,000 ALP</span>
-                    <span>1,000,000 ALP</span>
-                </div>
-            </div>
-            
-            <div class="project-actions">
-                <button class="invest-btn">Invest Now</button>
-                <button class="request-refund-btn">Request Refund</button>
-                <button class="claim-refund-btn">Claim Refund</button>
-            </div>
+				<div class="info-row">
+					<span class="info-label">End time</span>
+					<span class="info-value">April 30, 2025</span>
+			  	</div>
+
+            <button class="view-detail-btn">View more</button>
         </div>
+		  
+		</div>
+		<div class="project">
+			<div class="project-header">
+            <div class="project-name">Alpha Protocol</div>
+            <div class="raiser-name">BlockChain Ventures</div>
+        </div>
+        
+        <div class="project-body">
+            
+            <div class="info-row">
+                <span class="info-label">Funds Raised</span>
+                <span class="info-value">15,000 USDT</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Stage</span>
+                <span class="stage-badge">Funding</span>
+            </div>
+				<div class="info-row">
+					<span class="info-label">End time</span>
+					<span class="info-value">April 30, 2025</span>
+			  	</div>
+
+            <button class="view-detail-btn">View more</button>
+        </div>
+		  
 		</div>
 	</div>
+	
 	<div class="footer">
 		<div class="app-info">
 			<div class="app-logo-footer" onclick="window.location.href='/'">

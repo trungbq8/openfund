@@ -311,11 +311,8 @@ def edit_account():
                conn.close()
                return jsonify({"success": False, "message": "Username already in use"}), 400
          
-         if len(username) > 50:
-            return jsonify({"success": False, "message": "Username must be 50 characters maximum"}), 400
-         
-         if len(username) > 50 or len(username) == 0:
-            return jsonify({"success": False, "message": "Username must not be null"}), 400
+         if len(username) > 50 or len(username) < 6:
+            return jsonify({"success": False, "message": "Username must not be from 10-50 characters"}), 400
          
          if first_name and validate_name(first_name) == False:
             return jsonify({"success": False, "message": "Invalid first name!"}), 400
@@ -332,10 +329,10 @@ def edit_account():
          if last_name and len(last_name) > 15:
             return jsonify({"success": False, "message": "Last name must be 15 characters maximum"}), 400
          
-         if x_link and (not x_link.startswith("https://x.com/") or "." not in x_link or len(x_link) > 200):
+         if x_link and (not x_link.startswith("https://x.com/") or "." not in x_link or len(x_link) > 100):
             return jsonify({"success": False, "message": "Please provide a valid X url"}), 400
 
-         if website_link and (not website_link.startswith("https://") or "." not in website_link or len(website_link) > 200):
+         if website_link and (not website_link.startswith("https://") or "." not in website_link or len(website_link) > 100):
             return jsonify({"success": False, "message": "Please provide a valid website url"}), 400
                   
          if current_password and new_password:
@@ -615,12 +612,297 @@ def disconnect():
 
 @app.errorhandler(404)
 @app.route("/not-found")
-def not_found(e):
+def not_found(e=None):
     return render_template("404.html")
 
 @app.route("/project")
 def project():
     return render_template("project.html")
 
+def validate_project_submit(token_decimal, project_name, project_end_time, project_x_link, project_website_link, project_telegram_link, project_whitepaper_link, token_name, symbol, token_logo_url, token_total_supply, token_amount_to_sell, token_price, token_contract_address, project_description):
+   if not project_name or not project_end_time or not project_x_link or not project_website_link or not project_telegram_link or not project_whitepaper_link or not token_name or not symbol or not token_logo_url or not token_total_supply or not token_amount_to_sell or not token_price or not token_contract_address or not project_description:
+         return jsonify({"success": False, "message": "All fields are required!"}), 400
+   if len(project_name) > 50:
+      return jsonify({"success": False, "message": "Project name must be at 50 characters maximum!"}), 400
+   if len(token_name) > 50:
+      return jsonify({"success": False, "message": "Token name must be at 50 characters maximum!"}), 400
+   if len(symbol) > 10:
+      return jsonify({"success": False, "message": "Token must be at 10 characters maximum!"}), 400
+   if (not project_x_link.startswith("https://x.com/") or "." not in project_x_link or len(project_x_link) > 100):
+         return jsonify({"success": False, "message": "Please provide a valid X url"}), 400
+   if (not project_website_link.startswith("https://") or "." not in project_website_link or len(project_website_link) > 100):
+      return jsonify({"success": False, "message": "Please provide a valid website url"}), 400
+   if (not project_telegram_link.startswith("https://t.me/") or "." not in project_telegram_link or len(project_telegram_link) > 100):
+      return jsonify({"success": False, "message": "Please provide a valid telegram url"}), 400
+   if (not project_whitepaper_link.startswith("https://") or "." not in project_whitepaper_link or len(project_whitepaper_link) > 100):
+      return jsonify({"success": False, "message": "Please provide a valid whitepaper url"}), 400
+   if int(token_total_supply) < 10:
+      return jsonify({"success": False, "message": "Invalid token total supply"}), 400
+   if int(token_decimal) < 1:
+      return jsonify({"success": False, "message": "Invalid token decimal"}), 400
+   if int(token_amount_to_sell) < 10 or int(token_amount_to_sell) > int(token_total_supply):
+      return jsonify({"success": False, "message": "Invalid token amount to sell"}), 400
+   if float(token_price) not in [0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.5, 1, 5, 10, 0.05, 0.005, 0.0005, 0.00005, 0.000005]:
+      return jsonify({"success": False, "message": "Invalid token price. Must be a common fractional value in (10, 5, 1, 0.5, 0.1, 0.05, 0.01, ... , 0.000001"}), 400
+   if not w3.is_address(token_contract_address):
+      return jsonify({"success": False, "message": "Invalid token contract address."}), 400
+   now = int(time.time())
+   if not isinstance(project_end_time, (int, float)) or project_end_time < now + 3 * 24 * 3600:
+      return jsonify({"success": False, "message": "End time must be at least 3 days from now."}), 400
+   
+@app.route("/new-project", methods=["GET", "POST"])
+def new_project():
+   if 'raiser_id' not in session:
+      return redirect(url_for('login'))
+   if request.method == "POST":
+      data = request.json
+      project_name = data.get("project_name")
+      project_end_time =  data.get("project_end_time")
+      project_x_link =  data.get("project_x_link")
+      project_website_link =  data.get("project_website_link")
+      project_telegram_link =  data.get("project_telegram_link")
+      project_whitepaper_link =  data.get("project_whitepaper_link")
+      token_name =  data.get("token_name")
+      symbol =  data.get("symbol")
+      symbol = symbol.upper()
+      token_logo_url =  data.get("token_logo_url")
+      token_decimal = data.get("token_decimal")
+      token_total_supply =  data.get("token_total_supply")
+      token_amount_to_sell =  data.get("token_amount_to_sell")
+      token_price =  data.get("token_price")
+      token_contract_address =  data.get("token_contract_address")
+      project_description =  data.get("project_description")
+
+      validate_project_submit(token_decimal, project_name, project_end_time, project_x_link, project_website_link, project_telegram_link, project_whitepaper_link, token_name, symbol, token_logo_url, token_total_supply, token_amount_to_sell, token_price, token_contract_address, project_description)
+      
+      try:
+         conn = get_db_connection()
+         cur = conn.cursor()
+         
+         cur.execute("""
+               SELECT wallet_address FROM raiser 
+               WHERE id = %s
+         """, (session['raiser_id'],))
+         
+         user_data = cur.fetchone()
+         funding_wallet = user_data[0]
+
+         cur.execute(
+            """
+            INSERT INTO project (raiser_id, funding_address, name, logo_url, investment_end_time, token_name, token_symbol, total_token_supply, token_to_sell, token_price, token_address, fund_raised, token_sold, decimal, vote_for_refund, vote_for_refund_count, investors_count, x_link, website_link, telegram_link, whitepaper_link, description, platform_comment)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (session['raiser_id'], funding_wallet, project_name, token_logo_url, project_end_time, token_name ,symbol, token_total_supply, token_amount_to_sell, token_price, token_contract_address, '0', '0', token_decimal, '0', '0', '0', project_x_link, project_website_link, project_telegram_link, project_whitepaper_link, project_description, "Reviewing")
+         )
+         conn.commit()
+         cur.close()
+         conn.close()
+         return jsonify({"success": True, "message": "Submit project successfully!"}), 201
+      except psycopg2.Error as e:
+         print(f"Database error: {e}")
+         return jsonify({"success": False, "message": "An error occurred while updating your account"}), 500
+   else:
+      return render_template("new-project.html")
+
+@app.route("/edit-project/<project_id_param>", methods=["GET", "POST"])
+def edit_project(project_id_param):
+   if 'raiser_id' not in session:
+      return redirect(url_for('login'))
+   if request.method == "POST":
+      data = request.json
+      remove_project = data.get("remove")
+      project_name = data.get("project_name")
+      project_end_time =  data.get("project_end_time")
+      project_x_link =  data.get("project_x_link")
+      project_website_link =  data.get("project_website_link")
+      project_telegram_link =  data.get("project_telegram_link")
+      project_whitepaper_link =  data.get("project_whitepaper_link")
+      token_name =  data.get("token_name")
+      symbol =  data.get("symbol")
+      token_logo_url =  data.get("token_logo_url")
+      token_decimal = data.get("token_decimal")
+      token_total_supply =  data.get("token_total_supply")
+      token_amount_to_sell =  data.get("token_amount_to_sell")
+      token_price =  data.get("token_price")
+      token_contract_address =  data.get("token_contract_address")
+      project_description =  data.get("project_description")
+
+      validate_project_submit(token_decimal, project_name, project_end_time, project_x_link, project_website_link, project_telegram_link, project_whitepaper_link, token_name, symbol, token_logo_url, token_total_supply, token_amount_to_sell, token_price, token_contract_address, project_description)
+      
+      try:
+         conn = get_db_connection()
+         cur = conn.cursor()
+
+         cur.execute("SELECT id FROM project WHERE id = %s", (project_id_param,))
+         project_data = cur.fetchone()
+         if not project_data:
+            cur.close()
+            conn.close()
+            return redirect(url_for('not_found'))
+         if remove_project == True:
+            conn = get_db_connection()
+            cur = conn.cursor()
+
+            cur.execute("DELETE FROM project WHERE id = %s", (project_id_param,))
+
+            conn.commit()
+            cur.close()
+            conn.close()
+            return jsonify({"success": True, "message": "Project delete successfully!"}), 201
+      
+         cur.execute(
+            """
+            UPDATE project 
+            SET name = %s, logo_url = %s, investment_end_time = %s, token_name = %s, token_symbol = %s, total_token_supply = %s, token_to_sell = %s, token_price = %s, token_address = %s, decimal = %s, x_link = %s, website_link = %s, telegram_link = %s, whitepaper_link = %s, description = %s
+            WHERE id = %s
+            """,
+            (project_name, token_logo_url, project_end_time, token_name ,symbol.upper(), token_total_supply, token_amount_to_sell, token_price, token_contract_address, token_decimal, project_x_link, project_website_link, project_telegram_link, project_whitepaper_link, project_description, project_id_param)
+         )
+         conn.commit()
+         cur.close()
+         conn.close()
+         return jsonify({"success": True, "message": "Edit project successfully!"}), 201
+      except psycopg2.Error as e:
+         print(f"Database error: {e}")
+         return jsonify({"success": False, "message": "An error occurred while updating your project"}), 500
+   else:
+      try:
+         conn = get_db_connection()
+         cur = conn.cursor()
+         
+         cur.execute("""
+               SELECT name, logo_url, investment_end_time, token_name, token_symbol, total_token_supply, token_to_sell, token_price, token_address, decimal, x_link, website_link, telegram_link, whitepaper_link, description
+               FROM project WHERE id = %s
+         """, (project_id_param,))
+         
+         project_data = cur.fetchone()
+         cur.close()
+         conn.close()
+         
+         if not project_data:
+               return redirect(url_for('not_found'))
+         
+         name, logo_url, investment_end_time, token_name, token_symbol, total_token_supply, token_to_sell, token_price, token_address, decimal, x_link, website_link, telegram_link, whitepaper_link, description = project_data
+         
+         return render_template(
+               "edit-project.html",
+               project_data={
+                  "name" : name, 
+                  "logo_url" : logo_url, 
+                  "investment_end_time" : investment_end_time, 
+                  "token_name" : token_name, 
+                  "token_symbol" : token_symbol, 
+                  "total_token_supply" : total_token_supply, 
+                  "token_to_sell" : token_to_sell, 
+                  "token_price" : token_price, 
+                  "token_address" : token_address, 
+                  "decimal" : decimal, 
+                  "x_link" : x_link, 
+                  "website_link" : website_link, 
+                  "telegram_link" : telegram_link, 
+                  "whitepaper_link" : whitepaper_link, 
+                  "description" : description
+               },
+         )
+      except psycopg2.Error as e:
+         print(f"Database error: {e}")
+         return redirect(url_for('home'))
+      
+@app.route("/submitted-project")
+def submitted_project():
+   if 'raiser_id' not in session:
+      return redirect(url_for('login'))
+   try:
+      conn = get_db_connection()
+      cur = conn.cursor()
+      
+      cur.execute("""
+         SELECT id, name, listing_status, funding_status, platform_comment, logo_url
+         FROM project 
+         WHERE raiser_id = %s
+         ORDER BY created_time DESC
+      """, (session['raiser_id'],))
+      
+      projects = []
+      for row in cur.fetchall():
+         project_id, name, listing_status, funding_status, platform_comment, logo_url = row
+         projects.append({
+               "id": project_id,
+               "name": name,
+               "listing_status": listing_status,
+               "funding_status": funding_status,
+               "platform_comment": platform_comment,
+               "logo_url": logo_url
+         })
+      
+      cur.close()
+      conn.close()
+        
+      return render_template("submitted-projects.html", projects = projects)
+    
+   except psycopg2.Error as e:
+      print(f"Database error: {e}")
+      return redirect(url_for('home'))
+   
+@app.route('/edit-profile', methods=["GET", "POST"])
+def edit_profile():
+   if 'investor_wallet_address' not in session:
+      return redirect(url_for('home'))
+   if request.method == 'POST':
+      data = request.json
+      logo_url = data.get("logo_url")
+      username = data.get("username")
+      if not validate_username(username):
+         return jsonify({"success": False, "message": "Username must not include special characters"}), 400
+      if len(username) > 50 or len(username) < 6:
+         return jsonify({"success": False, "message": "Username must not be from 10-50 characters"}), 400
+      try:
+         conn = get_db_connection()
+         cur = conn.cursor()
+
+         cur.execute("SELECT id FROM investor WHERE username = %s AND wallet_address != %s", (username, session['investor_wallet_address']))
+         investor_data = cur.fetchone()
+         if investor_data:
+            cur.close()
+            conn.close()
+            return jsonify({"success": False, "message": "Username in use"}), 500
+         else:
+            cur.execute("SELECT id FROM investor WHERE wallet_address = %s", (session['investor_wallet_address'],))
+            exist = cur.fetchone()
+            if exist:
+               cur.execute("UPDATE investor SET username = %s, logo_url = %s WHERE wallet_address = %s", (username, logo_url, session['investor_wallet_address']))
+               conn.commit()
+               cur.close()
+               conn.close()
+            else:
+               cur.execute("INSERT INTO investor(username, logo_url, wallet_address) VALUES (%s, %s, %s)", (username, logo_url, session['investor_wallet_address']))
+               conn.commit()
+               cur.close()
+               conn.close()
+            return jsonify({"success": True, "message": "Profile update successfully!"}), 201
+         
+      except psycopg2.Error as e:
+         print(f"Database error: {e}")
+         return redirect(url_for('home'))
+   else:
+      try:
+         conn = get_db_connection()
+         cur = conn.cursor()
+
+         cur.execute("SELECT username, logo_url FROM investor WHERE wallet_address = %s", (session['investor_wallet_address'],))
+         investor_data = cur.fetchone()
+         if investor_data:
+            username, logo_url = investor_data
+         else:
+            username = ""
+            logo_url = ""
+         cur.close()
+         conn.close()
+         return render_template("edit-profile.html", user_data={"logo_url": logo_url, "username": username})
+      
+      except psycopg2.Error as e:
+         print(f"Database error: {e}")
+         return redirect(url_for('home'))
+      
 if __name__ == "__main__":
    app.run(host="0.0.0.0", port=5555)

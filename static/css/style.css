@@ -9,7 +9,6 @@ body{
    display:flex;
    flex-direction: column;
    align-items: center;
-   height: 100%;
    background-color: white;
 }
 button{
@@ -323,11 +322,11 @@ a{
    top: 220px;
    right: 50%;
    transform: translateX(90%);
-   height: 200px;
+   height: 244px;
 }
 .raiser-account-manage{
    right: -50px;
-   height: 200px
+   height: 244px
 }
 .investor-account-manage p, .raiser-account-manage p, .investor-account-manage-mobile p, .raiser-account-manage-mobile p{
    font-size: 12px;

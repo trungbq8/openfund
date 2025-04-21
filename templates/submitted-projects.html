@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1, user-scalable=no">
+   <title>OpenFund - Submitted projects</title>
+   <link rel="icon" href="/static/app_assets/open_fund_logo.png">
+   <link rel="stylesheet" href="/static/css/style.css">
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+   <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
+   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<body>
+   <style>
+      html{
+         height: 100%;
+      }
+      body{
+         justify-content: center;
+         box-sizing: border-box;
+      }
+      .submitted-projects-box{
+         width: 100%;
+         height: 100%;
+         max-width: 600px;
+         display: flex;
+         flex-direction: column;
+         padding: 20px;
+         box-sizing: border-box;
+         overflow-y: auto;
+         overflow-x: hidden;
+         scrollbar-width: none;
+         -ms-overflow-style: none;
+      }
+      .submitted-projects-box:-webkit-scrollbar {
+         display: none;
+      }
+      .submitted-projects-box h2{
+         font-size: 1rem;
+         margin: 5px 0;
+      }
+      .edit-btn, .view-btn{
+         background-color: black;
+         border: solid 1px black;
+         border-radius: 10px;
+         padding: 5.8px 10px;
+         color: white;
+         cursor: pointer;
+      }
+      .divide-section{
+         width: 100%;
+         border: solid 0.5px black;
+         background-color: black;
+         height: 0.5px;
+         opacity: 0.1;
+         margin: 10px 0;
+      }
+      .new-project-btn{
+         border-radius: 10px;
+         border: solid 2px black;
+         font-size: 15px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         background-color: rgb(0, 0, 0);
+         padding: 5.8px 10px;
+         color: white;
+         cursor: pointer;
+         gap: 5px
+      }
+      .project{
+         margin-top: 15px;
+         width: 100%;
+         border: solid 1px rgb(180, 180, 180);
+         border-radius: 20px;
+         overflow: hidden;
+      }
+      .project-header{
+         width: 100%;
+         height: 50px;
+         display: flex;
+         align-items: center;
+         justify-content: start;
+         padding: 30px 15px;
+         box-sizing: border-box;
+         border: solid 1px rgb(180, 180, 180);
+         border-top: 0;
+         border-left: 0;
+         border-right: 0;
+      }
+      .project-logo {
+         width: 30px;
+         height: 30px;
+         border-radius: 50%;
+         object-fit: cover;
+         margin-right: 5px;
+      }
+      .project-body{
+         padding: 15px;
+         display: flex;
+         flex-direction: column;
+      }
+      .project-body-item{
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+      }
+      .platform-comment{
+         margin: 5px 0;
+         border: solid 1px #9d9d9d;
+         border-radius: 20px;
+         border-top-left-radius: 0px;
+         border-bottom-left-radius: 0px;
+         border-left: solid 5px;
+         padding: 10px;
+      }
+      .project:hover{
+         transform: scale(1.01);
+         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      }
+   </style>
+   <div class="loading-spinner hidden" id="loading-spinner">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="40" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="100" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="160" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
+   </div>
+   <div class="overlay hidden" id="overlay"></div>
+   <div class="submitted-projects-box">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+         <div style="display: flex; align-items: center; gap: 10px">
+            <i class="fa-solid fa-arrow-left" style="cursor: pointer;" onclick="window.history.back()"></i>
+            <h2>All submitted projects</h2>
+         </div>
+         <button class="new-project-btn" id="new-project-btn" onclick="window.location.href='/new-project'">New <i class="fa-solid fa-plus"></i></button>
+      </div>
+      <div class="divide-section"></div>
+      <div id="projects-container">
+         
+      </div>
+   </div>
+   <script>
+      function loadProjects() {
+         const projectsContainer = document.getElementById('projects-container');
+         projectsContainer.innerHTML = '';
+         const projects_data = {{ projects | tojson }};
+         if (projects_data.length > 0) {
+            projects_data.forEach(project => {
+               projectsContainer.appendChild(createProjectElement(project));
+            });
+         } else {
+            projectsContainer.innerHTML = `
+               <div class="no-projects">
+                  <p>You haven't submitted any projects yet.</p>
+                  <p>Click the "New" button to create your first project.</p>
+               </div>
+            `;
+         }
+      }
+      
+      function createProjectElement(project) {
+         const projectDiv = document.createElement('div');
+         projectDiv.className = 'project';
+         
+         let statusClass = 'status-pending';
+         if (project.listing_status === 'accepted') {
+            statusClass = 'status-accepted';
+         } else if (project.listing_status === 'rejected') {
+            statusClass = 'status-rejected';
+         }
+         projectDiv.innerHTML = `
+            <div class="project-header">
+               <img src="${project.logo_url}" alt="${project.name}" class="project-logo">
+               <h2 class="project-title">${project.name}</h2>
+            </div>
+            <div class="project-body">
+               <div class="project-body-item">
+                  <span>Listing status</span>
+                  <span class="status-badge ${statusClass}" style="font-weight: bold;">${project.listing_status.charAt(0).toUpperCase() + project.listing_status.slice(1)}</span>
+               </div>
+               <div class="project-body-item">
+                  <span>Funding status</span>
+                  <span style="font-weight: bold;">${project.funding_status.charAt(0).toUpperCase() + project.funding_status.slice(1)}</span>
+               </div>
+               <div class="divide-section"></div>
+               <p style="margin: 0">Platform comment</p>
+               <p class="platform-comment">${project.platform_comment}</p>
+               ${project.listing_status === 'pending' ? 
+               `<div class="button-container" style="display: flex; align-items: center; justify-content: center; margin-top: 10px;">
+               <button class="edit-btn" onclick="window.location.href='/edit-project/${project.id}'">
+                  Edit project <i class="fa-solid fa-pen-to-square"></i>
+               </button>` : ''}
+                  ${project.listing_status === 'accepted' ? 
+                     `<button class="view-btn" onclick="window.location.href='/project/${project.id}'">
+                        View on Funding page <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                     </button>` : ''}
+               </div>
+            </div>
+         `;
+         return projectDiv;
+      }
+      loadProjects()
+   </script>
+</body>
+</html>
