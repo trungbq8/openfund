@@ -120,7 +120,7 @@ def signup():
       if not validate_name(first_name):
          return jsonify({"success": False, "message": "Invalid first name!"}), 400
       
-      if not validate_name(last_name):
+      if last_name and not validate_name(last_name):
          return jsonify({"success": False, "message": "Invalid last name!"}), 400
 
       if not validate_password(password):
