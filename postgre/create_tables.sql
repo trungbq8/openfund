@@ -26,21 +26,23 @@ CREATE TABLE investor (
 
 CREATE TABLE investment (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    project_id INT NOT NULL,
     investor_address VARCHAR(255) NOT NULL,
     amount INT NOT NULL,
     token_received INT NOT NULL,
+    FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE,
     FOREIGN KEY (investor_address) REFERENCES investor(wallet_address) ON DELETE CASCADE,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE project (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id SERIAL PRIMARY KEY,
     raiser_id UUID NOT NULL,
     name VARCHAR(255) NOT NULL,
     token_name VARCHAR(50) NOT NULL,
     token_symbol VARCHAR(10) NOT NULL,
     logo_url TEXT,
-    investment_end_time_unix bigint NOT NULL;
+    investment_end_time bigint NOT NULL,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     listing_status VARCHAR(20) CHECK (listing_status IN ('pending', 'accepted')) DEFAULT 'pending',
     hidden BOOLEAN DEFAULT FALSE,
@@ -78,7 +80,7 @@ CREATE TABLE post (
 
 CREATE TABLE project_like (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    project_id UUID NOT NULL,
+    project_id INT NOT NULL,
     investor_id UUID NOT NULL,
     FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE,
     FOREIGN KEY (investor_id) REFERENCES investor(id) ON DELETE CASCADE
@@ -86,7 +88,7 @@ CREATE TABLE project_like (
 
 CREATE TABLE project_comment (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    project_id UUID NOT NULL,
+    project_id INT NOT NULL,
     comment_text TEXT NOT NULL,
     investor_id UUID NOT NULL,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

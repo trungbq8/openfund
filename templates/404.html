@@ -10,6 +10,32 @@
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
 <body>
-not found
+<style>
+   html{
+      height: 100%;
+   }
+   body{
+      height: 100%;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+      padding: 20px;
+   }
+   .not-found-img{
+      max-width: 500px;
+      width: 100%;
+      height: auto;
+   }
+   .return-btn{
+      background-color: #012960;
+      border: solid 1px #012960;
+      border-radius: 10px;
+      padding: 5.8px 10px;
+      color: white;
+      cursor: pointer;
+   }
+</style>
+   <img class="not-found-img" src="/static/app_assets/not-found.png">
+   <button class="return-btn" onclick="window.location.href='/'">Home <i class="fa-solid fa-house"></i></button>
 </body>
 </html>

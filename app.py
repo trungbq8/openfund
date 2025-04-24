@@ -210,6 +210,124 @@ def invest():
       raiser_id = ""
    return render_template("invest.html", nonce=nonce, investor_connected=investor_connected, investor_wallet_address=investor_wallet_address, raiser_logged_in=raiser_logged_in, raiser_id = raiser_id)
 
+@app.route("/api/get-projects")
+def get_projects():
+   investor_wallet_address = session.get('investor_wallet_address')
+   page = request.args.get('page', 1, type=int)
+   per_page = request.args.get('per_page', 5, type=int)
+   project_type = request.args.get('type', "active", type=str)  # active, completed, invested
+   offset = (page - 1) * per_page
+   
+   if project_type == 'invested' and not investor_wallet_address:
+      return jsonify({"success": False, "message": "Investor not connected"}), 401
+   
+   try:
+      conn = get_db_connection()
+      cur = conn.cursor()
+      
+      projects = []
+      total_count = 0
+      
+      if project_type == 'invested':
+         cur.execute("""
+            SELECT COUNT(DISTINCT p.id) 
+            FROM project p
+            JOIN investment i ON p.id = i.project_id
+            WHERE i.investor_address = %s
+         """, (investor_wallet_address,))
+         total_count = cur.fetchone()[0]
+         
+         cur.execute("""
+            SELECT DISTINCT p.id, p.name, p.funding_status, 
+                   p.fund_raised, p.investment_end_time,
+                   CONCAT(r.first_name, ' ', r.last_name) AS raiser_name, 
+                   p.created_time
+            FROM project p
+            JOIN investment i ON p.id = i.project_id
+            JOIN raiser r ON p.raiser_id = r.id
+            WHERE i.investor_address = %s
+            ORDER BY p.created_time DESC
+            LIMIT %s OFFSET %s
+         """, (investor_wallet_address, per_page, offset))
+      
+      elif project_type == 'active':
+         cur.execute("""
+               SELECT COUNT(*) FROM project 
+               WHERE funding_status IN ('raising', 'voting')
+               AND listing_status = 'accepted'
+               AND hidden = FALSE
+            """)
+         total_count = cur.fetchone()[0]
+         
+         cur.execute("""
+            SELECT p.id, p.name, p.funding_status, 
+                  p.fund_raised, p.investment_end_time,
+                  CONCAT(r.first_name, ' ', r.last_name) AS raiser_name
+            FROM project p
+            JOIN raiser r ON p.raiser_id = r.id
+            WHERE p.funding_status IN ('raising', 'voting')
+            AND p.listing_status = 'accepted'
+            AND p.hidden = FALSE
+            ORDER BY p.created_time DESC
+            LIMIT %s OFFSET %s
+         """, (per_page, offset))
+      
+      elif project_type == 'completed':
+         cur.execute("""
+               SELECT COUNT(*) FROM project 
+               WHERE funding_status = 'completed'
+               AND listing_status = 'accepted'
+               AND hidden = FALSE
+            """)
+         total_count = cur.fetchone()[0]
+         
+         cur.execute("""
+            SELECT p.id, p.name, p.funding_status, 
+                  p.fund_raised, p.investment_end_time,
+                  CONCAT(r.first_name, ' ', r.last_name) AS raiser_name
+            FROM project p
+            JOIN raiser r ON p.raiser_id = r.id
+            WHERE p.funding_status = 'completed'
+            AND p.listing_status = 'accepted'
+            AND p.hidden = FALSE
+            ORDER BY p.created_time DESC
+            LIMIT %s OFFSET %s
+         """, (per_page, offset))
+      else:
+         return jsonify({"success": False, "message": "Invalid project type"}), 400
+      
+      for row in cur.fetchall():
+         project_data = {
+            "id": row[0],
+            "name": row[1],
+            "funding_status": row[2],
+            "fund_raised": row[3],
+            "investment_end_time": row[4],
+            "raiser_name": row[5]
+         }
+         
+         projects.append(project_data)
+      
+      total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 0
+      
+      cur.close()
+      conn.close()
+      
+      return jsonify({
+         "success": True,
+         "projects": projects,
+         "pagination": {
+            "total_count": total_count,
+            "total_pages": total_pages,
+            "current_page": page,
+            "per_page": per_page
+         }
+      })
+      
+   except psycopg2.Error as e:
+      print(f"Database error: {e}")
+      return jsonify({"success": False, "message": "Database error"}), 500
+   
 @app.route("/log-in", methods=['GET', 'POST'])
 def login():
    if 'raiser_id' in session:
@@ -514,7 +632,21 @@ def investor_connect():
    recovered_address = eth_account.Account.recover_message(message_hash, signature=signature)
    if recovered_address.lower() == wallet_address.lower():
       session['investor_wallet_address'] = wallet_address.lower()
-      return jsonify({"success": True, "message": "Connect wallet successfully!"}), 200
+      try:
+         conn = get_db_connection()
+         cur = conn.cursor()
+
+         cur.execute("SELECT id FROM investor WHERE wallet_address = %s", (session['investor_wallet_address'],))
+         exist = cur.fetchone()
+         if not exist:
+            cur.execute("INSERT INTO investor(wallet_address) VALUES (%s)", (session['investor_wallet_address'],))
+            conn.commit()
+            cur.close()
+            conn.close()
+         return jsonify({"success": True, "message": "Connect wallet successfully!"}), 200
+      except psycopg2.Error as e:
+         print(f"Database error: {e}")
+         return redirect(url_for('home'))
    return jsonify({"success": False, "message": "Signature not valid"}), 500
 
 @app.route('/log-out')
@@ -664,7 +796,6 @@ def new_project():
       project_whitepaper_link =  data.get("project_whitepaper_link")
       token_name =  data.get("token_name")
       symbol =  data.get("symbol")
-      symbol = symbol.upper()
       token_logo_url =  data.get("token_logo_url")
       token_decimal = data.get("token_decimal")
       token_total_supply =  data.get("token_total_supply")
@@ -692,7 +823,7 @@ def new_project():
             INSERT INTO project (raiser_id, funding_address, name, logo_url, investment_end_time, token_name, token_symbol, total_token_supply, token_to_sell, token_price, token_address, fund_raised, token_sold, decimal, vote_for_refund, vote_for_refund_count, investors_count, x_link, website_link, telegram_link, whitepaper_link, description, platform_comment)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
-            (session['raiser_id'], funding_wallet, project_name, token_logo_url, project_end_time, token_name ,symbol, token_total_supply, token_amount_to_sell, token_price, token_contract_address, '0', '0', token_decimal, '0', '0', '0', project_x_link, project_website_link, project_telegram_link, project_whitepaper_link, project_description, "Reviewing")
+            (session['raiser_id'], funding_wallet, project_name, token_logo_url, project_end_time, token_name ,symbol.upper(), token_total_supply, token_amount_to_sell, token_price, token_contract_address, '0', '0', token_decimal, '0', '0', '0', project_x_link, project_website_link, project_telegram_link, project_whitepaper_link, project_description, "Reviewing")
          )
          conn.commit()
          cur.close()
@@ -812,16 +943,33 @@ def edit_project(project_id_param):
 def submitted_project():
    if 'raiser_id' not in session:
       return redirect(url_for('login'))
+   return render_template("submitted-projects.html")
+
+@app.route("/api/submitted-projects")
+def api_submitted_projects():
+   if 'raiser_id' not in session:
+      return jsonify({"success": False, "message": "Not logged in"}), 401
+   
+   page = request.args.get('page', 1, type=int)
+   per_page = request.args.get('per_page', 5, type=int)
+   offset = (page - 1) * per_page
+   
    try:
       conn = get_db_connection()
       cur = conn.cursor()
+      
+      cur.execute("SELECT COUNT(*) FROM project WHERE raiser_id = %s", 
+                  (session['raiser_id'],))
+      total_count = cur.fetchone()[0]
+      total_pages = (total_count + per_page - 1) // per_page
       
       cur.execute("""
          SELECT id, name, listing_status, funding_status, platform_comment, logo_url
          FROM project 
          WHERE raiser_id = %s
          ORDER BY created_time DESC
-      """, (session['raiser_id'],))
+         LIMIT %s OFFSET %s
+      """, (session['raiser_id'], per_page, offset))
       
       projects = []
       for row in cur.fetchall():
@@ -837,12 +985,21 @@ def submitted_project():
       
       cur.close()
       conn.close()
-        
-      return render_template("submitted-projects.html", projects = projects)
-    
+      
+      return jsonify({
+         "success": True,
+         "projects": projects,
+         "pagination": {
+               "total_count": total_count,
+               "total_pages": total_pages,
+               "current_page": page,
+               "per_page": per_page
+         }
+      })
+      
    except psycopg2.Error as e:
       print(f"Database error: {e}")
-      return redirect(url_for('home'))
+      return jsonify({"success": False, "message": "Database error"}), 500
    
 @app.route('/edit-profile', methods=["GET", "POST"])
 def edit_profile():
@@ -853,9 +1010,11 @@ def edit_profile():
       logo_url = data.get("logo_url")
       username = data.get("username")
       if not validate_username(username):
-         return jsonify({"success": False, "message": "Username must not include special characters"}), 400
+         return jsonify({"success": False, "message": "Username must not be null or include special characters"}), 400
       if len(username) > 50 or len(username) < 6:
-         return jsonify({"success": False, "message": "Username must not be from 10-50 characters"}), 400
+         return jsonify({"success": False, "message": "Username must be from 10-50 characters"}), 400
+      if not logo_url:
+         logo_url = ""
       try:
          conn = get_db_connection()
          cur = conn.cursor()
@@ -867,18 +1026,10 @@ def edit_profile():
             conn.close()
             return jsonify({"success": False, "message": "Username in use"}), 500
          else:
-            cur.execute("SELECT id FROM investor WHERE wallet_address = %s", (session['investor_wallet_address'],))
-            exist = cur.fetchone()
-            if exist:
-               cur.execute("UPDATE investor SET username = %s, logo_url = %s WHERE wallet_address = %s", (username, logo_url, session['investor_wallet_address']))
-               conn.commit()
-               cur.close()
-               conn.close()
-            else:
-               cur.execute("INSERT INTO investor(username, logo_url, wallet_address) VALUES (%s, %s, %s)", (username, logo_url, session['investor_wallet_address']))
-               conn.commit()
-               cur.close()
-               conn.close()
+            cur.execute("UPDATE investor SET username = %s, logo_url = %s WHERE wallet_address = %s", (username, logo_url, session['investor_wallet_address']))
+            conn.commit()
+            cur.close()
+            conn.close()
             return jsonify({"success": True, "message": "Profile update successfully!"}), 201
          
       except psycopg2.Error as e:
