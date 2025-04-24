@@ -1013,8 +1013,6 @@ def edit_profile():
          return jsonify({"success": False, "message": "Username must not be null or include special characters"}), 400
       if len(username) > 50 or len(username) < 6:
          return jsonify({"success": False, "message": "Username must be from 10-50 characters"}), 400
-      if not logo_url:
-         logo_url = ""
       try:
          conn = get_db_connection()
          cur = conn.cursor()
@@ -1026,11 +1024,21 @@ def edit_profile():
             conn.close()
             return jsonify({"success": False, "message": "Username in use"}), 500
          else:
-            cur.execute("UPDATE investor SET username = %s, logo_url = %s WHERE wallet_address = %s", (username, logo_url, session['investor_wallet_address']))
+            if logo_url:
+               cur.execute(
+                  "UPDATE investor SET username = %s, logo_url = %s WHERE wallet_address = %s", 
+                  (username, logo_url, session['investor_wallet_address'])
+               )
+            else:
+               cur.execute(
+                  "UPDATE investor SET username = %s WHERE wallet_address = %s", 
+                  (username, session['investor_wallet_address'])
+               )
+
             conn.commit()
             cur.close()
             conn.close()
-            return jsonify({"success": True, "message": "Profile update successfully!"}), 201
+            return jsonify({"success": True, "message": "Profile updated successfully!"}), 201
          
       except psycopg2.Error as e:
          print(f"Database error: {e}")
