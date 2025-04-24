@@ -108,7 +108,7 @@ def signup():
       wallet_address = data.get('wallet_address')
       signature = data.get("signature")
 
-      if not first_name or not last_name or not email or not password or not wallet_address:
+      if not first_name or not email or not password or not wallet_address:
          return jsonify({"success": False, "message": "All fields are required!"}), 400
       
       if len(first_name) > 15 or len(last_name) > 15:

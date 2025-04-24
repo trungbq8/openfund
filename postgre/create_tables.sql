@@ -20,7 +20,7 @@ CREATE TABLE raiser (
 CREATE TABLE investor (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     wallet_address VARCHAR(255) UNIQUE NOT NULL,
-    username VARCHAR(100) UNIQUE NOT NULL,
+    username VARCHAR(100) UNIQUE,
     logo_url TEXT
 );
 
