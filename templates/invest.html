@@ -334,6 +334,12 @@
 		.status-failed{
 			color:rgb(156, 33, 33)
 		}
+		.status-voting{
+			color:rgb(210, 120, 60)
+		}
+		.status-completed{
+			color:rgb(33, 156, 52)
+		}
 	</style>
 	<div class="token-launch-banner">
 		<h1>Invest</h1>
@@ -433,7 +439,12 @@
          if (project.funding_status === 'failed') {
             statusClass = 'status-failed';
 			}
-
+			if (project.funding_status === 'voting') {
+            statusClass = 'status-voting';
+			}
+			if (project.funding_status === 'completed') {
+            statusClass = 'status-completed';
+			}
          projectDiv.innerHTML = `
 				<div class="project-header">
 					<div style="display: flex; align-items: center; justify-content: start; gap: 5px"><div style="width: 30px; height: 30px; border-radius: 50%; overflow: hidden"><img style="width: 100%; hieght: 100%; object-fit: cover" src=${project.logo_url}></div><div class="project-name">${project.name}</div></div>
