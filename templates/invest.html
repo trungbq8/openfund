@@ -331,6 +331,9 @@
       .no-projects-container p {
          margin: 5px 0;
       }
+		.status-failed{
+			color:rgb(156, 33, 33)
+		}
 	</style>
 	<div class="token-launch-banner">
 		<h1>Invest</h1>
@@ -425,10 +428,15 @@
 			};
 
 			const readable = date.toLocaleString(undefined, options);
+			
+			let statusClass = '';
+         if (project.funding_status === 'failed') {
+            statusClass = 'status-failed';
+			}
 
          projectDiv.innerHTML = `
 				<div class="project-header">
-					<div class="project-name">${project.name}</div>
+					<div style="display: flex; align-items: center; justify-content: start; gap: 5px"><div style="width: 30px; height: 30px; border-radius: 50%; overflow: hidden"><img style="width: 100%; hieght: 100%; object-fit: cover" src=${project.logo_url}></div><div class="project-name">${project.name}</div></div>
 					<div class="raiser-name">${project.raiser_name}</div>
         		</div>
         
@@ -441,7 +449,7 @@
 					
 					<div class="info-row">
 						<span class="info-label">Stage</span>
-						<span class="stage-badge">${project.funding_status.charAt(0).toUpperCase() + project.funding_status.slice(1)}</span>
+						<span class="stage-badge ${statusClass}">${project.funding_status.charAt(0).toUpperCase() + project.funding_status.slice(1)}</span>
 					</div>
 					<div class="info-row">
 						<span class="info-label">End time</span>

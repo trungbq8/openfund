@@ -71,7 +71,7 @@ function uploadImage(file) {
    })
    .then(response => {
       if (!response.ok) {
-         throw new Error('Network response was not ok');
+         throw new Error('File too large');
       }
       return response.json();
    })

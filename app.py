@@ -241,6 +241,7 @@ def get_projects():
             SELECT DISTINCT p.id, p.name, p.funding_status, 
                    p.fund_raised, p.investment_end_time,
                    CONCAT(r.first_name, ' ', r.last_name) AS raiser_name, 
+                   p.logo_url,
                    p.created_time
             FROM project p
             JOIN investment i ON p.id = i.project_id
@@ -262,7 +263,8 @@ def get_projects():
          cur.execute("""
             SELECT p.id, p.name, p.funding_status, 
                   p.fund_raised, p.investment_end_time,
-                  CONCAT(r.first_name, ' ', r.last_name) AS raiser_name
+                  CONCAT(r.first_name, ' ', r.last_name) AS raiser_name,
+                  p.logo_url
             FROM project p
             JOIN raiser r ON p.raiser_id = r.id
             WHERE p.funding_status IN ('raising', 'voting')
@@ -284,10 +286,11 @@ def get_projects():
          cur.execute("""
             SELECT p.id, p.name, p.funding_status, 
                   p.fund_raised, p.investment_end_time,
-                  CONCAT(r.first_name, ' ', r.last_name) AS raiser_name
+                  CONCAT(r.first_name, ' ', r.last_name) AS raiser_name,
+                  p.logo_url
             FROM project p
             JOIN raiser r ON p.raiser_id = r.id
-            WHERE p.funding_status = 'completed'
+            WHERE p.funding_status IN ('completed', 'failed')
             AND p.listing_status = 'accepted'
             AND p.hidden = FALSE
             ORDER BY p.created_time DESC
@@ -303,7 +306,8 @@ def get_projects():
             "funding_status": row[2],
             "fund_raised": row[3],
             "investment_end_time": row[4],
-            "raiser_name": row[5]
+            "raiser_name": row[5],
+            "logo_url": row[6]
          }
          
          projects.append(project_data)
@@ -737,6 +741,69 @@ def profile(raiser_id_param):
       print(f"Database error: {e}")
       return redirect(url_for('home'))
 
+@app.route("/api/get-raiser-projects")
+def api_get_raiser_projects():
+   page = request.args.get('page', 1, type=int)
+   per_page = request.args.get('per_page', 5, type=int)
+   offset = (page - 1) * per_page
+   raiser_username = request.args.get('raiser_username', '', type=str)
+   
+   if raiser_username == '':
+      return jsonify({"success": False, "message": "Missing raiser username"}), 500
+   
+   try:
+      conn = get_db_connection()
+      cur = conn.cursor()
+      
+      cur.execute("SELECT id FROM raiser WHERE username = %s", (raiser_username,))
+      user_data = cur.fetchone()
+      if not user_data:
+         cur.close()
+         conn.close()
+         return jsonify({"success": False, "message": "Raiser not found"}), 500
+      raiser_id = user_data[0]
+
+      cur.execute("SELECT COUNT(*) FROM project WHERE raiser_id = %s AND listing_status = 'accepted' AND hidden = FALSE", 
+                  (raiser_id,))
+      total_count = cur.fetchone()[0]
+      total_pages = (total_count + per_page - 1) // per_page
+      
+      cur.execute("""
+         SELECT id, name, funding_status, fund_raised, investment_end_time
+         FROM project 
+         WHERE raiser_id = %s AND listing_status = 'accepted' AND hidden = FALSE"
+         ORDER BY created_time DESC
+         LIMIT %s OFFSET %s
+      """, (raiser_id, per_page, offset))
+      
+      projects = []
+      for row in cur.fetchall():
+         projects.append({
+               "id": row[0],
+               "name": row[1],
+               "funding_status": row[2],
+               "fund_raised": row[3],
+               "investment_end_time": row[4]
+         })
+      
+      cur.close()
+      conn.close()
+      
+      return jsonify({
+         "success": True,
+         "projects": projects,
+         "pagination": {
+               "total_count": total_count,
+               "total_pages": total_pages,
+               "current_page": page,
+               "per_page": per_page
+         }
+      })
+      
+   except psycopg2.Error as e:
+      print(f"Database error: {e}")
+      return jsonify({"success": False, "message": "Database error"}), 500
+   
 @app.route('/disconnect')
 def disconnect():
     session.pop('investor_wallet_address', None)
@@ -779,8 +846,8 @@ def validate_project_submit(token_decimal, project_name, project_end_time, proje
    if not w3.is_address(token_contract_address):
       return jsonify({"success": False, "message": "Invalid token contract address."}), 400
    now = int(time.time())
-   if not isinstance(project_end_time, (int, float)) or project_end_time < now + 3 * 24 * 3600:
-      return jsonify({"success": False, "message": "End time must be at least 3 days from now."}), 400
+   if not isinstance(project_end_time, (int, float)) or project_end_time < now + 10 * 24 * 3600:
+      return jsonify({"success": False, "message": "End time must be at least 10 days from now."}), 400
    
 @app.route("/new-project", methods=["GET", "POST"])
 def new_project():
@@ -1024,21 +1091,11 @@ def edit_profile():
             conn.close()
             return jsonify({"success": False, "message": "Username in use"}), 500
          else:
-            if logo_url:
-               cur.execute(
-                  "UPDATE investor SET username = %s, logo_url = %s WHERE wallet_address = %s", 
-                  (username, logo_url, session['investor_wallet_address'])
-               )
-            else:
-               cur.execute(
-                  "UPDATE investor SET username = %s WHERE wallet_address = %s", 
-                  (username, session['investor_wallet_address'])
-               )
-
+            cur.execute("UPDATE investor SET username = %s, logo_url = %s WHERE wallet_address = %s", (username, logo_url, session['investor_wallet_address']))
             conn.commit()
             cur.close()
             conn.close()
-            return jsonify({"success": True, "message": "Profile updated successfully!"}), 201
+            return jsonify({"success": True, "message": "Profile update successfully!"}), 201
          
       except psycopg2.Error as e:
          print(f"Database error: {e}")
@@ -1052,8 +1109,9 @@ def edit_profile():
          investor_data = cur.fetchone()
          if investor_data:
             username, logo_url = investor_data
-         else:
+         if not username:
             username = ""
+         if not logo_url:
             logo_url = ""
          cur.close()
          conn.close()

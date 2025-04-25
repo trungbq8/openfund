@@ -326,7 +326,7 @@
          const firstNameInput = "{{ user_data.first_name }}" || '';
          const lastNameInput = "{{ user_data.last_name }}" || '';
          userWalletDisplay.textContent = "{{ user_data.wallet_address }}".slice(0, 6) + '...' + "{{ user_data.wallet_address }}".slice(-4);
-         
+         userNumberProject.textContent =  "{{ user_data.number_projects }}" || '0';
          userNameDisplay.textContent = `${firstNameInput} ${lastNameInput}`;
          userEmailDisplay.textContent = "{{ user_data.email }}" || '';
          
