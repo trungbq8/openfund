@@ -142,15 +142,20 @@
 		.project-list{
 			width: 100%;
 			display: flex;
-			padding: 30px 0px;
+			flex-direction: column;
+			padding: 30px 20px;
 			align-items: center;
 			justify-content: center;
+			box-sizing: border-box;
+			gap: 20px
 		}
 		.project{
-			width: clamp(330px, 90%, 800px);
-			border: solid 1px black;
+			width: clamp(330px, 90%, 600px);
+			border: solid 1px #d8d8d8;
+			background-color: white;
 			border-radius: 30px;
-			height: 300px
+			box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+			overflow: hidden;
 		}
       .raiser-profile-box{
          width: 100%;
@@ -194,6 +199,199 @@
          align-items: center;
          gap: 3px
       }
+		.project{
+			width: clamp(330px, 90%, 600px);
+			border: solid 1px #d8d8d8;
+			background-color: white;
+			border-radius: 30px;
+			box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+			overflow: hidden;
+		}
+		.project-header {
+			padding: 20px;
+			border-bottom: solid 1px #d8d8d8;
+		}
+		
+		.project-name {
+			font-size: 24px;
+			font-weight: 600;
+		}
+		
+		.raiser-name {
+			font-size: 14px;
+			opacity: 0.9;
+		}
+		
+		.end-time {
+			margin-top: 12px;
+			font-size: 14px;
+			opacity: 0.9;
+		}
+		
+		.project-body {
+			padding: 20px;
+			display: flex;
+			flex-direction: column;
+		}
+		
+		.info-row {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 15px;
+		}
+		
+		.info-label {
+			color: #6c757d;
+			font-size: 14px;
+		}
+		
+		.info-value {
+			font-weight: 600;
+			font-size: 15px;
+		}
+		
+		.stage-badge {
+			display: inline-block;
+			background-color: #edf2ff;
+			color: #4263eb;
+			padding: 5px 10px;
+			border-radius: 12px;
+			font-size: 12px;
+			font-weight: 600;
+		}
+		
+		.progress-container {
+			margin: 20px 0;
+		}
+		
+		.progress-label {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 5px;
+			font-size: 14px;
+		}
+		
+		.progress-bar {
+			height: 8px;
+			background-color: #e9ecef;
+			border-radius: 4px;
+			overflow: hidden;
+			margin-bottom: 5px;
+		}
+		
+		.progress {
+			height: 100%;
+			background: linear-gradient(135deg, #000145, #d14646);
+			border-radius: 4px;
+			width: 75%;
+		}
+		
+		.token-info {
+			font-size: clamp(8px, 2vw, 12px);
+			color: #6c757d;
+			display: flex;
+			justify-content: space-between;
+		}
+		
+		.refund-container {
+			margin: 20px 0;
+			padding: 15px;
+			background-color: #f8f9fa;
+			border-radius: 8px;
+		}
+		
+		.refund-header {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 15px;
+		}
+		
+		.refund-title {
+			font-weight: 600;
+			font-size: 14px;
+		}
+		
+		.refund-progress-bar {
+			height: 8px;
+			background-color: #e9ecef;
+			border-radius: 4px;
+			overflow: hidden;
+			margin-bottom: 5px;
+		}
+		
+		.refund-progress {
+			height: 100%;
+			background: linear-gradient(90deg, #fd7e14, #ff9800);
+			border-radius: 4px;
+			width: 30%;
+		}
+		
+		.view-detail-btn {
+			background-color: #000145;
+			color: white;
+			grid-column: span 2;
+			padding: 12px;
+			border: none;
+			border-radius: 8px;
+			font-weight: 600;
+			cursor: pointer;
+		}
+
+		.reload-btn{
+			background-color: black;
+         border: solid 1px black;
+         border-radius: 10px;
+         padding: 5.8px 10px;
+         color: white;
+         cursor: pointer;
+		}
+
+		.pagination-container {
+         display: flex;
+         justify-content: center;
+         margin-bottom: 20px;
+         gap: 5px;
+      }
+      .pagination-button {
+         padding: 5px 10px;
+         border: 1px solid #ddd;
+         border-radius: 5px;
+         background-color: white;
+         cursor: pointer;
+      }
+      .pagination-button.active {
+         background-color: black;
+         color: white;
+         border-color: black;
+      }
+      .pagination-button:hover:not(.active) {
+         background-color: #f3f3f3;
+      }
+      .pagination-button.disabled {
+         color: #ccc;
+         border-color: #eee;
+         cursor: not-allowed;
+      }
+      .no-projects-container {
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         padding: 40px 20px;
+         text-align: center;
+      }
+      .no-projects-container p {
+         margin: 5px 0;
+      }
+		.status-failed{
+			color:rgb(156, 33, 33)
+		}
+		.status-voting{
+			color:rgb(210, 120, 60)
+		}
+		.status-completed{
+			color:rgb(33, 156, 52)
+		}
 	</style>
 	<div class="investor-profile-banner">
 		<div class="raiser-profile-box">
@@ -201,9 +399,9 @@
             <img src="{{ user_data.logo_url or 'https://openfund.live/static/app_assets/user_default.png'}}">
          </div>
          <div class="user-name-email-wallet">
-            <p id="user-name" style="font-weight: bold; font-size: clamp(1rem, 4vw, 1.2rem);">Donal Donald Trump</p>
-            <p id="user-email" style="opacity: 0.69">trump@trump.com</p>
-            <div class="user-wallet-wrapper"><p id="user-wallet" style="opacity: 0.69; padding: 1px 3px; border: solid 1px black; border-radius: 10px;display: inline-block; white-space: nowrap; margin-right: 3px;">0x0000...0000</p><i class="fa-solid fa-copy" id="copy-wallet-btn" style="cursor: pointer; font-size: clamp(0.69rem, 2.9vw, 1rem);"></i></div>
+            <p id="user-name" style="font-weight: bold; font-size: clamp(1rem, 4vw, 1.2rem);"></p>
+            <p id="user-email" style="opacity: 0.69"></p>
+            <div class="user-wallet-wrapper"><p id="user-wallet" style="opacity: 0.69; padding: 1px 3px; border: solid 1px black; border-radius: 10px;display: inline-block; white-space: nowrap; margin-right: 3px;"></p><i class="fa-solid fa-copy" id="copy-wallet-btn" style="cursor: pointer; font-size: clamp(0.69rem, 2.9vw, 1rem);"></i></div>
             <div class="other-info">
                <i id="x-link" class="fa-brands fa-square-x-twitter" onclick="window.location.href='{{ user_data.x_link }}'" style="font-size: clamp(0.8rem, 3vw, 1rem);
     cursor: pointer;"></i>
@@ -218,7 +416,7 @@
 		<button class="select-option-btn" id="select-introduction-btn" onclick="updateOptionDisplay('introduction')">Introduction</button>
 		<button class="select-option-btn" id="select-all-project-btn" onclick="updateOptionDisplay('projects')">Projects</button>
 	</div>
-	<div class="introduction">
+	<div class="introduction" id="introduction">
 		<div class="introduction-box" id="introduction-area" style="text-align: justify;">
 
 		</div>
@@ -226,11 +424,9 @@
 			<p><b>⚠️ Disclaimer</b><i> All information provided on this profile page has been submitted by the raiser and is not independently verified by our platform. We do not guarantee the accuracy, completeness, or reliability of the content. Investors are encouraged to conduct their own due diligence before making any decisions.</i></p>
 		</div>
 	</div>
-	<div class="project-list">
-		<div class="project">
-
-		</div>
+	<div class="project-list" id="project-list">
 	</div>
+	<div class="pagination-container" id="pagination-container"></div>
 	<div class="footer">
 	<div class="app-info">
 		<div class="app-logo-footer" onclick="window.location.href='/'">
@@ -260,11 +456,15 @@
 	</div>
 	</div>
 </body>
+	<script src="/static/script/connect.js"></script>
 	<script>
+		const description = document.getElementById("introduction");
+		const projectArea = document.getElementById("project-list");
 		//connect
 		const menuBtn = document.querySelector('.menu-btn');
 		const mobileNav = document.querySelector('.nav-bar-mobile');
 		const close_nav_bar_mobile_btn = document.getElementById("close-nav-bar-mobile-btn");
+
 		const copy_wallet_btn = document.getElementById("copy-wallet-btn");
 		copy_wallet_btn.addEventListener('click', function(){
 			const walletAddress = "{{ user_data.wallet_address }}";
@@ -295,13 +495,17 @@
 				select_introduction_btn.style.color = "white";
 				select_all_project_btn.style.backgroundColor = "white";
 				select_all_project_btn.style.color = "black"
+				description.style.display = "flex";
+				projectArea.innerHTML = "";
 			}
 
 			if (selected == 'projects'){
 				select_all_project_btn.style.backgroundColor = "rgb(0, 1, 69)";
 				select_all_project_btn.style.color = "white";
 				select_introduction_btn.style.backgroundColor = "white";
-				select_introduction_btn.style.color = "black"
+				select_introduction_btn.style.color = "black";
+				description.style.display = "none";
+				loadProjects(1);
 			}
 		}
 		updateOptionDisplay('introduction')
@@ -320,11 +524,10 @@
          textArea.innerHTML = text;
          return textArea.value;
       }
-
+		const firstNameInput = "{{ user_data.first_name }}" || '';
+      const lastNameInput = "{{ user_data.last_name }}" || '';
 		// Load user data
       function loadUserData() {
-         const firstNameInput = "{{ user_data.first_name }}" || '';
-         const lastNameInput = "{{ user_data.last_name }}" || '';
          userWalletDisplay.textContent = "{{ user_data.wallet_address }}".slice(0, 6) + '...' + "{{ user_data.wallet_address }}".slice(-4);
          userNumberProject.textContent =  "{{ user_data.number_projects }}" || '0';
          userNameDisplay.textContent = `${firstNameInput} ${lastNameInput}`;
@@ -349,6 +552,168 @@
       }
 		loadUserData()
 
+		let currentPage = 1;
+      const perPage = 5;
+		const path = window.location.pathname;
+		const username = path.split("/").pop();
+
+		function createProjectElement(project) {
+         const projectDiv = document.createElement('div');
+         projectDiv.className = 'project';
+         
+			let unixTimestamp = Number(project.investment_end_time);
+			const date = new Date(unixTimestamp * 1000);
+
+			const options = {
+				year: 'numeric',
+				month: 'long',
+				day: 'numeric',
+				hour: '2-digit',
+				minute: '2-digit',
+				hour12: false
+			};
+
+			const readable = date.toLocaleString(undefined, options);
+			
+			let statusClass = '';
+         if (project.funding_status === 'failed') {
+            statusClass = 'status-failed';
+			}
+			if (project.funding_status === 'voting') {
+            statusClass = 'status-voting';
+			}
+			if (project.funding_status === 'completed') {
+            statusClass = 'status-completed';
+			}
+         projectDiv.innerHTML = `
+				<div class="project-header">
+					<div style="display: flex; align-items: center; justify-content: start; gap: 5px"><div style="width: 30px; height: 30px; border-radius: 50%; overflow: hidden"><img style="width: 100%; hieght: 100%; object-fit: cover" src=${project.logo_url}></div><div class="project-name">${project.name}</div></div>
+					<div class="raiser-name">${firstNameInput} ${lastNameInput}</div>
+        		</div>
+        
+        		<div class="project-body">
+            
+					<div class="info-row">
+						<span class="info-label">Funds Raised</span>
+						<span class="info-value">${project.fund_raised} USDT</span>
+					</div>
+					
+					<div class="info-row">
+						<span class="info-label">Stage</span>
+						<span class="stage-badge ${statusClass}">${project.funding_status.charAt(0).toUpperCase() + project.funding_status.slice(1)}</span>
+					</div>
+					<div class="info-row">
+						<span class="info-label">End time</span>
+						<span class="info-value">${readable}</span>
+					</div>
+					<button class="view-detail-btn" onclick="window.location.href='/project/${project.id}'">View more</button>
+				</div>
+         `;
+         return projectDiv;
+      }
+
+		function createPaginationButtons(currentPage, totalPages) {
+         const paginationContainer = document.getElementById('pagination-container');
+         paginationContainer.innerHTML = '';
+         
+         const prevButton = document.createElement('button');
+         prevButton.classList.add('pagination-button');
+         prevButton.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+         if (currentPage === 1) {
+            prevButton.classList.add('disabled');
+         } else {
+            prevButton.addEventListener('click', () => loadProjects(currentPage - 1));
+         }
+         paginationContainer.appendChild(prevButton);
+         
+         const maxButtons = 5;
+         let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+         let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+         
+         if (endPage - startPage + 1 < maxButtons && startPage > 1) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+         }
+         
+         for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.classList.add('pagination-button');
+            pageButton.textContent = i;
+            
+            if (i === currentPage) {
+               pageButton.classList.add('active');
+            } else {
+               pageButton.addEventListener('click', () => loadProjects(i));
+            }
+            
+            paginationContainer.appendChild(pageButton);
+         }
+         
+         const nextButton = document.createElement('button');
+         nextButton.classList.add('pagination-button');
+         nextButton.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+         if (currentPage === totalPages || totalPages === 0) {
+            nextButton.classList.add('disabled');
+         } else {
+            nextButton.addEventListener('click', () => loadProjects(currentPage + 1));
+         }
+         paginationContainer.appendChild(nextButton);
+      }
+      
+      function loadProjects(page = 1) {
+         const projectsContainer = document.getElementById('project-list');
+
+         loading_spinner.classList.remove('hidden');
+         overlay.classList.remove("hidden");
+
+         fetch(`/api/get-raiser-projects?page=${page}&per_page=${perPage}&raiser_username=${username}`)
+            .then(response => response.json())
+            .then(data => {
+               currentPage = page;
+               projectsContainer.innerHTML = '';
+               
+               loading_spinner.classList.add('hidden');
+               overlay.classList.add("hidden");
+
+               if (data.success) {
+                  if (data.projects.length > 0) {
+                     data.projects.forEach(project => {
+                        projectsContainer.appendChild(createProjectElement(project));
+                     });
+                     
+                     createPaginationButtons(data.pagination.current_page, data.pagination.total_pages);
+                  } else {
+                     projectsContainer.innerHTML = `
+                        <div class="no-projects-container">
+                           <p>No project found.</p>
+                        </div>
+                     `;
+                     document.getElementById('pagination-container').innerHTML = '';
+                  }
+               } else {
+                  showToastMessage(data.message || "Failed to load projects", false);
+                  projectsContainer.innerHTML = `
+                     <div class="no-projects-container">
+                        <p>Error loading projects.</p>
+                        <button class="edit-btn" onclick="loadProjects(1)">
+                           Try again <i class="fa-solid fa-refresh"></i>
+                        </button>
+                     </div>
+                  `;
+               }
+            })
+            .catch(error => {
+               console.error('Error fetching projects:', error);
+               projectsContainer.innerHTML = `
+                  <div class="no-projects-container">
+                     <p>Error connecting to server.</p>
+                     <button class="edit-btn" onclick="loadProjects(1)">
+                        Try again <i class="fa-solid fa-refresh"></i>
+                     </button>
+                  </div>
+               `;
+            });
+      }
+
 		let nonce;
       nonce = "{{ nonce }}";
       let isInvstorConnecting = true;
@@ -356,7 +721,6 @@
       const raiser_loggedin = {{ raiser_logged_in | tojson }};
       const shortWallet = "{{ investor_wallet_address }}".slice(0, 6) + '...' + "{{ investor_wallet_address }}".slice(-4);
 	</script>
-	<script src="/static/script/connect.js"></script>
    <script src="/static/script/main.js"></script>
 	<script src="/static/script/nav-bar.js"></script>
 </html>

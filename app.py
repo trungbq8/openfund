@@ -769,9 +769,9 @@ def api_get_raiser_projects():
       total_pages = (total_count + per_page - 1) // per_page
       
       cur.execute("""
-         SELECT id, name, funding_status, fund_raised, investment_end_time
+         SELECT id, name, funding_status, fund_raised, investment_end_time, logo_url
          FROM project 
-         WHERE raiser_id = %s AND listing_status = 'accepted' AND hidden = FALSE"
+         WHERE raiser_id = %s AND listing_status = 'accepted' AND hidden = FALSE
          ORDER BY created_time DESC
          LIMIT %s OFFSET %s
       """, (raiser_id, per_page, offset))
@@ -783,7 +783,8 @@ def api_get_raiser_projects():
                "name": row[1],
                "funding_status": row[2],
                "fund_raised": row[3],
-               "investment_end_time": row[4]
+               "investment_end_time": row[4],
+               "logo_url": row[5]
          })
       
       cur.close()
@@ -814,9 +815,90 @@ def disconnect():
 def not_found(e=None):
     return render_template("404.html")
 
-@app.route("/project")
-def project():
-    return render_template("project.html")
+# ...existing code...
+
+@app.route("/project/<project_id>")
+def project(project_id):
+    nonce = secrets.token_hex(16)
+    session['nonce'] = nonce
+
+    if 'investor_wallet_address' in session:
+        investor_connected = True
+        investor_wallet_address = session.get('investor_wallet_address')
+    else:
+        investor_connected = False 
+        investor_wallet_address = ""
+
+    if 'raiser_id' in session:
+        raiser_logged_in = True
+        raiser_id = session.get('raiser_id')
+    else:
+        raiser_logged_in = False
+        raiser_id = ""
+
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT p.id, p.name, p.token_name, p.token_symbol, p.logo_url, p.investment_end_time, 
+            p.funding_status, p.total_token_supply, p.token_to_sell, p.token_price, p.token_address, 
+            p.fund_raised, p.token_sold, p.decimal, p.vote_for_refund, p.vote_for_refund_count, 
+            p.x_link, p.website_link, p.telegram_link, p.whitepaper_link, p.description, 
+            CONCAT(r.first_name, ' ', r.last_name) AS raiser_name, r.username
+            FROM project p
+            JOIN raiser r ON p.raiser_id = r.id
+            WHERE p.id = %s AND p.listing_status = 'accepted'
+        """, (project_id,))
+        
+        project = cur.fetchone()
+        if not project:
+            return redirect("/not-found")
+            
+        project_data = {
+            "id": project[0],
+            "name": project[1],
+            "token_name": project[2],
+            "token_symbol": project[3],
+            "logo_url": project[4],
+            "end_time": project[5],
+            "total_token_supply": project[7],
+            "funding_status": project[6],
+            "token_to_sell": project[8],
+            "token_price": float(project[9]),
+            "token_address": project[10],
+            "fund_raised": project[11],
+            "token_sold": project[12],
+            "description": project[20],
+            "decimal": project[13],
+            "vote_for_refund": project[14],
+            "vote_for_refund_count": project[15],
+            "x_link": project[16],
+            "website_link": project[17],
+            "telegram_link": project[18],
+            "whitepaper_link": project[19],
+            "raiser_name": project[21],
+            "raiser_username": project[22]
+        }
+
+        cur.close()
+        conn.close()
+
+        return render_template(
+            "project.html",
+            project=project_data,
+            nonce=nonce,
+            investor_connected=investor_connected,
+            investor_wallet_address=investor_wallet_address,
+            raiser_logged_in=raiser_logged_in,
+            raiser_id=raiser_id
+        )
+
+    except (psycopg2.Error, Exception) as e:
+        print(e)
+        return redirect("/not-found")
+
+# ...existing code...
 
 def validate_project_submit(token_decimal, project_name, project_end_time, project_x_link, project_website_link, project_telegram_link, project_whitepaper_link, token_name, symbol, token_logo_url, token_total_supply, token_amount_to_sell, token_price, token_contract_address, project_description):
    if not project_name or not project_end_time or not project_x_link or not project_website_link or not project_telegram_link or not project_whitepaper_link or not token_name or not symbol or not token_logo_url or not token_total_supply or not token_amount_to_sell or not token_price or not token_contract_address or not project_description:
@@ -937,6 +1019,14 @@ def edit_project(project_id_param):
             cur.close()
             conn.close()
             return redirect(url_for('not_found'))
+         
+         cur.execute("SELECT id FROM project WHERE id = %s AND raiser_id = %s", (project_id_param, session['raiser_id']))
+         project_data = cur.fetchone()
+         if not project_data:
+            cur.close()
+            conn.close()
+            return jsonify({"success": False, "message": "Not have permission"}), 500
+         
          if remove_project == True:
             conn = get_db_connection()
             cur = conn.cursor()
@@ -967,6 +1057,13 @@ def edit_project(project_id_param):
       try:
          conn = get_db_connection()
          cur = conn.cursor()
+         
+         cur.execute("SELECT id FROM project WHERE id = %s AND raiser_id = %s", (project_id_param, session['raiser_id']))
+         project_data = cur.fetchone()
+         if not project_data:
+            cur.close()
+            conn.close()
+            return redirect(url_for('not_found'))
          
          cur.execute("""
                SELECT name, logo_url, investment_end_time, token_name, token_symbol, total_token_supply, token_to_sell, token_price, token_address, decimal, x_link, website_link, telegram_link, whitepaper_link, description

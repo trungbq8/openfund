@@ -79,14 +79,26 @@ function uploadImage(file) {
       if (data.success) {
          document.execCommand('insertImage', false, data.file_url);
          
-         setTimeout(() => {
-            const images = editor.querySelectorAll('img');
-            const lastImage = images[images.length - 1];
-            if (lastImage) {
-               lastImage.style.width = '100%';
-               lastImage.style.height = 'auto';
+         const selection = window.getSelection();
+         if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            const imgNode = range.startContainer.previousSibling;
+            
+            if (imgNode && imgNode.nodeName === 'IMG') {
+               imgNode.style.width = '100%';
+               imgNode.style.height = 'auto';
+            } 
+            else {
+               const images = editor.querySelectorAll('img');
+               for (let i = images.length - 1; i >= 0; i--) {
+                  if (images[i].src === data.file_url) {
+                     images[i].style.width = '100%';
+                     images[i].style.height = 'auto';
+                     break;
+                  }
+               }
             }
-         }, 100);
+         }
          
          imageUploadStatus.textContent = 'Image uploaded successfully';
       } else {
