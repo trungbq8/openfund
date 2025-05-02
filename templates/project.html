@@ -838,62 +838,62 @@
 			}
 			
 			try {
-			loading_spinner.classList.remove("hidden");
-			overlay.classList.remove("hidden");
-			const projectId = {{ project.id }};
-			showToastMessage("Submitting vote for refund...", true);
-			const voteTx = await openFundContract.voteForRefund(projectId, {
-				gasLimit: 200000
-			});
-			
-			await voteTx.wait();
-			showToastMessage("Vote for refund submitted successfully", true);
-			loading_spinner.classList.add("hidden");
-   		overlay.classList.add("hidden");
-			setTimeout(() => {
-				location.reload();
-			}, 2000);
+				loading_spinner.classList.remove("hidden");
+				overlay.classList.remove("hidden");
+				const projectId = {{ project.id }};
+				showToastMessage("Submitting vote for refund...", true);
+				const voteTx = await openFundContract.voteForRefund(projectId, {
+					gasLimit: 200000
+				});
+				
+				await voteTx.wait();
+				showToastMessage("Vote for refund submitted successfully", true);
+				loading_spinner.classList.add("hidden");
+				overlay.classList.add("hidden");
+				setTimeout(() => {
+					location.reload();
+				}, 2000);
 			} catch (error) {
-			loading_spinner.classList.add("hidden");
-   		overlay.classList.add("hidden");
-			console.error("Vote error:", error);
-			showToastMessage("Vote failed: " + (error.reason || error.message), false);
-			setTimeout(() => {
-				location.reload();
-			}, 1000);
+				loading_spinner.classList.add("hidden");
+				overlay.classList.add("hidden");
+				console.error("Vote error:", error);
+				showToastMessage("Vote failed: " + (error.reason || error.message), false);
+				setTimeout(() => {
+					location.reload();
+				}, 1000);
 			}
 		}
 		
 		async function claimRefund() {
 			if (!signer || !openFundContract) {
-			showToastMessage("Please connect your wallet first", false);
-			return;
+				showToastMessage("Please connect your wallet first", false);
+				return;
 			}
 			
 			try {
 				loading_spinner.classList.remove("hidden");
-			overlay.classList.remove("hidden");
-			const projectId = {{ project.id }};
-			showToastMessage("Claiming refund...", true);
-			const claimTx = await openFundContract.getRefund(projectId, {
-				gasLimit: 300000
-			});
-			
-			await claimTx.wait();
-			showToastMessage("Refund claimed successfully", true);
-			loading_spinner.classList.add("hidden");
-			overlay.classList.add("hidden");
-			setTimeout(() => {
-				location.reload();
-			}, 2000);
+				overlay.classList.remove("hidden");
+				const projectId = {{ project.id }};
+				showToastMessage("Claiming refund...", true);
+				const claimTx = await openFundContract.getRefund(projectId, {
+					gasLimit: 300000
+				});
+				
+				await claimTx.wait();
+				showToastMessage("Refund claimed successfully", true);
+				loading_spinner.classList.add("hidden");
+				overlay.classList.add("hidden");
+				setTimeout(() => {
+					location.reload();
+				}, 2000);
 			} catch (error) {
-			loading_spinner.classList.add("hidden");
-			overlay.classList.add("hidden");
-			console.error("Refund claim error:", error);
-			showToastMessage("Refund claim failed: " + (error.reason || error.message), false);
-			setTimeout(() => {
-				location.reload();
-			}, 1000);
+				loading_spinner.classList.add("hidden");
+				overlay.classList.add("hidden");
+				console.error("Refund claim error:", error);
+				showToastMessage("Refund claim failed: " + (error.reason || error.message), false);
+				setTimeout(() => {
+					location.reload();
+				}, 1000);
 			}
 		}
 		document.getElementById('usdt-amount').addEventListener('input', function(e) {
