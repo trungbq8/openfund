@@ -773,61 +773,61 @@
 			
 			const usdtAmount = parseFloat(usdtAmountInput);
 			if (usdtAmount <= 0 || usdtAmount % 100 !== 0 || usdtAmount > 1000) {
-			showToastMessage("Amount must be a multiple of 100 USDT (max 1000 USDT)", false);
-			return;
-			}
-			
-			try {
-			const address = await signer.getAddress();
-			const balance = await usdtContract.balanceOf(address);
-			const balanceInUsdt = ethers.formatUnits(balance, contractConfig.usdtDecimal);
-			
-			if (parseFloat(balanceInUsdt) < usdtAmount) {
-				showToastMessage("Insufficient USDT balance", false);
+				showToastMessage("Amount must be a multiple of 100 USDT (max 1000 USDT)", false);
 				return;
 			}
 			
-			const units = usdtAmount / 100;
-			
-			const requiredAllowance = ethers.parseUnits(usdtAmount.toString(), contractConfig.usdtDecimal);
-			const allowance = await usdtContract.allowance(address, contractConfig.openFundAddress);
-			
-			if (allowance < requiredAllowance) {
+			try {
+				const address = await signer.getAddress();
+				const balance = await usdtContract.balanceOf(address);
+				const balanceInUsdt = ethers.formatUnits(balance, contractConfig.usdtDecimal);
+				
+				if (parseFloat(balanceInUsdt) < usdtAmount) {
+					showToastMessage("Insufficient USDT balance", false);
+					return;
+				}
+				
+				const units = usdtAmount / 100;
+				
+				const requiredAllowance = ethers.parseUnits(usdtAmount.toString(), contractConfig.usdtDecimal);
+				const allowance = await usdtContract.allowance(address, contractConfig.openFundAddress);
+				
+				if (allowance < requiredAllowance) {
+					loading_spinner.classList.remove("hidden");
+					overlay.classList.remove("hidden");
+					showToastMessage("Approving USDT...", true);
+					const approveTx = await usdtContract.approve(contractConfig.openFundAddress, requiredAllowance);
+					await approveTx.wait();
+					showToastMessage("USDT approved", true);
+					loading_spinner.classList.add("hidden");
+					overlay.classList.add("hidden");
+				}
 				loading_spinner.classList.remove("hidden");
-   			overlay.classList.remove("hidden");
-				showToastMessage("Approving USDT...", true);
-				const approveTx = await usdtContract.approve(contractConfig.openFundAddress, requiredAllowance);
-				await approveTx.wait();
-				showToastMessage("USDT approved", true);
+				overlay.classList.remove("hidden");
+				showToastMessage("Investing in project...", true);
+				const projectId = {{ project.id }};
+				const investTx = await openFundContract.invest(projectId, units, {
+					gasLimit: 300000
+				});
+				
+				showToastMessage("Transaction submitted, waiting for confirmation...", true);
+				await investTx.wait();
 				loading_spinner.classList.add("hidden");
-   			overlay.classList.add("hidden");
-			}
-			loading_spinner.classList.remove("hidden");
-   		overlay.classList.remove("hidden");
-			showToastMessage("Investing in project...", true);
-			const projectId = {{ project.id }};
-			const investTx = await openFundContract.invest(projectId, units, {
-				gasLimit: 300000
-			});
-			
-			showToastMessage("Transaction submitted, waiting for confirmation...", true);
-			await investTx.wait();
-			loading_spinner.classList.add("hidden");
-   		overlay.classList.add("hidden");
-			showToastMessage("Investment successful!", true);
-			
-			setTimeout(() => {
-				location.reload();
-			}, 2000);
+				overlay.classList.add("hidden");
+				showToastMessage("Investment successful!", true);
+				
+				setTimeout(() => {
+					location.reload();
+				}, 2000);
 			
 			} catch (error) {
-			loading_spinner.classList.add("hidden");
-   		overlay.classList.add("hidden");
-			console.error("Investment error:", error);
-			showToastMessage("Investment failed: " + (error.reason || error.message), false);
-			setTimeout(() => {
-				location.reload();
-			}, 1000);
+				loading_spinner.classList.add("hidden");
+				overlay.classList.add("hidden");
+				console.error("Investment error:", error);
+				showToastMessage("Investment failed: " + (error.reason || error.message), false);
+				setTimeout(() => {
+					location.reload();
+				}, 1000);
 			}
 		}
 		
