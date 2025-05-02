@@ -60,7 +60,7 @@ def upload_image():
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         file.save(file_path)
         
-        file_url = url_for('static', filename=f'uploads/{unique_filename}', _external=True)
+        file_url = url_for('static', filename=f'uploads/{unique_filename}', _external=True, _scheme='https')
         
         return jsonify({
             "success": True, 
@@ -815,8 +815,6 @@ def disconnect():
 def not_found(e=None):
     return render_template("404.html")
 
-# ...existing code...
-
 @app.route("/project/<project_id>")
 def project(project_id):
     nonce = secrets.token_hex(16)
@@ -854,7 +852,18 @@ def project(project_id):
         project = cur.fetchone()
         if not project:
             return redirect("/not-found")
-            
+        
+        cur.execute("SELECT COUNT(*) FROM project_like WHERE project_id = %s", (project_id,))
+        like_count = cur.fetchone()[0]
+        liked = False
+        if investor_connected:
+           cur.execute("SELECT id FROM investor WHERE wallet_address = %s", (session.get('investor_wallet_address'),))
+           investor = cur.fetchone()
+           investor_id = investor[0]
+           cur.execute("SELECT id FROM project_like WHERE project_id = %s AND investor_id = %s", 
+                    (project_id, investor_id))
+           liked = cur.fetchone()
+
         project_data = {
             "id": project[0],
             "name": project[1],
@@ -878,7 +887,9 @@ def project(project_id):
             "telegram_link": project[18],
             "whitepaper_link": project[19],
             "raiser_name": project[21],
-            "raiser_username": project[22]
+            "raiser_username": project[22],
+            "like_count": like_count,
+            "isLiked": bool(liked)
         }
 
         cur.close()
@@ -897,8 +908,6 @@ def project(project_id):
     except (psycopg2.Error, Exception) as e:
         print(e)
         return redirect("/not-found")
-
-# ...existing code...
 
 def validate_project_submit(token_decimal, project_name, project_end_time, project_x_link, project_website_link, project_telegram_link, project_whitepaper_link, token_name, symbol, token_logo_url, token_total_supply, token_amount_to_sell, token_price, token_contract_address, project_description):
    if not project_name or not project_end_time or not project_x_link or not project_website_link or not project_telegram_link or not project_whitepaper_link or not token_name or not symbol or not token_logo_url or not token_total_supply or not token_amount_to_sell or not token_price or not token_contract_address or not project_description:
@@ -1218,5 +1227,55 @@ def edit_profile():
          print(f"Database error: {e}")
          return redirect(url_for('home'))
       
+
+@app.route("/project-like-dislike", methods=["POST"])
+def toggle_like_project():
+    data = request.json
+    project_id = data.get("project_id")
+    if "investor_wallet_address" not in session:
+        return jsonify({"success": False, "message": "Investor not connected"}), 401
+
+    investor_wallet_address = session.get("investor_wallet_address")
+
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("SELECT id FROM project WHERE id = %s AND hidden = FALSE", (project_id,))
+        project = cur.fetchone()
+        if not project:
+            cur.close()
+            conn.close()
+            return jsonify({"success": False, "message": "Project not found"}), 404
+
+        cur.execute("SELECT id FROM investor WHERE wallet_address = %s", (investor_wallet_address,))
+        investor = cur.fetchone()
+        if not investor:
+            cur.close()
+            conn.close()
+            return jsonify({"success": False, "message": "Investor not found"}), 404
+
+        investor_id = investor[0]
+
+        cur.execute("SELECT id FROM project_like WHERE project_id = %s AND investor_id = %s", (project_id, investor_id))
+        like = cur.fetchone()
+
+        if like:
+            cur.execute("DELETE FROM project_like WHERE project_id = %s AND investor_id = %s", (project_id, investor_id))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return jsonify({"success": True, "message": "Project disliked successfully"}), 200
+        else:
+            cur.execute("INSERT INTO project_like (project_id, investor_id) VALUES (%s, %s)", (project_id, investor_id))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return jsonify({"success": True, "message": "Project liked successfully"}), 201
+
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return jsonify({"success": False, "message": "An error occurred"}), 500
+    
 if __name__ == "__main__":
    app.run(host="0.0.0.0", port=5555)

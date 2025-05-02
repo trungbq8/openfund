@@ -31,6 +31,7 @@ investor_disconnect_btn.addEventListener('click', async function() {
    } catch (e) {
       console.log(e);
    }
+   localStorage.removeItem('selectedWallet');
    window.location.href = '/disconnect';
 });
 investor_disconnect_btn_mobile.addEventListener('click', async function() {
@@ -46,6 +47,7 @@ investor_disconnect_btn_mobile.addEventListener('click', async function() {
    } catch (e) {
       console.log(e);
    }
+   localStorage.removeItem('selectedWallet');
    window.location.href = '/disconnect';
 });
 raiser_account_btn.addEventListener("click", function() {

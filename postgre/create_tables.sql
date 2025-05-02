@@ -24,12 +24,15 @@ CREATE TABLE investor (
     logo_url TEXT
 );
 
-CREATE TABLE investment (
+CREATE TABLE transaction (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_id INT NOT NULL,
     investor_address VARCHAR(255) NOT NULL,
-    amount INT NOT NULL,
-    token_received INT NOT NULL,
+    amount INT,
+    token_received INT,
+    transaction_time TIMESTAMP NOT NULL,
+    transaction_hash VARCHAR(255) NOT NULL,
+    type VARCHAR(20) CHECK (type IN ('investment', 'vote', 'get_refund')) DEFAULT 'investment',
     FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE,
     FOREIGN KEY (investor_address) REFERENCES investor(wallet_address) ON DELETE CASCADE,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP

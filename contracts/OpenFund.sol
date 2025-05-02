@@ -32,7 +32,7 @@ contract OpenFund is Ownable, ReentrancyGuard {
         mapping(address => bool) hasVoted;
         mapping(address => bool) refundClaimed;
         mapping(address => bool) rejectFundRelease;
-        uint256 voteForRefund;
+        uint256 voteForRefundAmount;
         uint256 investorsCount;
         uint256 votersForRefundCount;
         ProjectStatus status;
@@ -52,7 +52,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
     event InvestmentMade(uint256 indexed projectId, address indexed investor, uint256 amount, uint256 tokensToReceive);
     event VoteCast(uint256 indexed projectId, address indexed voter);
     event FundsClaimed(uint256 indexed projectId, uint256 amount);
-    event TokensClaimed(uint256 indexed projectId, address indexed investor, uint256 amount);
     event Refunded(uint256 indexed projectId, address indexed investor, uint256 amount);
     event UnsoldTokensClaimed(uint256 indexed projectId, uint256 amount);
     event PlatformFeeClaimed(uint256 indexed projectId, uint256 amount);
@@ -196,9 +195,9 @@ contract OpenFund is Ownable, ReentrancyGuard {
 
         project.hasVoted[msg.sender] = true;
 
-        project.voteForRefund += voterBalance / 10**project.decimal;
+        project.voteForRefundAmount += voterBalance / 10**project.decimal;
 
-        if (project.voteForRefund > project.tokensSold / 2) {
+        if (project.voteForRefundAmount > project.tokensSold / 2) {
             project.status = ProjectStatus.FundingFailed;
             emit ProjectFailed(_projectId);
         }
@@ -327,14 +326,10 @@ contract OpenFund is Ownable, ReentrancyGuard {
         ProjectStatus status,
         uint256 investorsCount,
         uint256 votersForRefundCount,
-        uint256 voterForRefundPercentage
+        uint256 voteForRefundAmount
     ) {
         Project storage project = projects[_projectId];
         
-        uint256 _voterForRefundPercentage = 0;
-        if (project.fundsRaised > 0) {
-            _voterForRefundPercentage = (project.voteForRefund * 100) / project.fundsRaised;
-        }
         return (
             project.raiser,
             project.tokenAddress,
@@ -346,7 +341,7 @@ contract OpenFund is Ownable, ReentrancyGuard {
             project.status,
             project.investorsCount,
             project.votersForRefundCount,
-            _voterForRefundPercentage
+            project.voteForRefundAmount
         );
     }
     

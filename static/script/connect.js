@@ -5,7 +5,7 @@ let signature;
 let message;
 // let nonce;
 // nonce = "{{ nonce }}";
-// const walletAddressInput =
+// const walletAddressInput = for non investor connecting
 // connect_wallet_btn = 
 const close_wallet_btn = document.getElementById("close-connect-wallet-btn");
 const connect_box = document.getElementById("connect-wallet-box");
@@ -81,36 +81,36 @@ async function signMessage(account, message, walletType) {
 
 async function addSwitchChain(walletType) {
    try {
-      let provider;
+      let wallet_provider;
       
       switch (walletType) {
             case 'metamask':
             case 'binance':
             case 'coinbase':
-               provider = window.ethereum;
+               wallet_provider = window.ethereum;
                break;
             case 'okx':
-               provider = window.okxwallet;
+               wallet_provider = window.okxwallet;
                break;
             case 'trust':
-               provider = window.trustwallet || window.ethereum;
+               wallet_provider = window.trustwallet || window.ethereum;
                break;
             default:
                throw new Error('Unsupported wallet type');
       }
       
-      if (!provider) {
+      if (!wallet_provider) {
             throw new Error(`${formatWalletName(walletType)} provider not found`);
       }
       
       try {
-            await provider.request({
+            await wallet_provider.request({
                method: 'wallet_switchEthereumChain',
                params: [{ chainId: '0xae3f3' }],
             });
             return true;
       } catch (switchError) {
-            await provider.request({
+            await wallet_provider.request({
                method: 'wallet_addEthereumChain',
                params: [{
                   chainId: '0xae3f3',
@@ -125,7 +125,7 @@ async function addSwitchChain(walletType) {
                }],
             });
             
-            await provider.request({
+            await wallet_provider.request({
                method: 'wallet_switchEthereumChain',
                params: [{ chainId: '0xae3f3' }],
             });
@@ -169,7 +169,7 @@ async function connectWallet(walletType) {
          case 'trust':
             const trustProvider = window.trustwallet || (window.ethereum && window.ethereum.isTrust ? window.ethereum : null);
             if (!trustProvider) {
-               showToastMessage('Trust Wallet is not installed. Please install Trust Wallet first.', false);
+               showToastMessage('Trust Walle App is not installed. Please install Trust Wallet App first.', false);
                return null;
             }
             accounts = await trustProvider.request({ method: 'eth_requestAccounts' });
@@ -208,7 +208,7 @@ document.querySelectorAll('.wallet_intergrated').forEach(button => {
    button.addEventListener('click', async function() {
       const walletType = this.getAttribute('data-wallet');
       selectedWallet = walletType;
-      
+      localStorage.setItem('selectedWallet', walletType);
       loading_spinner.classList.remove("hidden");
       
       try {
@@ -268,3 +268,56 @@ document.querySelectorAll('.wallet_intergrated').forEach(button => {
       }
    });
 });
+
+async function checkWalletConnectionOnLoad() {
+   if (investor_wallet_connected) {
+     try {
+       // Get the wallet provider that was used for connection
+       let provider;
+       let isConnected = false;
+       
+       if (localStorage.getItem('selectedWallet')) {
+         const storedWallet = localStorage.getItem('selectedWallet');
+         
+         switch (storedWallet) {
+           case 'metamask':
+           case 'binance':
+           case 'coinbase':
+             if (window.ethereum) {
+               provider = window.ethereum;
+               const accounts = await provider.request({ method: 'eth_accounts' });
+               isConnected = accounts && accounts.length > 0;
+             }
+             break;
+           case 'okx':
+             if (window.okxwallet) {
+               provider = window.okxwallet;
+               const accounts = await provider.request({ method: 'eth_accounts' });
+               isConnected = accounts && accounts.length > 0;
+             }
+             break;
+           case 'trust':
+             provider = window.trustwallet || (window.ethereum && window.ethereum.isTrust ? window.ethereum : null);
+             if (provider) {
+               const accounts = await provider.request({ method: 'eth_accounts' });
+               isConnected = accounts && accounts.length > 0;
+             }
+             break;
+         }
+       }
+       if (!isConnected) {
+         localStorage.removeItem('selectedWallet');
+         window.location.href = '/disconnect';
+       } else {
+         const event = new CustomEvent('walletConnectionVerified', { detail: { isConnected: true } });
+         window.dispatchEvent(event);
+       }
+     } catch (error) {
+       console.error('Error checking wallet connection:', error);
+       window.location.href = '/disconnect';
+     }
+   }
+ }
+ window.addEventListener('DOMContentLoaded', () => {
+   checkWalletConnectionOnLoad();
+ });

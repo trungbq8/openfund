@@ -10,7 +10,7 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-</head>
+	<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.0/dist/ethers.umd.min.js"></script></head>
 <body>
 	<div class="loading-spinner hidden" id="loading-spinner">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="40" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="100" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="160" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
@@ -244,14 +244,14 @@
 		}
 		
 		.invest-btn {
-			background-color: #000145;
-			color: white;
+			background-color: #d8d8d8;
+			color: #6c757d;
 			grid-column: span 2;
 			padding: 12px;
 			border: none;
 			border-radius: 8px;
 			font-weight: 600;
-			cursor: pointer;
+			cursor: not-allowed;
 		}
 		
 		.request-refund-btn, .claim-refund-btn {
@@ -261,7 +261,7 @@
 			padding: 12px;
 			border-radius: 8px;
 			font-weight: 600;
-			cursor: pointer;
+			cursor: not-allowed;
 		}
 		
 		.request-refund-btn:hover, .claim-refund-btn:hover {
@@ -389,11 +389,11 @@
 			<div class="project-header">
             <div class="project-name" id="project-name">{{ project.name }}</div>
             <div class="raiser-name" id="raiser-name">{{ project.raiser_name }}</div>
-            <div class="end-time" id="investment-end-time">Project End: {{ project.end_time }}</div>
+            <div class="end-time"><span id="end-time-text">Funding ends in: </span><span id="investment-end-time"></span></div>
         </div>
         <script>
+			let unixTimestamp = Number({{ project.end_time }});
 			function updateCountdown() {
-				 let unixTimestamp = Number({{ project.end_time }});
 				 const endDate = new Date(unixTimestamp * 1000);
 				 const now = new Date();
 				 
@@ -409,7 +409,8 @@
 							hour12: false
 					  };
 					  const formattedEndDate = endDate.toLocaleString(undefined, options);
-					  countdownElement.innerHTML = `<span class="ended-badge">Ended at ${formattedEndDate}</span>`;
+					  countdownElement.innerHTML = `Ended at <span class="ended-badge">${formattedEndDate}</span>`;
+					  document.getElementById("end-time-text").innerHTML = "";
 				 } else {
 					  const timeDiff = endDate - now;
 					  
@@ -418,7 +419,7 @@
 					  const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
 					  const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
 					  
-					  countdownElement.innerHTML = `Ends in: <span class="countdown-timer" style="color:red">${days}d ${hours}h ${minutes}m ${seconds}s</span>`;
+					  countdownElement.innerHTML = `<span class="countdown-timer" style="color:red">${days}d ${hours}h ${minutes}m ${seconds}s</span>`;
 				 }
 			}
 			
@@ -495,17 +496,82 @@
                 </div>
             </div>
             <div style="display: flex; flex-direction:column; align-items: start; width: 100%;">
-					<span style="font-size: 14px; margin-bottom: 5px;">Enter USDT amount</span>
-					<input id="usdt-amount" style="width: 100%; box-sizing: border-box;" placeholder="Muliple of 100, 1000 maximum for each investor"></input>
+					<span style="font-size: 14px; margin-bottom: 5px;">Enter USDT amount<span id="remaining-buy-amount-text"> (<span id="remaining-buy-amount">--</span> USDT remaining)</span></span>
+					<input id="usdt-amount" style="width: 100%; box-sizing: border-box;" placeholder="Must be muliples of 100 USDT" readonly></input>
 				</div>
-				<p style="margin: 5px 0; font-size: 14px; text-align: right;">You will receive <span id="token-to-receive">10,000</span> {{ project.token_symbol }}</p>
-            <div class="project-actions">
-                <button class="invest-btn">Invest Now</button>
-                <button class="request-refund-btn">Request Refund</button>
-                <button class="claim-refund-btn">Claim Refund</button>
+				<p style="margin: 5px 0 0 0; font-size: 14px; text-align: right;">Balance: <span id="usdt-balance">--</span> USDT</p>
+				<p style="margin: 0; font-size: 14px; text-align: right;">You will receive <span id="token-to-receive">--</span> {{ project.token_symbol }}</p>
+            <p id="connect-wallet-alert" style="margin: 0; font-size: 14px; text-align: center; color: red">Connect wallet to continue!</p>
+				<div class="project-actions">
+                <button class="invest-btn" disabled>Invest Now</button>
+                <button class="request-refund-btn" disabled>Request Refund</button>
+                <button class="claim-refund-btn" disabled>Claim Refund</button>
             </div>
         </div>
 		</div>
+		<div class="like-section" style="margin-top: 20px; width: 100%; max-width: 600px; display: flex; justify-content: center;">
+			<button id="like-button" class="like-btn">
+			  <i class="fa-regular fa-heart" id="like-icon"></i>
+			  <span id="like-count">0</span>
+			</button>
+		 </div>
+		 
+		 <style>
+			.like-btn {
+			  display: flex;
+			  align-items: center;
+			  justify-content: center;
+			  gap: 8px;
+			  background-color: white;
+			  border: 1px solid #dee2e6;
+			  color: #6c757d;
+			  padding: 10px 20px;
+			  border-radius: 20px;
+			  font-weight: 600;
+			  cursor: pointer;
+			  transition: all 0.2s ease;
+			}
+			
+			.like-btn:hover {
+			  background-color: #f8f9fa;
+			}
+			
+			.like-btn.liked {
+			  border-color: #d14646;
+			  color: #d14646;
+			}
+			
+			.like-btn.liked i {
+			  color: #d14646;
+			}
+			
+			.like-btn i {
+			  font-size: 18px;
+			  transition: transform 0.3s ease;
+			}
+			
+			.like-btn:hover i {
+			  transform: scale(1.2);
+			}
+			
+			.like-btn.liked i.fa-regular.fa-heart {
+			  display: none;
+			}
+			
+			.like-btn:not(.liked) i.fa-solid.fa-heart {
+			  display: none;
+			}
+			
+			@keyframes like-animation {
+			  0% { transform: scale(1); }
+			  50% { transform: scale(1.3); }
+			  100% { transform: scale(1); }
+			}
+			
+			.like-animation {
+			  animation: like-animation 0.5s ease;
+			}
+		 </style>
 	</div>
    <div class="footer">
 		<div class="app-info">
@@ -557,6 +623,375 @@
       const investor_wallet_connected = {{ investor_connected | tojson }};
       const raiser_loggedin = {{ raiser_logged_in | tojson }};
       const shortWallet = "{{ investor_wallet_address }}".slice(0, 6) + '...' + "{{ investor_wallet_address }}".slice(-4);
+		
+		const contractConfig = {
+			openFundAddress: "0x58deec306b5acd8ea559e4cfa49aefea22af0a7b",
+			usdtAddress: "0xDeC8197C9A95B603f65f147c1061A5aA3F3c4609",
+			projectId: {{ project.id }},
+			tokenContractAddress: "{{ project.token_address }}",
+			usdtDecimal: 6,
+			chainId: 5005,
+			rpcUrl: "https://evm-rpc-arctic-1.sei-apis.com"
+		};
+		
+		const openFundABI = [
+			"function invest(uint256 _projectId, uint256 _units) external",
+			"function voteForRefund(uint256 _projectId) external",
+			"function getRefund(uint256 _projectId) external",
+			"function getProjectDetails(uint256 _projectId) external view returns (address, address, uint256, uint256, uint256, uint256, uint256, uint8, uint256, uint256, uint256)",
+			"function getInvestmentDetails(uint256 _projectId, address _investor) external view returns (uint256, bool, bool, bool)"
+		];
+		
+		const erc20ABI = [
+			"function balanceOf(address owner) view returns (uint256)",
+			"function decimals() view returns (uint8)",
+			"function approve(address spender, uint256 amount) external returns (bool)",
+			"function allowance(address owner, address spender) view returns (uint256)"
+		];
+		
+		const readProvider = new ethers.JsonRpcProvider(contractConfig.rpcUrl);
+		const readOnlyUsdtContract = new ethers.Contract(contractConfig.usdtAddress, erc20ABI, readProvider);
+		
+		let provider, signer, usdtContract, openFundContract, projectTokenContract, projectDetails, investmentDetails, remainingInvestmentAmount;
+		let userAddress = "{{ investor_wallet_address }}";
+
+		async function setupWallet() {
+			const storedWallet = localStorage.getItem('selectedWallet');
+			addSwitchChain(storedWallet);
+			try{
+				switch (storedWallet) {
+				case 'metamask':
+				case 'binance':
+				case 'coinbase':
+					if (window.ethereum) {
+						provider = new ethers.BrowserProvider(window.ethereum);
+						signer = await provider.getSigner();
+					}
+					break;
+				case 'okx':
+					if (window.okxwallet) {
+						provider = new ethers.BrowserProvider(window.okxwallet);
+						signer = await provider.getSigner();
+					}
+					break;
+				case 'trust':
+					window_provider = window.trustwallet || (window.ethereum && window.ethereum.isTrust ? window.ethereum : null);
+					if (provider) {
+						provider = new ethers.BrowserProvider(window_provider);
+						signer = await provider.getSigner();
+					}
+					break;
+				}
+			
+				usdtContract = new ethers.Contract(contractConfig.usdtAddress, erc20ABI, signer);
+				openFundContract = new ethers.Contract(contractConfig.openFundAddress, openFundABI, signer);
+				projectTokenContract = new ethers.Contract(contractConfig.tokenContractAddress, erc20ABI, signer);
+				const user_token_balance = await projectTokenContract.balanceOf(userAddress);
+				projectDetails = await openFundContract.getProjectDetails(contractConfig.projectId);
+				investmentDetails = await openFundContract.getInvestmentDetails(contractConfig.projectId, userAddress);
+				if (projectDetails[7] == 1){
+					document.querySelector('.invest-btn').disabled = false;
+					document.querySelector('.invest-btn').style.cursor = 'pointer';
+					document.querySelector('.invest-btn').style.backgroundColor = '#000145';
+					document.querySelector('.invest-btn').style.color = 'white';
+					document.getElementById('usdt-amount').removeAttribute('readonly');
+				}
+				if (investmentDetails[3]){
+					document.querySelector('.request-refund-btn').textContent = 'Voted for Refund';
+				}
+				currentTimestamp = Math.floor(Date.now() / 1000);
+				if (projectDetails[7] == 2 && !investmentDetails[1] && user_token_balance > 0 && currentTimestamp < Number({{ project.end_time + 3*24*60*60 }})){
+					unixTimestamp = Number({{ project.end_time + 3*24*60*60 }});
+					document.querySelector('.request-refund-btn').disabled = false;
+					document.querySelector('.request-refund-btn').style.cursor = 'pointer';
+					document.querySelector('.request-refund-btn').style.borderColor = 'black';
+					document.querySelector('.request-refund-btn').style.color = 'black';
+					document.getElementById("end-time-text").innerHTML = "Voting ends in: ";
+				}
+				if (projectDetails[7] == 3){
+					document.getElementById("end-time-text").innerHTML = "Claim refund ends in: ";
+				}
+				if (projectDetails[7] == 3 && !investmentDetails[3] && user_token_balance > 0 && currentTimestamp < Number({{ project.end_time + 4*24*60*60 }})){
+					document.querySelector('.claim-refund-btn').disabled = false;
+					document.querySelector('.claim-refund-btn').style.cursor = 'pointer';
+					document.querySelector('.claim-refund-btn').style.borderColor = 'black';
+					document.querySelector('.claim-refund-btn').style.color = 'black';
+				}
+				if (investmentDetails[3]){
+					document.querySelector('.claim-refund-btn').textContent = 'Refund Claimed';
+				}
+				remainingInvestmentAmount = 1000 - Number(ethers.formatUnits(investmentDetails[0], contractConfig.usdtDecimal));
+				document.getElementById('remaining-buy-amount').textContent = remainingInvestmentAmount.toLocaleString();
+					await updateUSDTBalance();
+				} catch (error) {
+						console.error("Error setting up wallet:", error);
+				}
+		}
+		
+		async function updateUSDTBalance() {
+			try {
+				const balance = await readOnlyUsdtContract.balanceOf(userAddress);
+				const decimals = await readOnlyUsdtContract.decimals();
+				const formattedBalance = ethers.formatUnits(balance, decimals);
+				
+				document.getElementById('usdt-balance').textContent = parseFloat(formattedBalance).toLocaleString();
+			} catch (error) {
+				console.error("Error updating USDT balance:", error);
+			}
+		}
+		
+		window.addEventListener('walletConnectionVerified', (event) => {
+			if (event.detail.isConnected) {
+				document.getElementById('connect-wallet-alert').style.display = 'none';
+				setupWallet();
+				updateUSDTBalance();
+			}
+		});
+		
+		function calculateTokensToReceive() {
+			const usdtAmount = parseFloat(document.getElementById('usdt-amount').value) || 0;
+			const tokenPrice = {{ project.token_price }};
+			
+			if (usdtAmount && tokenPrice) {
+			const tokensToReceive = usdtAmount / tokenPrice;
+			document.getElementById('token-to-receive').textContent = tokensToReceive.toLocaleString();
+			} else {
+			document.getElementById('token-to-receive').textContent = '--';
+			}
+		}
+
+		async function investInProject() {
+			if (!signer || !openFundContract) {
+			showToastMessage("Please connect your wallet first", false);
+			return;
+			}
+			const usdtAmountInput = document.getElementById('usdt-amount').value;
+			if (!usdtAmountInput) {
+			showToastMessage("Please enter USDT amount", false);
+			return;
+			}
+			
+			const usdtAmount = parseFloat(usdtAmountInput);
+			if (usdtAmount <= 0 || usdtAmount % 100 !== 0 || usdtAmount > 1000) {
+			showToastMessage("Amount must be a multiple of 100 USDT (max 1000 USDT)", false);
+			return;
+			}
+			
+			try {
+			const address = await signer.getAddress();
+			const balance = await usdtContract.balanceOf(address);
+			const balanceInUsdt = ethers.formatUnits(balance, contractConfig.usdtDecimal);
+			
+			if (parseFloat(balanceInUsdt) < usdtAmount) {
+				showToastMessage("Insufficient USDT balance", false);
+				return;
+			}
+			
+			const units = usdtAmount / 100;
+			
+			const requiredAllowance = ethers.parseUnits(usdtAmount.toString(), contractConfig.usdtDecimal);
+			const allowance = await usdtContract.allowance(address, contractConfig.openFundAddress);
+			
+			if (allowance < requiredAllowance) {
+				loading_spinner.classList.remove("hidden");
+   			overlay.classList.remove("hidden");
+				showToastMessage("Approving USDT...", true);
+				const approveTx = await usdtContract.approve(contractConfig.openFundAddress, requiredAllowance);
+				await approveTx.wait();
+				showToastMessage("USDT approved", true);
+				loading_spinner.classList.add("hidden");
+   			overlay.classList.add("hidden");
+			}
+			loading_spinner.classList.remove("hidden");
+   		overlay.classList.remove("hidden");
+			showToastMessage("Investing in project...", true);
+			const projectId = {{ project.id }};
+			const investTx = await openFundContract.invest(projectId, units, {
+				gasLimit: 300000
+			});
+			
+			showToastMessage("Transaction submitted, waiting for confirmation...", true);
+			await investTx.wait();
+			loading_spinner.classList.add("hidden");
+   		overlay.classList.add("hidden");
+			showToastMessage("Investment successful!", true);
+			
+			setTimeout(() => {
+				location.reload();
+			}, 2000);
+			
+			} catch (error) {
+			loading_spinner.classList.add("hidden");
+   		overlay.classList.add("hidden");
+			console.error("Investment error:", error);
+			showToastMessage("Investment failed: " + (error.reason || error.message), false);
+			setTimeout(() => {
+				location.reload();
+			}, 1000);
+			}
+		}
+		
+		async function requestRefund() {
+			if (!signer || !openFundContract) {
+				showToastMessage("Please connect your wallet first", false);
+				return;
+			}
+			
+			try {
+			loading_spinner.classList.remove("hidden");
+			overlay.classList.remove("hidden");
+			const projectId = {{ project.id }};
+			showToastMessage("Submitting vote for refund...", true);
+			const voteTx = await openFundContract.voteForRefund(projectId, {
+				gasLimit: 200000
+			});
+			
+			await voteTx.wait();
+			showToastMessage("Vote for refund submitted successfully", true);
+			loading_spinner.classList.add("hidden");
+   		overlay.classList.add("hidden");
+			setTimeout(() => {
+				location.reload();
+			}, 2000);
+			} catch (error) {
+			loading_spinner.classList.add("hidden");
+   		overlay.classList.add("hidden");
+			console.error("Vote error:", error);
+			showToastMessage("Vote failed: " + (error.reason || error.message), false);
+			setTimeout(() => {
+				location.reload();
+			}, 1000);
+			}
+		}
+		
+		async function claimRefund() {
+			if (!signer || !openFundContract) {
+			showToastMessage("Please connect your wallet first", false);
+			return;
+			}
+			
+			try {
+				loading_spinner.classList.remove("hidden");
+			overlay.classList.remove("hidden");
+			const projectId = {{ project.id }};
+			showToastMessage("Claiming refund...", true);
+			const claimTx = await openFundContract.getRefund(projectId, {
+				gasLimit: 300000
+			});
+			
+			await claimTx.wait();
+			showToastMessage("Refund claimed successfully", true);
+			loading_spinner.classList.add("hidden");
+			overlay.classList.add("hidden");
+			setTimeout(() => {
+				location.reload();
+			}, 2000);
+			} catch (error) {
+			loading_spinner.classList.add("hidden");
+			overlay.classList.add("hidden");
+			console.error("Refund claim error:", error);
+			showToastMessage("Refund claim failed: " + (error.reason || error.message), false);
+			setTimeout(() => {
+				location.reload();
+			}, 1000);
+			}
+		}
+		document.getElementById('usdt-amount').addEventListener('input', function(e) {
+			this.value = this.value.replace(/[^0-9]/g, '');
+			
+			if (this.value) {
+				let numValue = parseInt(this.value);
+				
+				if (numValue > remainingInvestmentAmount) {
+						numValue = remainingInvestmentAmount;
+				}
+				
+				if (numValue >= 100) {
+						numValue = Math.round(numValue / 100) * 100;
+				}
+				
+				this.value = numValue || '';
+			}
+			
+			calculateTokensToReceive();
+		});
+
+		document.getElementById('usdt-amount').addEventListener('keypress', function(e) {
+			if (!/^\d$/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+				e.preventDefault();
+			}
+		});
+		
+   	document.querySelector('.invest-btn').addEventListener('click', investInProject);
+		document.querySelector('.request-refund-btn').addEventListener('click', requestRefund);
+   	document.querySelector('.claim-refund-btn').addEventListener('click', claimRefund);
+
+		//Like-Dislike
+		const likeButton = document.getElementById("like-button");
+		const likeIcon = document.getElementById("like-icon");
+		const likeCount = document.getElementById("like-count");
+		
+		const projectId = getProjectIdFromUrl();
+		let isLiked = false;
+		
+		function getProjectIdFromUrl() {
+			const urlParts = window.location.pathname.split('/');
+			return urlParts[urlParts.indexOf('project') + 1];
+		}
+
+		if ({{ project.isLiked | tojson }}) {
+        likeButton.classList.add('liked');
+        likeIcon.classList.remove('fa-regular');
+        likeIcon.classList.add('fa-solid');
+        isLiked = true;
+      }
+		likeCount.textContent = {{ project.like_count }} || 0;
+
+		likeButton.addEventListener('click', function() {
+			if (!investor_wallet_connected) {
+				showToastMessage("Connect your wallet to like projects", false);
+				return;
+			}
+    
+			fetch('/project-like-dislike', {
+				method: 'POST',
+				headers: {
+				'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+				project_id: projectId
+				})
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					isLiked = !isLiked;
+					
+					if (isLiked) {
+						likeButton.classList.add('liked');
+						likeIcon.classList.remove('fa-regular');
+						likeIcon.classList.add('fa-solid');
+						likeIcon.classList.add('like-animation');
+						likeCount.textContent = (parseInt(likeCount.textContent) + 1);
+					} else {
+						likeButton.classList.remove('liked');
+						likeIcon.classList.remove('fa-solid');
+						likeIcon.classList.add('fa-regular');
+						likeCount.textContent = (parseInt(likeCount.textContent) - 1);
+					}
+				
+					setTimeout(() => {
+						likeIcon.classList.remove('like-animation');
+					}, 500);
+				} else {
+					showToastMessage("An error occurred. Please try again.", false);
+				}
+			})
+			.catch(error => {
+				console.error('Error toggling like:', error);
+				showToastMessage("An error occurred. Please try again.", false);
+			});
+		});
 	</script>
 	<script src="/static/script/nav-bar.js"></script>
 </html>
