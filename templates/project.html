@@ -762,8 +762,8 @@
 
 		async function investInProject() {
 			if (!signer || !openFundContract) {
-			showToastMessage("Please connect your wallet first", false);
-			return;
+				showToastMessage("Please connect your wallet first", false);
+				return;
 			}
 			const usdtAmountInput = document.getElementById('usdt-amount').value;
 			if (!usdtAmountInput) {
