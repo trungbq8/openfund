@@ -272,7 +272,6 @@ document.querySelectorAll('.wallet_intergrated').forEach(button => {
 async function checkWalletConnectionOnLoad() {
    if (investor_wallet_connected) {
      try {
-       // Get the wallet provider that was used for connection
        let provider;
        let isConnected = false;
        
@@ -299,7 +298,8 @@ async function checkWalletConnectionOnLoad() {
            case 'trust':
              provider = window.trustwallet || (window.ethereum && window.ethereum.isTrust ? window.ethereum : null);
              if (provider) {
-               const accounts = await provider.request({ method: 'eth_accounts' });
+               const accounts = await provider.request({ method: 'eth_requestAccounts' });
+               //const accounts = await provider.request({ method: 'eth_accounts' });
                isConnected = accounts && accounts.length > 0;
              }
              break;

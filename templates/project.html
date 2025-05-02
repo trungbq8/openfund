@@ -676,7 +676,7 @@
 					break;
 				case 'trust':
 					window_provider = window.trustwallet || (window.ethereum && window.ethereum.isTrust ? window.ethereum : null);
-					if (provider) {
+					if (window_provider) {
 						provider = new ethers.BrowserProvider(window_provider);
 						signer = await provider.getSigner();
 					}
