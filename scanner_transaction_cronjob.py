@@ -118,10 +118,10 @@ def process_investment_made_event(web3, event):
         
         cur = conn.cursor()
         
-        cur.execute("SELECT id FROM investor WHERE wallet_address = %s", (investor_address,))
+        cur.execute("SELECT id FROM investor WHERE wallet_address = %s", (investor_address.lower(),))
         result = cur.fetchone()
         if not result:
-            cur.execute("INSERT INTO investor(wallet_address) VALUES (%s)", (investor_address,))
+            cur.execute("INSERT INTO investor(wallet_address) VALUES (%s)", (investor_address.lower(),))
             conn.commit()
         
         cur.execute(
@@ -129,7 +129,7 @@ def process_investment_made_event(web3, event):
             INSERT INTO transaction(project_id, investor_address, amount, token_received, transaction_time, transaction_hash, type)
             VALUES (%s, %s, %s, %s, %s, %s, 'investment')
             """,
-            (project_id, investor_address, amount_decimal, tokens_received, transaction_time, transaction_hash)
+            (project_id, investor_address.lower(), amount_decimal, tokens_received, transaction_time, transaction_hash)
         )
         
         conn.commit()
@@ -163,10 +163,10 @@ def process_vote_cast_event(web3, event):
         
         cur = conn.cursor()
         
-        cur.execute("SELECT id FROM investor WHERE wallet_address = %s", (voter_address,))
+        cur.execute("SELECT id FROM investor WHERE wallet_address = %s", (voter_address.lower(),))
         result = cur.fetchone()
         if not result:
-            cur.execute("INSERT INTO investor(wallet_address) VALUES (%s)", (voter_address,))
+            cur.execute("INSERT INTO investor(wallet_address) VALUES (%s)", (voter_address.lower(),))
             conn.commit()
         
         cur.execute(
@@ -174,7 +174,7 @@ def process_vote_cast_event(web3, event):
             INSERT INTO transaction(project_id, investor_address, transaction_time, transaction_hash, type)
             VALUES (%s, %s, %s, %s, 'vote')
             """,
-            (project_id, voter_address, transaction_time, transaction_hash)
+            (project_id, voter_address.lower(), transaction_time, transaction_hash)
         )
         
         conn.commit()
@@ -211,10 +211,10 @@ def process_refund_event(web3, event):
         
         cur = conn.cursor()
         
-        cur.execute("SELECT id FROM investor WHERE wallet_address = %s", (investor_address,))
+        cur.execute("SELECT id FROM investor WHERE wallet_address = %s", (investor_address.lower(),))
         result = cur.fetchone()
         if not result:
-            cur.execute("INSERT INTO investor(wallet_address) VALUES (%s)", (investor_address,))
+            cur.execute("INSERT INTO investor(wallet_address) VALUES (%s)", (investor_address.lower(),))
             conn.commit()
         
         cur.execute(
@@ -222,7 +222,7 @@ def process_refund_event(web3, event):
             INSERT INTO transaction(project_id, investor_address, amount, transaction_time, transaction_hash, type)
             VALUES (%s, %s, %s, %s, %s, 'get_refund')
             """,
-            (project_id, investor_address, amount_decimal, transaction_time, transaction_hash)
+            (project_id, investor_address.lower(), amount_decimal, transaction_time, transaction_hash)
         )
         
         conn.commit()
