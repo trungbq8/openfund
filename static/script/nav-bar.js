@@ -28,6 +28,14 @@ investor_disconnect_btn.addEventListener('click', async function() {
             },
          ],
       });
+      await window.ethereum.request({
+         method: 'wallet_disconnect',
+         params: [
+            {
+               eth_accounts: {},
+            },
+         ],
+      });
    } catch (e) {
       console.log(e);
    }
@@ -38,6 +46,14 @@ investor_disconnect_btn_mobile.addEventListener('click', async function() {
    try {
       await window.ethereum.request({
          method: 'wallet_revokePermissions',
+         params: [
+            {
+               eth_accounts: {},
+            },
+         ],
+      });
+      await window.ethereum.request({
+         method: 'wallet_disconnect',
          params: [
             {
                eth_accounts: {},

@@ -61,8 +61,6 @@ CREATE TABLE project (
     fund_claimed BOOLEAN DEFAULT FALSE,
     platform_fee_claimed BOOLEAN DEFAULT FALSE,
     vote_for_refund bigint NOT NULL,
-    vote_for_refund_count INT NOT NULL,
-    investors_count INT NOT NULL,
     x_link VARCHAR(100),
     website_link VARCHAR(100),
     telegram_link VARCHAR(100),

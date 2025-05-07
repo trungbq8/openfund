@@ -27,14 +27,12 @@ contract OpenFund is Ownable, ReentrancyGuard {
         uint256 tokensSold;
         uint8 decimal;
         bool fundsClaimed;
+        bool unsoldTokensClaimed;
         bool platformFeeClaimed;
         mapping(address => uint256) investments;
         mapping(address => bool) hasVoted;
         mapping(address => bool) refundClaimed;
-        mapping(address => bool) rejectFundRelease;
         uint256 voteForRefundAmount;
-        uint256 investorsCount;
-        uint256 votersForRefundCount;
         ProjectStatus status;
     }
     
@@ -43,8 +41,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
     
     // Project storage
     mapping(uint256 => Project) private projects;
-
-    mapping(address => uint256[]) private investorProjects;
     
     // Events
     event ProjectCreated(uint256 indexed projectId, address indexed raiser, uint256 tokensToSell, uint256 tokenPrice, uint256 endFundingTime);
@@ -79,7 +75,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
         uint256 _endFundingTime,
         uint8 _decimal
     ) external onlyOwner {
-        
         require(_endFundingTime > block.timestamp, "End time must be in the future");
         require(_tokensToSell > 0, "Tokens to sell must be greater than 0");
         require(_raiser != address(0), "Invalid raiser address");
@@ -156,11 +151,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
             "Investing: USDT transfer failed"
         );
         
-        if (project.investments[msg.sender] == 0) {
-            project.investorsCount++;
-            investorProjects[msg.sender].push(_projectId);
-        }
-        
         IERC20 projectToken = IERC20(project.tokenAddress);
         require(
             projectToken.transfer(msg.sender, tokensToReceive *10**project.decimal),
@@ -201,8 +191,7 @@ contract OpenFund is Ownable, ReentrancyGuard {
             project.status = ProjectStatus.FundingFailed;
             emit ProjectFailed(_projectId);
         }
-        project.rejectFundRelease[msg.sender] == true;
-        project.votersForRefundCount++;
+        
         emit VoteCast(_projectId, msg.sender);
     }
     
@@ -217,8 +206,16 @@ contract OpenFund is Ownable, ReentrancyGuard {
         require(block.timestamp >= project.endRefundTime, "It is not time to claim fund");
         require(!project.fundsClaimed, "Funds already claimed");
         
-        uint256 platformFee = (project.fundsRaised * PLATFORM_FEE_PERCENT) / 100;
-        uint256 raiserAmount = project.fundsRaised - platformFee;
+        uint256 raiserAmount;
+    
+        if (project.status == ProjectStatus.FundingFailed) {
+            raiserAmount = project.fundsRaised;
+        } else {
+            uint256 platformFee = (project.fundsRaised * PLATFORM_FEE_PERCENT) / 100;
+            raiserAmount = project.fundsRaised - platformFee;
+            
+            project.status = ProjectStatus.FundingCompleted;
+        }
         
         require(
             usdtToken.transfer(project.raiser, raiserAmount),
@@ -226,10 +223,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
         );
         
         project.fundsClaimed = true;
-
-        if (project.status != ProjectStatus.FundingFailed){
-            project.status = ProjectStatus.FundingCompleted;
-        }
 
         emit FundsClaimed(_projectId, raiserAmount);
     }
@@ -267,6 +260,7 @@ contract OpenFund is Ownable, ReentrancyGuard {
         
         emit Refunded(_projectId, msg.sender, refundAmount);
     }
+
     /**
      * @dev Raiser claims unsold tokens
      * @param _projectId ID of the project
@@ -280,15 +274,19 @@ contract OpenFund is Ownable, ReentrancyGuard {
         uint256 unsoldTokens = project.tokensToSell - project.tokensSold;
         require(unsoldTokens > 0, "No unsold tokens");
         
-        // Transfer unsold tokens back to raiser
+        require(!project.unsoldTokensClaimed, "Unsold tokens already claimed");
+        
         IERC20 projectToken = IERC20(project.tokenAddress);
         require(
             projectToken.transfer(project.raiser, unsoldTokens * 10**project.decimal),
             "Token transfer failed"
         );
-        
+
+        project.unsoldTokensClaimed = true;
+
         emit UnsoldTokensClaimed(_projectId, unsoldTokens);
     }
+
     /**
      * @dev Platform claims fee
      * @param _projectId ID of the project
@@ -311,6 +309,7 @@ contract OpenFund is Ownable, ReentrancyGuard {
         
         emit PlatformFeeClaimed(_projectId, platformFee);
     }
+
     /**
     * @dev Get project details
     * @param _projectId ID of the project
@@ -324,9 +323,9 @@ contract OpenFund is Ownable, ReentrancyGuard {
         uint256 endFundingTime,
         uint256 fundsRaised,
         ProjectStatus status,
-        uint256 investorsCount,
-        uint256 votersForRefundCount,
-        uint256 voteForRefundAmount
+        bool unsoldTokensClaimed,
+        uint256 voteForRefundAmount,
+        bool fundsClaimed
     ) {
         Project storage project = projects[_projectId];
         
@@ -339,9 +338,9 @@ contract OpenFund is Ownable, ReentrancyGuard {
             project.endFundingTime,
             project.fundsRaised,
             project.status,
-            project.investorsCount,
-            project.votersForRefundCount,
-            project.voteForRefundAmount
+            project.unsoldTokensClaimed,
+            project.voteForRefundAmount,
+            project.fundsClaimed
         );
     }
     
@@ -353,7 +352,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
     function getInvestmentDetails(uint256 _projectId, address _investor) external view returns (
         uint256 investmentAmount,
         bool hasVoted,
-        bool rejectFundRelease,
         bool hasClaimedRefund
     ) {
         Project storage project = projects[_projectId];
@@ -361,16 +359,7 @@ contract OpenFund is Ownable, ReentrancyGuard {
         return (
             project.investments[_investor],
             project.hasVoted[_investor],
-            project.rejectFundRelease[_investor],
             project.refundClaimed[_investor]
         );
-    }
-    
-    /**
-     * @dev Get all projected invested of an investor
-     * @param _investor Address of investor
-     */
-    function getInvestorProjects(address _investor) external view returns (uint256[] memory) {
-        return investorProjects[_investor];
     }
 }

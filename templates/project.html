@@ -624,7 +624,7 @@
       const shortWallet = "{{ investor_wallet_address }}".slice(0, 6) + '...' + "{{ investor_wallet_address }}".slice(-4);
 		
 		const contractConfig = {
-			openFundAddress: "0x58deec306b5acd8ea559e4cfa49aefea22af0a7b",
+			openFundAddress: "0x6b2b43b3b162c2a7aea56c8422fd34a94847f2c0",
 			usdtAddress: "0xDeC8197C9A95B603f65f147c1061A5aA3F3c4609",
 			projectId: {{ project.id }},
 			tokenContractAddress: "{{ project.token_address }}",
@@ -636,8 +636,8 @@
 			"function invest(uint256 _projectId, uint256 _units) external",
 			"function voteForRefund(uint256 _projectId) external",
 			"function getRefund(uint256 _projectId) external",
-			"function getProjectDetails(uint256 _projectId) external view returns (address, address, uint256, uint256, uint256, uint256, uint256, uint8, uint256, uint256, uint256)",
-			"function getInvestmentDetails(uint256 _projectId, address _investor) external view returns (uint256, bool, bool, bool)"
+			"function getProjectDetails(uint256 _projectId) external view returns (address, address, uint256, uint256, uint256, uint256, uint256, uint8, bool, uint256, bool)",
+			"function getInvestmentDetails(uint256 _projectId, address _investor) external view returns (uint256, bool, bool)"
 		];
 		
 		const erc20ABI = [
@@ -694,7 +694,7 @@
 					document.querySelector('.invest-btn').style.color = 'white';
 					document.getElementById('usdt-amount').removeAttribute('readonly');
 				}
-				if (investmentDetails[3]){
+				if (investmentDetails[1]){
 					document.querySelector('.request-refund-btn').textContent = 'Voted for Refund';
 				}
 				currentTimestamp = Math.floor(Date.now() / 1000);
@@ -709,13 +709,13 @@
 				if (projectDetails[7] == 3){
 					document.getElementById("end-time-text").innerHTML = "Claim refund ends in: ";
 				}
-				if (projectDetails[7] == 3 && !investmentDetails[3] && user_token_balance > 0 && currentTimestamp < Number({{ project.end_time + 4*24*60*60 }})){
+				if (projectDetails[7] == 3 && !investmentDetails[2] && user_token_balance > 0 && currentTimestamp < Number({{ project.end_time + 4*24*60*60 }})){
 					document.querySelector('.claim-refund-btn').disabled = false;
 					document.querySelector('.claim-refund-btn').style.cursor = 'pointer';
 					document.querySelector('.claim-refund-btn').style.borderColor = 'black';
 					document.querySelector('.claim-refund-btn').style.color = 'black';
 				}
-				if (investmentDetails[3]){
+				if (investmentDetails[2]){
 					document.querySelector('.claim-refund-btn').textContent = 'Refund Claimed';
 				}
 				remainingInvestmentAmount = 1000 - Number(ethers.formatUnits(investmentDetails[0], contractConfig.usdtDecimal));

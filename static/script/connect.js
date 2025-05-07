@@ -270,7 +270,7 @@ document.querySelectorAll('.wallet_intergrated').forEach(button => {
 });
 
 async function checkWalletConnectionOnLoad() {
-   if (investor_wallet_connected) {
+   if (isInvstorConnecting && investor_wallet_connected) {
      try {
        let provider;
        let isConnected = false;

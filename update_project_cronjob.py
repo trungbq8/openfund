@@ -20,7 +20,7 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 RPC_URL = "https://evm-rpc-arctic-1.sei-apis.com"
-CONTRACT_ADDRESS = Web3.to_checksum_address("0x58deec306b5acd8ea559e4cfa49aefea22af0a7b")
+CONTRACT_ADDRESS = Web3.to_checksum_address("0x6b2b43b3b162c2a7aea56c8422fd34a94847f2c0")
 
 CONTRACT_ABI = [
     {
@@ -35,9 +35,9 @@ CONTRACT_ABI = [
             {"internalType": "uint256", "name": "endFundingTime", "type": "uint256"},
             {"internalType": "uint256", "name": "fundsRaised", "type": "uint256"},
             {"internalType": "enum OpenFund.ProjectStatus", "name": "status", "type": "uint8"},
-            {"internalType": "uint256", "name": "investorsCount", "type": "uint256"},
-            {"internalType": "uint256", "name": "votersForRefundCount", "type": "uint256"},
-            {"internalType": "uint256", "name": "voteForRefund", "type": "uint256"}
+            {"internalType": "bool", "name": "unsoldTokensClaimed", "type": "bool"},
+            {"internalType": "uint256", "name": "voteForRefundAmount", "type": "uint256"},
+            {"internalType": "bool", "name": "fundsClaimed", "type": "bool"}
         ],
         "stateMutability": "view",
         "type": "function"
@@ -75,7 +75,7 @@ def get_active_projects():
         cur.execute("""
             SELECT id, funding_status 
             FROM project 
-            WHERE funding_status IN ('raising', 'voting') 
+            WHERE funding_status IN ('raising', 'voting', 'created') 
             AND listing_status = 'accepted'
         """)
         
@@ -90,16 +90,16 @@ def get_active_projects():
     
     return projects
 
-
 def get_contract_project_details(web3, contract, project_id):
     """Query the blockchain for project details"""
     try:
         return contract.functions.getProjectDetails(project_id).call()
     except Exception as e:
+        print(f"Error fetching project details from contract: {e}")
         return None
 
 
-def update_project_in_database(project_id, tokens_sold, funds_raised, status, vote_for_refund, voters_count):
+def update_project_in_database(project_id, tokens_sold, funds_raised, status, vote_for_refund, funds_claimed):
     """Update project information in the database"""
     try:
         conn = get_db_connection()
@@ -111,6 +111,8 @@ def update_project_in_database(project_id, tokens_sold, funds_raised, status, vo
         db_status = 'raising'
         if status == ProjectStatus.VotingPeriod:
             db_status = 'voting'
+        elif status == ProjectStatus.InitialCreated:
+            db_status = 'created'
         elif status == ProjectStatus.FundingFailed:
             db_status = 'failed'
         elif status == ProjectStatus.FundingCompleted:
@@ -122,16 +124,16 @@ def update_project_in_database(project_id, tokens_sold, funds_raised, status, vo
                 fund_raised = %s, 
                 funding_status = %s,
                 vote_for_refund = %s,
-                vote_for_refund_count = %s
+                fund_claimed = %s
             WHERE id = %s
-        """, (tokens_sold, funds_raised, db_status, vote_for_refund, voters_count, project_id))
-        
+        """, (tokens_sold, funds_raised, db_status, vote_for_refund, funds_claimed, project_id))
+        print(f"Project {project_id} updated successfully")
         conn.commit()
         cur.close()
         conn.close()
         return True
-        
     except psycopg2.Error as e:
+        print(f"Database update error: {e}")
         if conn:
             conn.close()
         return False
@@ -158,21 +160,21 @@ def main_loop():
                 project_details = get_contract_project_details(web3, contract, project_id)
                 
                 if project_details:
-                    _, _, _, tokens_sold, _, _, funds_raised, status, _, voters_count, vote_for_refund = project_details
+                    _, _, _, tokens_sold, _, _, funds_raised, status, _, vote_for_refund, funds_claimed = project_details
                     update_project_in_database(
                         project_id=project_id,
                         tokens_sold=tokens_sold,
                         funds_raised=funds_raised / 10**6,
                         status=status,
                         vote_for_refund=vote_for_refund,
-                        voters_count=voters_count
+                        funds_claimed=funds_claimed
                     )
             
             time.sleep(UPDATE_INTERVAL)
             
         except Exception as e:
             print(f"Error in main loop: {e}")
-            time.sleep(60)
+            time.sleep(10)
 
 if __name__ == "__main__":
     main_loop()

@@ -841,7 +841,7 @@ def project(project_id):
         cur.execute("""
             SELECT p.id, p.name, p.token_name, p.token_symbol, p.logo_url, p.investment_end_time, 
             p.funding_status, p.total_token_supply, p.token_to_sell, p.token_price, p.token_address, 
-            p.fund_raised, p.token_sold, p.decimal, p.vote_for_refund, p.vote_for_refund_count, 
+            p.fund_raised, p.token_sold, p.decimal, p.vote_for_refund, 
             p.x_link, p.website_link, p.telegram_link, p.whitepaper_link, p.description, 
             CONCAT(r.first_name, ' ', r.last_name) AS raiser_name, r.username
             FROM project p
@@ -878,16 +878,15 @@ def project(project_id):
             "token_address": project[10],
             "fund_raised": project[11],
             "token_sold": project[12],
-            "description": project[20],
+            "description": project[19],
             "decimal": project[13],
             "vote_for_refund": project[14],
-            "vote_for_refund_count": project[15],
-            "x_link": project[16],
-            "website_link": project[17],
-            "telegram_link": project[18],
-            "whitepaper_link": project[19],
-            "raiser_name": project[21],
-            "raiser_username": project[22],
+            "x_link": project[15],
+            "website_link": project[16],
+            "telegram_link": project[17],
+            "whitepaper_link": project[18],
+            "raiser_name": project[20],
+            "raiser_username": project[21],
             "like_count": like_count,
             "isLiked": bool(liked)
         }
@@ -1111,7 +1110,61 @@ def edit_project(project_id_param):
       except psycopg2.Error as e:
          print(f"Database error: {e}")
          return redirect(url_for('home'))
+
+@app.route("/funding-management/<project_id_param>")
+def funding_management(project_id_param):
+   if 'raiser_id' not in session:
+      return redirect(url_for('login'))
+   if not project_id_param:
+      return redirect(url_for('home'))
+   try:
+      conn = get_db_connection()
+      cur = conn.cursor()
       
+      cur.execute("SELECT id FROM project WHERE id = %s AND raiser_id = %s", (project_id_param, session['raiser_id']))
+      project_data = cur.fetchone()
+      if not project_data:
+         cur.close()
+         conn.close()
+         return redirect(url_for('not_found'))
+      
+      cur.execute("""
+            SELECT name, investment_end_time, token_name, logo_url, token_symbol, decimal, token_sold, listing_status, funding_status, token_to_sell, funding_address, fund_raised, token_address
+            FROM project WHERE id = %s
+      """, (project_id_param,))
+      
+      project_data = cur.fetchone()
+      cur.close()
+      conn.close()
+      
+      if not project_data:
+         return redirect(url_for('not_found'))
+      
+      name, investment_end_time, token_name, logo_url, token_symbol, decimal, token_sold, listing_status, funding_status, token_to_sell, funding_address, fund_raised, token_address = project_data
+      
+      return render_template(
+            "funding-management.html",
+            project_data={
+               "name": name, 
+               "investment_end_time": investment_end_time,
+               "token_name": token_name,
+               "logo_url": logo_url,
+               "token_symbol": token_symbol,
+               "decimal": decimal,
+               "token_sold": token_sold,
+               "listing_status": listing_status,
+               "funding_status": funding_status,
+               "token_to_sell": token_to_sell,
+               "funding_address": funding_address,
+               "fund_raised": fund_raised,
+               "token_address": token_address,
+               "id": project_id_param
+            }
+      )
+   except psycopg2.Error as e:
+      print(f"Database error: {e}")
+      return redirect(url_for('home'))
+
 @app.route("/submitted-project")
 def submitted_project():
    if 'raiser_id' not in session:
@@ -1272,7 +1325,6 @@ def toggle_like_project():
             cur.close()
             conn.close()
             return jsonify({"success": True, "message": "Project liked successfully"}), 201
-
     except psycopg2.Error as e:
         print(f"Database error: {e}")
         return jsonify({"success": False, "message": "An error occurred"}), 500

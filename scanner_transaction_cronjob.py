@@ -14,7 +14,7 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 RPC_URL = "https://evm-rpc-arctic-1.sei-apis.com"
-CONTRACT_ADDRESS = Web3.to_checksum_address("0x58deec306b5acd8ea559e4cfa49aefea22af0a7b")
+CONTRACT_ADDRESS = Web3.to_checksum_address("0x6b2b43b3b162c2a7aea56c8422fd34a94847f2c0")
 BLOCK_FILE = "last_processed_block.json"
 POLL_INTERVAL = 0.5
 

@@ -221,13 +221,16 @@
                `<div class="button-container" style="display: flex; align-items: center; justify-content: center; margin-top: 10px;">
                <button class="edit-btn" onclick="window.location.href='/edit-project/${project.id}'">
                   Edit project <i class="fa-solid fa-pen-to-square"></i>
-               </button>` : ''}
+               </button></div>` : ''}
                   ${project.listing_status === 'accepted' ? 
                      `<div class="button-container" style="display: flex; align-items: center; justify-content: center; margin-top: 10px;">
                         <button class="view-btn" onclick="window.location.href='/project/${project.id}'">
                         View on Funding page <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                     </button>` : ''}
-               </div>
+                     </button></div>
+                     <div class="button-container" style="display: flex; align-items: center; justify-content: center; margin-top: 5px;">
+                        <button class="view-btn" onclick="window.location.href='/funding-management/${project.id}'">
+                        Funding Management <i class="fa-solid fa-coins"></i>
+                     </button></div>` : ''}
             </div>
          `;
          return projectDiv;
