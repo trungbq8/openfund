@@ -1328,6 +1328,72 @@ def toggle_like_project():
     except psycopg2.Error as e:
         print(f"Database error: {e}")
         return jsonify({"success": False, "message": "An error occurred"}), 500
+
+@app.route("/api/transactions")
+def get_transactions():
+    if 'investor_wallet_address' not in session:
+        return jsonify({"success": False, "message": "Investor not connected"}), 401
+
+    investor_wallet_address = session.get('investor_wallet_address')
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 5, type=int)
+    offset = (page - 1) * per_page
+
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT COUNT(*) 
+            FROM transaction 
+            WHERE investor_address = %s
+        """, (investor_wallet_address,))
+        
+        total_count = cur.fetchone()[0]
+        total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 0
+
+        cur.execute("""
+            SELECT t.id, t.project_id, t.amount, t.token_received, 
+                   t.transaction_time, t.transaction_hash, t.type,
+                   p.name AS project_name, p.token_symbol
+            FROM transaction t
+            JOIN project p ON t.project_id = p.id
+            WHERE t.investor_address = %s
+            ORDER BY t.transaction_time DESC
+            LIMIT %s OFFSET %s
+        """, (investor_wallet_address, per_page, offset))
+
+        transactions = []
+        for row in cur.fetchall():
+            transactions.append({
+                "id": str(row[0]),
+                "project_id": row[1],
+                "amount": row[2],
+                "token_received": row[3],
+                "transaction_time": row[4].timestamp() if hasattr(row[4], 'timestamp') else row[4],
+                "transaction_hash": row[5],
+                "type": row[6],
+                "project_name": row[7],
+                "token_symbol": row[8]
+            })
+
+        cur.close()
+        conn.close()
+
+        return jsonify({
+            "success": True,
+            "transactions": transactions,
+            "pagination": {
+                "total_count": total_count,
+                "total_pages": total_pages,
+                "current_page": page,
+                "per_page": per_page
+            }
+        })
+
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return jsonify({"success": False, "message": "Database error"}), 500
     
 if __name__ == "__main__":
    app.run(host="0.0.0.0", port=5555)
