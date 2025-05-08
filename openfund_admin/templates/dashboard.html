@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}OpenFund Admin | Dashboard{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<div class="stats-cards">
+    <!-- Pending Projects -->
+    <a style="text-decoration: none;" href="{{ url_for('review_projects') }}" class="stat-card">
+        <div class="icon">
+            <i class="fas fa-hourglass-half"></i>
+        </div>
+        <div class="title">Pending Projects</div>
+        <div class="value">{{ pending_projects }}</div>
+    </a>
+
+    <!-- Projects This Week -->
+    <a style="text-decoration: none;" href="{{ url_for('review_projects') }}" class="stat-card">
+        <div class="icon">
+            <i class="fas fa-calendar-week"></i>
+        </div>
+        <div class="title">Projects This Week</div>
+        <div class="value">{{ projects_this_week }}</div>
+    </a>
+
+    <!-- Accepted Projects -->
+    <a style="text-decoration: none;" href="{{ url_for('manage_projects') }}" class="stat-card">
+        <div class="icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="title">Accepted Projects</div>
+        <div class="value">{{ accepted_projects }}</div>
+    </a>
+
+    <!-- Active Funding Projects -->
+    <a style="text-decoration: none;" href="{{ url_for('manage_projects') }}?status=raising" class="stat-card">
+        <div class="icon">
+            <i class="fas fa-dollar-sign"></i>
+        </div>
+        <div class="title">Active Fundraising Projects</div>
+        <div class="value">{{ funding_projects }}</div>
+    </a>
+
+    <!-- Total Raisers -->
+    <div class="stat-card">
+        <div class="icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="title">Total Raisers</div>
+        <div class="value">{{ total_raisers }}</div>
+    </div>
+
+    <!-- Total Investors -->
+    <div class="stat-card">
+        <div class="icon">
+            <i class="fas fa-user-tie"></i>
+        </div>
+        <div class="title">Total Investors</div>
+        <div class="value">{{ total_investors }}</div>
+    </div>
+
+    <!-- Platform Fee (Last 30 Days) -->
+    <div class="stat-card">
+        <div class="icon">
+            <i class="fas fa-percentage"></i>
+        </div>
+        <div class="title">Platform Fee (30 Days)</div>
+        <div class="value">${{ "%.2f"|format(platform_fee) }}</div>
+    </div>
+
+    <!-- Active Users (Last 30 Days) -->
+    <div class="stat-card">
+        <div class="icon">
+            <i class="fas fa-user-clock"></i>
+        </div>
+        <div class="title">Active Users (30 Days)</div>
+        <div class="value">{{ active_users }}</div>
+    </div>
+</div>
+
+<!-- Transaction Volume Chart -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Transaction Volume (Last 30 Days)</h2>
+        <div class="card-title-right">
+            <div class="value">${{ "%.2f"|format(transaction_volume) }}</div>
+        </div>
+    </div>
+    <div class="card-body">
+        <canvas id="transactionVolumeChart"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Chart for Transaction Volume
+    const ctx = document.getElementById('transactionVolumeChart').getContext('2d');
+    const transactionVolumeChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels | tojson }},
+            datasets: [{
+                label: 'Transaction Volume ($)',
+                data: {{ chart_data | tojson }},
+                backgroundColor: 'rgb(33, 33, 33, 0.5)',
+                borderColor: 'rgb(33, 33, 33)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += '$' + context.raw.toFixed(2);
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

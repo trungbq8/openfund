@@ -1028,9 +1028,9 @@ def edit_project(project_id_param):
             conn.close()
             return redirect(url_for('not_found'))
          
-         cur.execute("SELECT id FROM project WHERE id = %s AND raiser_id = %s", (project_id_param, session['raiser_id']))
+         cur.execute("SELECT id, editable FROM project WHERE id = %s AND raiser_id = %s", (project_id_param, session['raiser_id']))
          project_data = cur.fetchone()
-         if not project_data:
+         if not project_data or project_data[1] == False:
             cur.close()
             conn.close()
             return jsonify({"success": False, "message": "Not have permission"}), 500
@@ -1066,9 +1066,9 @@ def edit_project(project_id_param):
          conn = get_db_connection()
          cur = conn.cursor()
          
-         cur.execute("SELECT id FROM project WHERE id = %s AND raiser_id = %s", (project_id_param, session['raiser_id']))
+         cur.execute("SELECT id, editable FROM project WHERE id = %s AND raiser_id = %s", (project_id_param, session['raiser_id']))
          project_data = cur.fetchone()
-         if not project_data:
+         if not project_data or project_data[1] == False:
             cur.close()
             conn.close()
             return redirect(url_for('not_found'))

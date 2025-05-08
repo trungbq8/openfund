@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}OpenFund Admin | Manage Projects{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-20">
+    <h1>Manage Projects</h1>
+</div>
+
+<div class="card mb-20">
+    <div class="card-header">
+        <h2 class="card-title">Filter Options</h2>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('manage_projects') }}" method="get" class="d-flex flex-wrap align-items-center">
+            <div style="margin-right: 20px; margin-bottom: 10px;">
+                <label for="status" class="form-label">Funding Status</label>
+                <select name="status" id="status" class="form-control form-select">
+                    <option value="" {% if not current_status %}selected{% endif %}>All</option>
+                    <option value="raising" {% if current_status == 'raising' %}selected{% endif %}>Raising</option>
+                    <option value="voting" {% if current_status == 'voting' %}selected{% endif %}>Voting</option>
+                    <option value="completed" {% if current_status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="failed" {% if current_status == 'failed' %}selected{% endif %}>Failed</option>
+                </select>
+            </div>
+            
+            <div style="margin-right: 20px; margin-bottom: 10px;">
+                <label for="sort" class="form-label">Sort By</label>
+                <select name="sort" id="sort" class="form-control form-select">
+                    <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest</option>
+                    <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>Oldest</option>
+                    <option value="fund_raised" {% if current_sort == 'fund_raised' %}selected{% endif %}>Most Funded</option>
+                </select>
+            </div>
+
+            <div style="align-self: end; margin-bottom: 10px;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Accepted Projects</h2>
+    </div>
+    <div class="card-body">
+        {% if projects %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>Token</th>
+                        <th>Raiser</th>
+                        <th>Status</th>
+                        <th>Funds Raised</th>
+                        <th>Visibility</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <img src="{{ project.logo_url or url_for('static', filename='app_assets/not-found.png') }}" alt="Logo" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                                {{ project.name }}
+                            </div>
+                        </td>
+                        <td>{{ project.token_symbol }}</td>
+                        <td>{{ project.raiser_name }}</td>
+                        <td>
+                            <span class="badge badge-{{ project.funding_status }}">
+                                {{ project.funding_status|capitalize }}
+                            </span>
+                        </td>
+                        <td>${{ "%.2f"|format(project.fund_raised|default(0)) }}</td>
+                        <td>
+                            {% if project.hidden %}
+                                <span class="badge badge-danger">Hidden</span>
+                            {% else %}
+                                <span class="badge badge-success">Visible</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a style="text-decoration: none;" href="{{ url_for('view_project', project_id=project.id) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+            <h3>No Projects Found</h3>
+            <p>No projects match your current filters.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

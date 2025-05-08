@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}OpenFund Admin | Review Project{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-20">
+    <h1>Project Review</h1>
+    <a style="text-decoration: none;" href="{{ url_for('review_projects') }}" class="btn btn-primary">
+        <i class="fas fa-arrow-left"></i> Back to List
+    </a>
+</div>
+
+<div class="card mb-20">
+    <div class="card-header">
+        <h2 class="card-title">Project Details</h2>
+    </div>
+    <div class="card-body">
+        <div class="d-flex mb-20">
+            <div style="width: 100px; height: 100px; margin-right: 20px;">
+                <img src="{{ project.logo_url or url_for('static', filename='app_assets/not-found.png') }}" alt="Project Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+            </div>
+            <div>
+                <h2>{{ project.name }}</h2>
+                <div><strong>Token Symbol:</strong> {{ project.token_symbol }}</div>
+                <div><strong>Raiser:</strong> {{ project.raiser_name }} ({{ project.raiser_email }})</div>
+                <div><strong>Submitted:</strong> {{ project.created_time.strftime('%Y-%m-%d %H:%M') if project.created_time else 'Unknown' }}</div>
+            </div>
+        </div>
+
+        <div class="row" style="display: flex; flex-wrap: wrap; margin: -10px;">
+            <div class="col" style="flex: 1; min-width: 300px; padding: 10px;">
+                <h3>Basic Information</h3>
+                <table class="table">
+                    <tr>
+                        <th>Token Name</th>
+                        <td>{{ project.token_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Token Address</th>
+                        <td style="word-break: break-word;">{{ project.token_address }}</td>
+                    </tr>
+                    <tr>
+                        <th>Token Decimals</th>
+                        <td>{{ project.decimal }}</td>
+                    </tr>
+                    <tr>
+                        <th>Total Supply</th>
+                        <td>{{ "{:,}".format(project.total_token_supply) }}</td>
+                    </tr>
+                    <tr>
+                        <th>Token to Sell</th>
+                        <td>{{ "{:,}".format(project.token_to_sell) }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col" style="flex: 1; min-width: 300px; padding: 10px;">
+                <h3>Project Details</h3>
+                <table class="table">
+                    <tr>
+                        <th>Investment End</th>
+                        <td>{{ project.investment_end_time|int|datetime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Website</th>
+                        <td>
+                            {% if project.website_link %}
+                                <a href="{{ project.website_link }}" target="_blank">Website</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Whitepaper</th>
+                        <td>
+                            {% if project.whitepaper_link %}
+                                <a href="{{ project.whitepaper_link }}" target="_blank">View Whitepaper</a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-20">
+            <h3>Project Description</h3>
+            <div class="card">
+                <div class="card-body" style="text-align: justify;">
+                    <p>{{ project.description|safe }}</p>
+                </div>
+            </div>
+        </div>
+
+        {% if project.platform_comment %}
+        <div class="mt-20">
+            <h3>Previous Admin Comments</h3>
+            <div class="alert alert-info">
+                {{ project.platform_comment }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Review Decision</h2>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('update_project', project_id=project.id) }}" method="post">
+            <div class="form-group">
+                <label class="form-label" for="platform_comment">Admin Comment</label>
+                <textarea class="form-control" id="platform_comment" name="platform_comment" rows="3">{{ project.platform_comment or '' }}</textarea>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-20">
+                <button type="submit" name="action" value="accept" class="btn btn-success">
+                    <i class="fas fa-check"></i> Accept Project
+                </button>
+                <button type="submit" name="action" value="reject" class="btn btn-danger">
+                    <i class="fas fa-times"></i> Reject Project
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // You could add validation scripts here if needed
+</script>
+{% endblock %}

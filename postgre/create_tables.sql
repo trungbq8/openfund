@@ -76,6 +76,7 @@ CREATE TABLE post (
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    thumbnail_url TEXT NOT NULL,
     status VARCHAR(10) CHECK (status IN ('draft', 'posted')) DEFAULT 'draft'
 );
 
@@ -95,4 +96,12 @@ CREATE TABLE project_comment (
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE,
     FOREIGN KEY (investor_id) REFERENCES investor(id) ON DELETE CASCADE
+);
+
+CREATE TABLE admin (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    username VARCHAR(50) UNIQUE NOT NULL,
+    hashed_password TEXT NOT NULL,
+    salt TEXT NOT NULL,
+    last_login TIMESTAMP
 );

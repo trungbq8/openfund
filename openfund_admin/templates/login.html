@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}OpenFund Admin | Login{% endblock %}
+
+{% block head %}
+<style>
+    body {
+        background-color: var(--primary-color);
+        background-image: linear-gradient(135deg, #d3d3d3 0%, #4d819d 100%);
+    }
+</style>
+{% endblock %}
+
+{% block full_page %}
+<div class="login-page">
+    <div class="login-box">
+        <div class="login-logo">
+            <img src="{{ url_for('static', filename='app_assets/open_fund_logo.png') }}" alt="OpenFund Logo">
+        </div>
+        <div class="login-title">Admin Dashboard</div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form action="{{ url_for('login') }}" method="post">
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required autofocus style="border-radius: 15px">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required style="border-radius: 15px">
+            </div>
+            
+            <div style="display: flex; align-items: center; justify-content: center;" class="form-group mt-20">
+                <button type="submit" class="btn btn-primary btn-lg w-100" style="border-radius: 15px;">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </div>
+        </form>
+        
+        <div class="text-center mt-20">
+            <p class="mt-10">© 2025 OpenFund. All rights reserved.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

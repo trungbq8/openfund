@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}OpenFund Admin | Project Details{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-20">
+    <h1>Project Details</h1>
+    <div>
+        <a style="text-decoration: none;" href="{{ url_for('manage_projects') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="card mb-20">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="card-title">Project Information</h2>
+        <div>
+            <form action="{{ url_for('update_project', project_id=project.id) }}" method="post" style="display: inline;">
+                <input type="hidden" name="action" value="toggle_visibility">
+                <button type="submit" class="btn btn-{{ 'success' if project.hidden else 'warning' }}">
+                    <i class="fas fa-{{ 'eye' if project.hidden else 'eye-slash' }}"></i> 
+                    {{ 'Show Project' if project.hidden else 'Hide Project' }}
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="d-flex mb-20">
+            <div style="width: 100px; height: 100px; margin-right: 20px;">
+                <img src="{{ project.logo_url or url_for('static', filename='app_assets/not-found.png') }}" alt="Project Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+            </div>
+            <div>
+                <h2>{{ project.name }}</h2>
+                <div><strong>Token Symbol:</strong> {{ project.token_symbol }}</div>
+                <div><strong>Raiser:</strong> {{ project.raiser_name }} ({{ project.raiser_email }})</div>
+                <div>
+                    <span class="badge badge-{{ project.funding_status }}">
+                        {{ project.funding_status|capitalize }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="display: flex; flex-wrap: wrap; margin: -10px;">
+            <div class="col" style="flex: 1; padding: 10px;">
+                <h3>Basic Information</h3>
+                <table class="table">
+                    <tr>
+                        <th>Token Name</th>
+                        <td>{{ project.token_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Token Address</th>
+                        <td style="word-break: break-word;">{{ project.token_address }}</td>
+                    </tr>
+                    <tr>
+                        <th>Token Decimals</th>
+                        <td>{{ project.decimal }}</td>
+                    </tr>
+                    <tr>
+                        <th>Created Time</th>
+                        <td>{{ project.created_time.strftime('%Y-%m-%d %H:%M') if project.created_time else 'Unknown' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Investment End</th>
+                        <td>{{ project.investment_end_time|int|datetime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="col" style="flex: 1; min-width: 300px; padding: 10px;">
+                <h3>Funding Details</h3>
+                <table class="table">
+                    <tr>
+                        <th>Funding Status</th>
+                        <td>
+                            <span class="badge badge-{{ project.funding_status }}">
+                                {{ project.funding_status|capitalize }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Total Supply</th>
+                        <td>{{ "{:,}".format(project.total_token_supply) }}</td>
+                    </tr>
+                    <tr>
+                        <th>Tokens to Sell</th>
+                        <td>{{ "{:,}".format(project.token_to_sell) }}</td>
+                    </tr>
+                    <tr>
+                        <th>Tokens Sold</th>
+                        <td>{{ "{:,}".format(project.token_sold) }}</td>
+                    </tr>
+                    <tr>
+                        <th>Funds Raised</th>
+                        <td>${{ "{:,}".format(project.fund_raised) }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="col" style="flex: 1; min-width: 300px; padding: 10px;">
+                <h3>Participants</h3>
+                <table class="table">
+                    <tr>
+                        <th>Total Investors</th>
+                        <td>{{ project.total_investors }}</td>
+                    </tr>
+                    <tr>
+                        <th>Vote for Refund</th>
+                        <td>{{ project.total_votes }}</td>
+                    </tr>
+                    <tr>
+                        <th>Fund Claimed</th>
+                        <td>
+                            {% if project.fund_claimed %}
+                                <span class="badge badge-success">Yes</span>
+                            {% else %}
+                                <span class="badge badge-warning">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Platform Fee Claimed</th>
+                        <td>
+                            {% if project.fee_claimed %}
+                                <span class="badge badge-success">Yes</span>
+                            {% else %}
+                                {% if project.funding_status == 'completed' %}
+                                    <span class="badge badge-danger">No</span>
+                                {% else %}
+                                    <span class="badge badge-info">Not Applicable</span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Platform Fee (5%)</th>
+                        <td>${{ "%.2f"|format(project.fund_raised|default(0) * 0.05) }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-20">
+            <h3>Project Description</h3>
+            <div class="card">
+                <div class="card-body" style="text-align: justify;">
+                    <p>{{ project.description|safe }}</p>
+                </div>
+            </div>
+        </div>
+
+        {% if project.platform_comment %}
+        <div class="mt-20">
+            <h3>Admin Comments</h3>
+            <div class="alert alert-info">
+                {{ project.platform_comment }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Platform Fee Management (Only for Completed Projects) -->
+{% if project.funding_status == 'completed' and not project.fee_claimed %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Platform Fee Management</h2>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="fas fa-info-circle"></i> Platform fee (5% = ${{ "%.2f"|format(project.fund_raised|default(0) * 0.05) }}) has not been claimed yet.
+        </div>
+        
+        <form action="{{ url_for('update_project', project_id=project.id) }}" method="post">
+            <input type="hidden" name="action" value="claim_fee">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-check"></i> Mark Fee as Claimed
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block title %}OpenFund Admin | {{ 'Edit' if post else 'New' }} Post{% endblock %}
+
+{% block head %}
+<style>
+  .wysiwyg-container {
+         margin-top: 10px;
+         width: 100%;
+  }
+  .editor-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      background-color: #f5f5f5;
+      padding: 8px;
+      border-radius: 8px 8px 0 0;
+      border: 1px solid #ddd;
+      align-items: center;
+      justify-content: center;
+  }
+  .toolbar-btn {
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+  .toolbar-btn:hover {
+      background-color: #e9e9e9;
+  }
+  .toolbar-btn.active {
+      background-color: #e0e0e0;
+      border-color: #aaa;
+  }
+  .toolbar-group {
+      display: flex;
+      gap: 3px;
+      border-right: 1px solid #ddd;
+      padding-right: 5px;
+  }
+  .toolbar-group:last-child {
+      border-right: none;
+  }
+  .editor-content {
+      width: 100%;
+      min-height: 500px;
+      border: 1px solid #ddd;
+      border-top: none;
+      padding: 10px;
+      font-family: 'Poppins', sans-serif;
+      overflow-y: auto;
+      border-radius: 0 0 8px 8px;
+      outline: none;
+      box-sizing: border-box;
+  }
+  .preview-toggle {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+  }
+  .preview-toggle button {
+      background-color: rgb(0, 0, 0);
+      border: 1px solid rgb(0, 0, 0);
+      border-radius: 10px;
+      padding: 5.8px 10px;
+      cursor: pointer;
+      color: white
+  }
+  .preview-toggle button.active {
+      background-color: #ffffff;
+      border-color: #000000;
+      color: #000000;
+  }
+  .preview-container {
+      width: 100%;
+      min-height: 200px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      font-family: 'Poppins', sans-serif;
+      display: none;
+      box-sizing: border-box;
+  }
+  .preview-container.active {
+      display: block;
+  }
+  .file-input {
+      display: none;
+  }
+  .image-upload-status {
+      margin-top: 5px;
+      color: #666;
+      font-size: 12px;
+  }
+  .editor-content img {
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+  }
+  .custom-modal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    max-width: 90%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+  
+  .custom-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1040;
+  }
+  
+  .custom-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+  }
+  .custom-modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+  
+  .custom-modal-close {
+    background: transparent;
+    border: 0;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  
+  .custom-modal-body {
+    padding: 1rem;
+  }
+  
+  .custom-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+  }
+  
+  .open {
+    display: block;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-20">
+    <h1>{{ 'Edit' if post else 'New' }} Post</h1>
+    <a  style="text-decoration: none;" href="{{ url_for('manage_posts') }}" class="btn btn-primary">
+        <i class="fas fa-arrow-left"></i> Back to Posts
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">{{ 'Edit' if post else 'Create' }} Blog Post</h2>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('edit_post', post_id=post.id) if post else url_for('new_post') }}" method="post">
+            <div class="form-group">
+                <label class="form-label" for="title">Post Title</label>
+                <input type="text" class="form-control" id="title" name="title" value="{{ post.title if post else '' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="thumbnail_url">Thumbnail URL</label>
+                <input type="hidden" class="form-control" id="thumbnail_url" name="thumbnail_url" value="{{ post.thumbnail_url if post else '' }}" hidden>
+                <img id="thumbnail-preview" src="{{ post.thumbnail_url if post else 'https://openfund.live/static/uploads/1746692365_Untitled_design_1.png' }}" alt="Thumbnail Preview" style="max-height: 100px; margin-top: 10px;">
+            </div>
+            <button id="upload-thumbnail" type="button" class="btn btn-secondary mb-10">
+                <i class="fas fa-upload"></i> Upload Thumbnail</button>
+            <div class="form-group">
+                <label class="form-label" for="content">Content</label>
+                <input type="hidden" id="content" name="content" value="{{ post.content if post else '' }}" hidden>
+                <div class="wysiwyg-container">
+                  <div class="editor-toolbar">
+                     <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                        <button class="toolbar-btn" data-command="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                        <button class="toolbar-btn" data-command="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                        <button class="toolbar-btn" data-command="strikeThrough" title="Strike through"><i class="fa-solid fa-strikethrough"></i></button>
+                     </div>
+                     <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="justifyLeft" title="Align left"><i class="fa-solid fa-align-left"></i></button>
+                        <button class="toolbar-btn" data-command="justifyCenter" title="Align center"><i class="fa-solid fa-align-center"></i></button>
+                        <button class="toolbar-btn" data-command="justifyRight" title="Align right"><i class="fa-solid fa-align-right"></i></button>
+                        <button class="toolbar-btn" data-command="justifyFull" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
+                     </div>
+                     <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="insertUnorderedList" title="Bullet list"><i class="fa-solid fa-list-ul"></i></button>
+                        <button class="toolbar-btn" data-command="insertOrderedList" title="Numbered list"><i class="fa-solid fa-list-ol"></i></button>
+                     </div>
+                     <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="h1" title="Heading 1">H1</button>
+                        <button class="toolbar-btn" data-command="h2" title="Heading 2">H2</button>
+                        <button class="toolbar-btn" data-command="h3" title="Heading 3">H3</button>
+                        <button class="toolbar-btn" data-command="p" title="Paragraph">P</button>
+                     </div>
+                     <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="createLink" title="Insert link"><i class="fa-solid fa-link"></i></button>
+                        <button class="toolbar-btn" data-command="unlink" title="Remove link"><i class="fa-solid fa-unlink"></i></button>
+                        <button type="button" class="toolbar-btn" id="image-upload-btn" title="Upload image"><i class="fa-solid fa-image"></i></button>
+                        <input type="file" id="image-upload" class="file-input" accept="image/*">
+                     </div>
+                  </div>
+                  <div class="editor-content" id="editor-content" contenteditable="true"></div>
+                  <div class="image-upload-status" id="image-upload-status"></div>
+                  <div class="preview-toggle">
+                     <button type="button" id="toggle-preview">Preview</button>
+                  </div>
+                  <div class="preview-container" id="preview-container"></div>
+                </div>
+                <script src="/static/script/wysiwyg_editor.js"></script>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="status">Status</label>
+                <select class="form-control form-select" id="status" name="status">
+                    <option value="draft" {% if not post or post.status == 'draft' %}selected{% endif %}>Draft</option>
+                    <option value="published" {% if post and post.status == 'published' %}selected{% endif %}>Published</option>
+                </select>
+            </div>
+            
+            <div class="mt-20">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> {{ 'Update' if post else 'Create' }} Post
+                </button>
+                {% if post %}
+                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">
+                    <i class="fas fa-trash"></i> Delete Post
+                </button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if post %}
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="custom-modal">
+  <div class="custom-modal-content">
+    <div class="custom-modal-header">
+      <h5 class="custom-modal-title">Confirm Delete</h5>
+      <button type="button" class="custom-modal-close">&times;</button>
+    </div>
+    <div class="custom-modal-body">
+      <p>Are you sure you want to delete this post "<strong>{{ post.title }}</strong>"?</p>
+      <p>This action cannot be undone.</p>
+    </div>
+    <div class="custom-modal-footer">
+      <button type="button" class="btn btn-secondary custom-modal-cancel">Cancel</button>
+      <form action="{{ url_for('edit_post', post_id=post.id) }}" method="post">
+        <input type="hidden" name="action" value="delete">
+        <button type="submit" class="btn btn-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+<div id="modalOverlay" class="custom-modal-overlay"></div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal control
+        const deleteBtn = document.querySelector('button[data-target="#deleteModal"]');
+        const modal = document.getElementById('deleteModal');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const closeBtn = modal?.querySelector('.custom-modal-close');
+        const cancelBtn = modal?.querySelector('.custom-modal-cancel');
+        
+        // Only setup modal events if we're on an edit page (not new post)
+        if (deleteBtn && modal && modalOverlay) {
+            // Open modal
+            deleteBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                modal.classList.add('open');
+                modalOverlay.classList.add('open');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            });
+            
+            // Close modal function
+            function closeModal() {
+                modal.classList.remove('open');
+                modalOverlay.classList.remove('open');
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+            
+            // Close with X button
+            closeBtn.addEventListener('click', closeModal);
+            
+            // Close with Cancel button
+            cancelBtn.addEventListener('click', closeModal);
+        }
+        const editor = document.getElementById('editor-content');
+        const postContent = '{{ post.content|safe if post else "" }}';
+        editor.innerHTML = postContent;
+        
+        bioHtmlContent = editor.innerHTML;
+        updatePreview();
+    });
+    function showToastMessage(message, success) {
+        Toastify({
+            text: message,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            stopOnFocus: true,
+            style: {
+                background: success ? "#4BB543" : "#FF0000"
+            }
+        }).showToast();
+    }
+  const uploadThumnailImage = document.getElementById("thumbnail-preview");
+  const uploadThumbnailBtn = document.getElementById("upload-thumbnail");
+  const thumbnailUrlInput = document.getElementById("thumbnail_url");
+  const contentInput = document.getElementById("content");
+  const imageFileInput = document.createElement('input');
+    imageFileInput.type = 'file';
+    imageFileInput.accept = 'image/*';
+    imageFileInput.style.display = 'none';
+    document.body.appendChild(imageFileInput);
+    
+    uploadThumbnailBtn.addEventListener('click', function() {
+          imageFileInput.click();
+    });
+    
+    imageFileInput.addEventListener('change', function(e) {
+          if (this.files && this.files[0]) {
+              const file = this.files[0];
+              
+              const formData = new FormData();
+              formData.append('file', file);
+              
+              fetch('https://openfund.live/upload-image', {
+                method: 'POST',
+                body: formData
+              })
+              .then(response => response.json())
+              .then(data => {
+                
+                if (data.success) {
+                    uploadThumnailImage.src = data.file_url;
+                    thumbnailUrlInput.value = data.file_url;
+                    } else {
+                    throw new Error(data.message || "Error uploading image");
+                }
+              })
+              .catch(error => {
+                loadingSpinner.classList.add('hidden');
+                overlay.classList.add("hidden");
+                console.error('Error:', error);
+                showToastMessage(error.message || "Error uploading image", false);
+              });
+          }
+    });
+</script>
+{% endblock %}
