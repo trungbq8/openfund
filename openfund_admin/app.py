@@ -298,7 +298,7 @@ def update_project(project_id):
         elif action == 'reject':
             cur.execute("""
                 UPDATE project 
-                SET listing_status = 'rejected', platform_comment = %s
+                SET listing_status = 'pending', platform_comment = %s
                 WHERE id = %s
             """, (comment, project_id))
             flash('Project has been rejected', 'success')
@@ -315,7 +315,7 @@ def update_project(project_id):
         elif action == 'claim_fee':
             cur.execute("""
                 UPDATE project 
-                SET fee_claimed = true
+                SET platform_fee_claimed = true
                 WHERE id = %s AND funding_status = 'completed'
             """, (project_id,))
             flash('Platform fee has been marked as claimed', 'success')
