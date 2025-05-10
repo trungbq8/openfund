@@ -1395,5 +1395,168 @@ def get_transactions():
         print(f"Database error: {e}")
         return jsonify({"success": False, "message": "Database error"}), 500
     
+@app.route("/blog")
+def blog():
+   nonce = secrets.token_hex(16)
+   session['nonce'] = nonce
+   if 'investor_wallet_address' in session:
+      investor_connected = True
+      investor_wallet_address = session.get('investor_wallet_address')
+   else:
+      investor_connected = False
+      investor_wallet_address = ""
+
+   if 'raiser_id' in session:
+      raiser_logged_in = True
+      raiser_id = session.get('raiser_id')
+   else:
+      raiser_logged_in = False
+      raiser_id = ""
+   
+   query = request.args.get('query', '')
+   
+   return render_template("blog.html", nonce=nonce, investor_connected=investor_connected, investor_wallet_address=investor_wallet_address, raiser_logged_in=raiser_logged_in, raiser_id=raiser_id, query=query)
+
+@app.route("/api/blog/posts")
+def get_blog_posts():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 5, type=int)
+    query = request.args.get('query', '')
+    offset = (page - 1) * per_page
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Build the query based on whether we're searching or just listing
+        if query:
+            search_query = f"%{query}%"
+            count_sql = """
+                SELECT COUNT(*) FROM post 
+                WHERE status = 'posted' 
+                AND (title ILIKE %s OR content ILIKE %s)
+            """
+            cur.execute(count_sql, (search_query, search_query))
+            
+            total_count_result = cur.fetchone()
+            total_count = total_count_result[0] if total_count_result else 0
+            
+            posts_sql = """
+                SELECT id, title, content, created_time, thumbnail_url 
+                FROM post 
+                WHERE status = 'posted' 
+                AND (title ILIKE %s OR content ILIKE %s)
+                ORDER BY created_time DESC
+                LIMIT %s OFFSET %s
+            """
+            cur.execute(posts_sql, (search_query, search_query, per_page, offset))
+        else:
+            count_sql = "SELECT COUNT(*) FROM post WHERE status = 'posted'"
+            cur.execute(count_sql)
+            
+            total_count_result = cur.fetchone()
+            total_count = total_count_result[0] if total_count_result else 0
+            
+            posts_sql = """
+                SELECT id, title, content, created_time, thumbnail_url 
+                FROM post 
+                WHERE status = 'posted'
+                ORDER BY created_time DESC
+                LIMIT %s OFFSET %s
+            """
+            cur.execute(posts_sql, (per_page, offset))
+        
+        # Get the posts
+        posts = []
+        for row in cur.fetchall():
+            post_id, title, content, created_time, thumbnail_url = row
+            posts.append({
+                "id": post_id,
+                "title": title,
+                "content": content,
+                "created_time": created_time.timestamp() if created_time else None,
+                "thumbnail_url": thumbnail_url
+            })
+        
+        total_pages = (total_count + per_page - 1) // per_page if total_count > 0 else 0
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify({
+            "success": True,
+            "posts": posts,
+            "pagination": {
+                "total_count": total_count,
+                "total_pages": total_pages,
+                "current_page": page,
+                "per_page": per_page
+            }
+        })
+        
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return jsonify({"success": False, "message": "Database error"}), 500
+
+@app.route("/blog/post/<post_id>")
+def blog_post(post_id):
+    nonce = secrets.token_hex(16)
+    session['nonce'] = nonce
+    if 'investor_wallet_address' in session:
+        investor_connected = True
+        investor_wallet_address = session.get('investor_wallet_address')
+    else:
+        investor_connected = False
+        investor_wallet_address = ""
+
+    if 'raiser_id' in session:
+        raiser_logged_in = True
+        raiser_id = session.get('raiser_id')
+    else:
+        raiser_logged_in = False
+        raiser_id = ""
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT id, title, content, created_time, thumbnail_url 
+            FROM post 
+            WHERE id = %s AND status = 'posted'
+        """, (post_id,))
+        
+        post = cur.fetchone()
+        
+        cur.close()
+        conn.close()
+        
+        if not post:
+            return redirect("/not-found")
+        
+        post_id, title, content, created_time, thumbnail_url = post
+        
+        post_data = {
+            "id": post_id,
+            "title": title,
+            "content": content,
+            "created_time": created_time,
+            "thumbnail_url": thumbnail_url
+        }
+        
+        return render_template(
+            "blog-post.html",
+            post=post_data,
+            nonce=nonce,
+            investor_connected=investor_connected,
+            investor_wallet_address=investor_wallet_address,
+            raiser_logged_in=raiser_logged_in,
+            raiser_id=raiser_id
+        )
+        
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+        return redirect("/not-found")
+    
 if __name__ == "__main__":
    app.run(host="0.0.0.0", port=5555)

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1, user-scalable=no">
+    <title>OpenFund - Blog</title>
+    <link rel="icon" href="/static/app_assets/open_fund_logo.png">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+</head>
+<body>
+    <div class="loading-spinner hidden" id="loading-spinner">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="40" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="100" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="160" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
+   </div>
+    <!-- nav bar -->
+    <div class="nav-bar">
+      <div class="app-logo" onclick="window.location.href='/'">
+         <img src="/static/app_assets/open_fund_logo.png" alt="OpenFund logo">
+         <p>OpenFund</p>
+      </div>
+      <div class="nav-bar-select">
+         <div class="link" onclick="window.location.href='/invest'">Invest</div>
+            <div class="link" onclick="window.location.href='/blog'">Blog</div>
+            <div class="link" onclick="window.location.href='/document'">Document</div>
+      </div>
+      <div class="authenticate">
+         <button class="sign-in-up" onclick="window.location.href='/sign-up'" id="sign-in-up-btn">Log In/Sign Up</button>
+         <button class="connect-wallet" id="connect-btn">
+            <i class="fa-solid fa-wallet"></i>
+            <div class="investor_connected_check hidden" id="investor_connected_check" style="background-color: white; color: rgb(0, 1, 69); font-size: 15px; position: absolute; bottom: -3px; right: -3px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"><i class="fa-solid fa-circle-check"></i></div>
+         </button>
+         <button class="raiser-account hidden" id="raiser-account">
+            <i class="fa-solid fa-user"></i>
+         </button>
+      </div>
+      <button class="menu-btn">
+         <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="investor-account-manage hidden" id="investor-account-manage">
+         <p>Investor account</p>
+         <input name="investor-wallet-address" id="investor-wallet-address" style="text-align: center; font-size: 12px; padding: 0; border: 0;" readonly required>
+         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-profile'">Edit profile</div>
+         <div class="investor-account-manage-btn" id="investor-disconnect-btn">Disconnect</div>
+      </div>
+      <div class="raiser-account-manage hidden" id="raiser-account-manage">
+         <p>Raiser account</p>
+            <div class="raiser-account-manage-btn" onclick="window.location.href='/submitted-project'">Submitted projects</div>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+         <div class="raiser-account-manage-btn" id="raiser-log-out-btn" onclick="window.location.href='/log-out'">Log out</div>
+      </div>
+   </div>
+   <div class="nav-bar-mobile hidden">
+      <div class="link-mobile" onclick="window.location.href='/invest'">Invest<i class="fa-solid fa-arrow-right"></i></div>
+      <hr>
+      <div class="link-mobile" onclick="window.location.href='/blog'">Blog<i class="fa-solid fa-arrow-right"></i></div>
+      <hr>
+      <div class="link-mobile" onclick="window.location.href='/document'">Document<i class="fa-solid fa-arrow-right"></i></div>
+      <hr>
+      <div class="authenticate-mobile">
+         <button class="connect-wallet-mobile" id="connect-btn-mobile">
+            Connect wallet<i class="fa-solid fa-wallet"></i>
+         </button>
+         <button class="sign-in-up-mobile" onclick="window.location.href='/sign-up'" id="sign-in-up-mobile-btn">Log In/Sign Up</button>
+         <button class="sign-in-up-mobile" id="raiser-account-mobile-btn">Raiser Account</button>
+      </div>
+      <div class="investor-account-manage-mobile hidden" id="investor-account-manage-mobile">
+         <p>Investor account</p>
+         <input name="investor-wallet-address hidden" id="investor-wallet-address-mobile" style="text-align: center; font-size: 12px; padding: 0; border: 0;" readonly required>
+         <div class="investor-account-manage-btn" onclick="window.location.href='/edit-profile'">Edit profile</div>
+         <div class="investor-account-manage-btn" id="investor-disconnect-btn-mobile">Disconnect</div>
+      </div>
+      <div class="raiser-account-manage-mobile hidden" id="raiser-account-manage-mobile">
+         <p>Raiser account</p>
+            <div class="raiser-account-manage-btn" onclick="window.location.href='/submitted-project'">Submitted projects</div>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
+         <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+         <div class="raiser-account-manage-btn" id="raiser-log-out-btn-mobile" onclick="window.location.href='/log-out'">Log out</div>
+      </div>
+      <button class="close-nav-bar-mobile-btn" id="close-nav-bar-mobile-btn">Close</button>
+   </div>
+     <!-- end nav bar -->
+    <!-- connect wallet -->
+    <div class="overlay hidden" id="overlay">
+        <div class="connect-wallet-box hidden" id="connect-wallet-box">
+            <button class="close-connect-wallet-btn" id="close-connect-wallet-btn">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h1>Connect wallet</h1>
+            <p>(For investors only)</p>
+            <hr style="width: 100px;">
+            <button class="wallet_intergrated" data-wallet="metamask"><img class="wallet-icon-logo" src="/static/app_assets/metamask.png" alt="Metamask logo">Metamask</button>
+         <button class="wallet_intergrated" data-wallet="binance"><img class="wallet-icon-logo" src="/static/app_assets/binance_web3.png" alt="Metamask logo">Binance Web3</button>
+         <button class="wallet_intergrated" data-wallet="okx"><img class="wallet-icon-logo" src="/static/app_assets/okx_web3.png" alt="Metamask logo">OKX Web3</button>
+         <button class="wallet_intergrated" data-wallet="trust"><img class="wallet-icon-logo" src="/static/app_assets/trust_wallet.png" alt="Metamask logo">Trust Wallet</button>
+         <button class="wallet_intergrated" data-wallet="coinbase"><img class="wallet-icon-logo" src="/static/app_assets/coinbase_wallet.png" alt="Metamask logo">Coinbase Wallet</button>
+         <p>By connecting a wallet, you agree to the OpenFund's <a style="color:black" href="/term-service">Terms of Service</a> and consent to its <a style="color:black" href="/privacy-policy">Privacy Policy</a>.</p>
+        </div>
+    </div>
+    
+   <!-- Blog content -->
+   <div class="blog-banner">
+      <h1>Discover</h1>
+      <p>Stay updated with the latest news and insights from Openfund</p>
+   </div>
+
+   <div class="blog-container">
+      <div class="blog-search-container">
+         <form id="search-form">
+            <div class="search-box">
+               <input type="text" id="search-input" placeholder="Search for posts..." value="{{ query if query else '' }}">
+               <button type="submit"><i class="fa-solid fa-search"></i></button>
+            </div>
+         </form>
+      </div>
+
+      <div id="blog-posts-container">
+         <!-- Posts will be loaded here -->
+      </div>
+
+      <div class="pagination-container" id="pagination-container">
+         <!-- Pagination will be added here -->
+      </div>
+   </div>
+
+   <div class="footer">
+      <div class="app-info">
+         <div class="app-logo-footer" onclick="window.location.href='/'">
+            <img src="/static/app_assets/open_fund_logo.png" alt="OpenFund logo">
+            <p>OpenFund</p>
+         </div>
+         <div class="term-links">
+            <a href="/privacy_policy">Privacy</a>
+            <a href="/terms">Terms</a>
+            <a href="/document">Document</a>
+            <a href="/blog">Blog</a>
+            <a href="/help_center">Help Center</a>
+         </div>
+         <div class="community-links">
+            <i class="fa-brands fa-square-x-twitter" onclick="window.location.href='https://x.com'"></i>
+            <i class="fa-brands fa-telegram" onclick="window.location.href='https://telegram.com'"></i>
+            <i class="fa-brands fa-facebook" onclick="window.location.href='https://facebook.com'"></i>
+            <i class="fa-solid fa-envelope" onclick="window.location.href='mailto:support@openfund.live'"></i>
+         </div>
+      </div>
+      <div class="term-links-mobile">
+         <a href="/privacy_policy">Privacy</a>
+         <a href="/terms">Terms</a>
+         <a href="/document">Document</a>
+         <a href="/blog">Blog</a>
+         <a href="/help_center">Help Center</a>
+      </div>
+   </div>
+
+   <style>
+      .blog-banner {
+         width: 100%;
+         height: 50vh;
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         flex-direction: column;
+         padding-top: 50px;
+         text-align: center;
+         background-color: #f5f7fe;
+         margin-bottom: 30px;
+      }
+      .blog-banner h1 {
+         font-size: clamp(3rem, 5vw, 5rem);
+         margin: 0;
+         color: #000145;
+      }
+      .blog-banner p {
+         font-size: clamp(0.8rem, 2vw, 2rem);
+         margin: 10px 0 0 0;
+         color: #555;
+      }
+      .blog-container {
+         width: 100%;
+         margin: 0 auto 0px auto;
+         padding: 0 20px;
+         box-sizing: border-box;
+      }
+      .blog-search-container {
+         margin-bottom: 30px;
+      }
+      .search-box {
+         display: flex;
+         border: 1px solid #ddd;
+         border-radius: 30px;
+         overflow: hidden;
+         max-width: 400px;
+         margin: 0 auto;
+      }
+      .search-box input {
+         flex-grow: 1;
+         border: none;
+         padding: 12px 15px;
+         font-size: 16px;
+      }
+      .search-box input:focus {
+         outline: none;
+      }
+      .search-box button {
+         background-color: #000145;
+         color: white;
+         border: none;
+         padding: 0 20px;
+         cursor: pointer;
+      }
+      .blog-post {
+         width: 100%;
+         display: flex;
+         background-color: white;
+         border-radius: 15px;
+         overflow: hidden;
+         border: solid 1px rgb(215 215 215);
+         box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+         margin-bottom: 25px;
+         transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .blog-post:hover {
+         transform: translateY(-5px);
+         box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      }
+      .blog-post-thumbnail {
+         width: 280px;
+         overflow: hidden;
+      }
+      .blog-post-thumbnail img {
+         width: 100%;
+         height: 100%;
+         object-fit: cover;
+      }
+      .blog-post-content {
+         flex: 1;
+         padding: 20px;
+         display: flex;
+         flex-direction: column;
+      }
+      .blog-post-title {
+         font-size: 1.5rem;
+         margin: 0;
+         color: #000145;
+      }
+      .blog-post-date {
+         font-size: 14px;
+         color: #777;
+         margin-bottom: 5px;
+      }
+      .blog-post-excerpt {
+         margin: 0 0 10px 0;
+         line-height: 1.6;
+         color: #444;
+         flex-grow: 1;
+      }
+      .read-more-btn {
+         align-self: flex-end;
+         background-color: #000145;
+         color: white;
+         border: none;
+         border-radius: 5px;
+         padding: 8px 16px;
+         font-weight: 500;
+         cursor: pointer;
+         transition: background-color 0.3s ease;
+         text-decoration: none;
+         font-size: 14px;
+      }
+      .read-more-btn:hover {
+         background-color: #000225;
+      }
+      .no-posts-container {
+         text-align: center;
+         padding: 50px 20px;
+      }
+      .no-posts-container i {
+         color: #ddd;
+      }
+      .no-posts-container p {
+         color: #777;
+         font-size: 18px;
+      }
+      /* Responsive styles */
+      @media (max-width: 768px) {
+         .blog-post {
+            flex-direction: column;
+         }
+         .blog-post-thumbnail {
+            width: 100%;
+         }
+      }
+      .reload-btn{
+			background-color: black;
+         border: solid 1px black;
+         border-radius: 10px;
+         padding: 5.8px 10px;
+         color: white;
+         cursor: pointer;
+		}
+
+		.pagination-container {
+         display: flex;
+         justify-content: center;
+         margin-bottom: 20px;
+         gap: 5px;
+      }
+      .pagination-button {
+         padding: 5px 10px;
+         border: 1px solid #ddd;
+         border-radius: 5px;
+         background-color: white;
+         cursor: pointer;
+      }
+      .pagination-button.active {
+         background-color: black;
+         color: white;
+         border-color: black;
+      }
+      .pagination-button:hover:not(.active) {
+         background-color: #f3f3f3;
+      }
+      .pagination-button.disabled {
+         color: #ccc;
+         border-color: #eee;
+         cursor: not-allowed;
+      }
+   </style>
+
+</body>
+<script src="/static/script/connect.js"></script>
+<script src="/static/script/main.js"></script>
+<script>
+   //connect
+   const menuBtn = document.querySelector('.menu-btn');
+   const mobileNav = document.querySelector('.nav-bar-mobile');
+   const close_nav_bar_mobile_btn = document.getElementById("close-nav-bar-mobile-btn");
+
+
+   menuBtn.addEventListener('click', () => {
+      mobileNav.classList.remove('hidden');
+   });
+
+   close_nav_bar_mobile_btn.addEventListener('click', () => {
+      mobileNav.classList.add('hidden');
+   });
+   let nonce;
+   nonce = "{{ nonce }}";
+   let isInvstorConnecting = true;
+   const investor_wallet_connected = {{ investor_connected | tojson }};
+   const raiser_loggedin = {{ raiser_logged_in | tojson }};
+   const shortWallet = "{{ investor_wallet_address }}".slice(0, 6) + '...' + "{{ investor_wallet_address }}".slice(-4);
+   
+   // Blog functionality
+   const postsContainer = document.getElementById('blog-posts-container');
+   const paginationContainer = document.getElementById('pagination-container');
+   const searchForm = document.getElementById('search-form');
+   const searchInput = document.getElementById('search-input');
+   
+   let currentPage = 1;
+   const perPage = 5;
+   
+   // Handle search form submission
+   searchForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const query = searchInput.value.trim();
+      loadPosts(1, query);
+   });
+   
+   // Create a blog post element
+   function createPostElement(post) {
+      const postElement = document.createElement('div');
+      postElement.className = 'blog-post';
+      
+      // Format date
+      const date = new Date(post.created_time * 1000);
+      const formattedDate = date.toLocaleDateString(undefined, {
+         year: 'numeric',
+         month: 'long',
+         day: 'numeric'
+      });
+      
+      // Create excerpt from content (strip HTML and limit length)
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = post.content;
+      const textContent = tempDiv.textContent || tempDiv.innerText;
+      const excerpt = textContent.substring(0, 120) + (textContent.length > 120 ? '...' : '');
+      
+      postElement.innerHTML = `
+         <div class="blog-post-thumbnail">
+            <img src="${post.thumbnail_url}" alt="${post.title}">
+         </div>
+         <div class="blog-post-content">
+            <h2 class="blog-post-title">${post.title}</h2>
+            <div class="blog-post-date">${formattedDate}</div>
+            <p class="blog-post-excerpt">${excerpt}</p>
+            <a href="/blog/post/${post.id}" class="read-more-btn">Read More</a>
+         </div>
+      `;
+      
+      return postElement;
+   }
+   
+   // Create pagination buttons
+   function createPaginationButtons(currentPage, totalPages) {
+      paginationContainer.innerHTML = '';
+      
+      if (totalPages <= 1) return;
+      
+      const prevButton = document.createElement('button');
+      prevButton.classList.add('pagination-button');
+      prevButton.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+      if (currentPage === 1) {
+         prevButton.classList.add('disabled');
+      } else {
+         prevButton.addEventListener('click', () => loadPosts(currentPage - 1, searchInput.value.trim()));
+      }
+      paginationContainer.appendChild(prevButton);
+      
+      const maxButtons = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+      let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+      
+      if (endPage - startPage + 1 < maxButtons && startPage > 1) {
+         startPage = Math.max(1, endPage - maxButtons + 1);
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+         const pageButton = document.createElement('button');
+         pageButton.classList.add('pagination-button');
+         pageButton.textContent = i;
+         
+         if (i === currentPage) {
+            pageButton.classList.add('active');
+         } else {
+            pageButton.addEventListener('click', () => loadPosts(i, searchInput.value.trim()));
+         }
+         
+         paginationContainer.appendChild(pageButton);
+      }
+      
+      const nextButton = document.createElement('button');
+      nextButton.classList.add('pagination-button');
+      nextButton.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+      if (currentPage === totalPages) {
+         nextButton.classList.add('disabled');
+      } else {
+         nextButton.addEventListener('click', () => loadPosts(currentPage + 1, searchInput.value.trim()));
+      }
+      paginationContainer.appendChild(nextButton);
+   }
+   
+   // Load posts from API
+   function loadPosts(page = 1, query = '') {
+      loading_spinner.classList.remove('hidden');
+      overlay.classList.remove("hidden");
+      
+      let url = `/api/blog/posts?page=${page}&per_page=${perPage}`;
+      if (query) {
+         url += `&query=${encodeURIComponent(query)}`;
+      }
+      
+      fetch(url)
+         .then(response => response.json())
+         .then(data => {
+            loading_spinner.classList.add('hidden');
+            overlay.classList.add("hidden");
+            
+            postsContainer.innerHTML = '';
+            
+            if (data.success) {
+               currentPage = page;
+               
+               if (data.posts.length > 0) {
+                  data.posts.forEach(post => {
+                     postsContainer.appendChild(createPostElement(post));
+                  });
+                  
+                  createPaginationButtons(data.pagination.current_page, data.pagination.total_pages);
+               } else {
+                  postsContainer.innerHTML = `
+                     <div class="no-posts-container">
+                        <i class="fa-solid fa-newspaper" style="font-size: 50px"></i>
+                        <p>${query ? 'No posts match your search.' : 'No blog posts available yet.'}</p>
+                     </div>
+                  `;
+                  paginationContainer.innerHTML = '';
+               }
+            } else {
+               showToastMessage(data.message || "Failed to load blog posts", false);
+               postsContainer.innerHTML = `
+                  <div class="no-posts-container">
+                     <i class="fa-solid fa-circle-exclamation" style="font-size:50px"></i>
+                     <p>Error loading posts. Please try again later.</p>
+                     <button class="read-more-btn" onclick="loadPosts(1, '${query}')">
+                        Try again <i class="fa-solid fa-refresh"></i>
+                     </button>
+                  </div>
+               `;
+            }
+         })
+         .catch(error => {
+            console.error('Error fetching posts:', error);
+            loading_spinner.classList.add('hidden');
+            overlay.classList.add("hidden");
+            
+            postsContainer.innerHTML = `
+               <div class="no-posts-container">
+                  <i class="fa-solid fa-circle-exclamation" style="font-size: 50px;"></i>
+                  <p>Error connecting to server.</p>
+                  <button class="read-more-btn" onclick="loadPosts(1, '${query}')">
+                     Try again <i class="fa-solid fa-refresh"></i>
+                  </button>
+               </div>
+            `;
+         });
+   }
+   
+   // Load posts when the page loads
+   document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageParam = urlParams.get('page');
+      const queryParam = urlParams.get('query');
+      
+      const initialPage = pageParam ? parseInt(pageParam) : 1;
+      
+      if (queryParam) {
+         searchInput.value = queryParam;
+      }
+      
+      loadPosts(initialPage, queryParam || '');
+   });
+</script>
+<script src="/static/script/nav-bar.js"></script>
+</html>

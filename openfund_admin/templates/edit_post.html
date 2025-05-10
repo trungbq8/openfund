@@ -239,7 +239,7 @@
                 <label class="form-label" for="status">Status</label>
                 <select class="form-control form-select" id="status" name="status">
                     <option value="draft" {% if not post or post.status == 'draft' %}selected{% endif %}>Draft</option>
-                    <option value="published" {% if post and post.status == 'published' %}selected{% endif %}>Published</option>
+                    <option value="posted" {% if post and post.status == 'posted' %}selected{% endif %}>Published</option>
                 </select>
             </div>
             
