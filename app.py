@@ -1557,6 +1557,155 @@ def blog_post(post_id):
     except psycopg2.Error as e:
         print(f"Database error: {e}")
         return redirect("/not-found")
+
+@app.route("/legal")
+def legal():
+   nonce = secrets.token_hex(16)
+   session['nonce'] = nonce
+   if 'investor_wallet_address' in session:
+      investor_connected = True
+      investor_wallet_address = session.get('investor_wallet_address')
+   else:
+      investor_connected = False
+      investor_wallet_address = ""
+
+   if 'raiser_id' in session:
+      raiser_logged_in = True
+      raiser_id = session.get('raiser_id')
+   else:
+      raiser_logged_in = False
+      raiser_id = ""
+   
+   return render_template("legal.html", nonce=nonce, investor_connected=investor_connected, investor_wallet_address=investor_wallet_address, raiser_logged_in=raiser_logged_in, raiser_id=raiser_id)
+
+@app.route("/faucet")
+def faucet():
+    nonce = secrets.token_hex(16)
+    session['nonce'] = nonce
+    
+    if 'investor_wallet_address' in session:
+        investor_connected = True
+        investor_wallet_address = session.get('investor_wallet_address')
+    else:
+        investor_connected = False
+        investor_wallet_address = ""
+
+    if 'raiser_id' in session:
+        raiser_logged_in = True
+        raiser_id = session.get('raiser_id')
+    else:
+        raiser_logged_in = False
+        raiser_id = ""
+        
+    return render_template(
+        "faucet.html",
+        nonce=nonce,
+        investor_connected=investor_connected,
+        investor_wallet_address=investor_wallet_address,
+        raiser_logged_in=raiser_logged_in,
+        raiser_id=raiser_id
+    )
+
+@app.route('/relay', methods=['POST'])
+def relay_transaction():
+    try:
+        data = request.json
+        
+        # Validate request data
+        required_fields = ['contractAddress', 'userAddress', 'tokenType', 'nonce', 'signature']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        # Get relayer private key from environment variable
+        relayer_private_key = os.getenv("RELAYER_PRIVATE_KEY")
+        if not relayer_private_key:
+            return jsonify({"error": "Relayer not configured"}), 500
+        
+        faucet_abi = [
+            {
+                "inputs": [
+                    {"internalType": "address", "name": "user", "type": "address"},
+                    {"internalType": "uint256", "name": "nonce", "type": "uint256"},
+                    {"internalType": "bytes", "name": "signature", "type": "bytes"}
+                ],
+                "name": "claimSEIGasless",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {"internalType": "address", "name": "user", "type": "address"},
+                    {"internalType": "uint256", "name": "nonce", "type": "uint256"},
+                    {"internalType": "bytes", "name": "signature", "type": "bytes"}
+                ],
+                "name": "claimUSDTGasless",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            }
+        ]
+        
+        # Create contract instance
+        contract_address = data['contractAddress']
+        contract = w3.eth.contract(address=Web3.to_checksum_address(contract_address), abi=faucet_abi)
+        # Create transaction based on token type
+        token_type = int(data['tokenType'])
+        user_address = data['userAddress']
+        nonce = int(data['nonce'])
+        signature = data['signature']
+        
+        # Get the relayer address
+        account = w3.eth.account.from_key(relayer_private_key)
+        relayer_address = account.address
+        
+        # Check if the relayer has enough balance
+        gas_price = w3.eth.gas_price
+        estimated_gas = 200000  # Set a default gas limit
+        required_balance = gas_price * estimated_gas
+        relayer_balance = w3.eth.get_balance(relayer_address)
+        
+        if relayer_balance < required_balance:
+            return jsonify({"error": "Relayer has insufficient balance"}), 500
+        
+        # Create and sign transaction
+        if token_type == 0:  # SEI
+            tx = contract.functions.claimSEIGasless(
+                user_address,
+                nonce,
+                signature
+            ).build_transaction({
+                'from': relayer_address,
+                'nonce': w3.eth.get_transaction_count(relayer_address),
+                'gas': estimated_gas,
+                'gasPrice': gas_price
+            })
+        else:  # USDT
+           tx = contract.functions.claimUSDTGasless(
+                user_address,
+                nonce,
+                signature
+            ).build_transaction({
+                'from': relayer_address,
+                'nonce': w3.eth.get_transaction_count(relayer_address),
+                'gas': estimated_gas,
+                'gasPrice': gas_price
+            })
+        
+        # Sign and send transaction
+        signed_tx = w3.eth.account.sign_transaction(tx, relayer_private_key)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        
+        # Return the transaction hash
+        return jsonify({
+            "success": True,
+            "transactionHash": tx_hash.hex()
+        })
+        
+    except Exception as e:
+        print(f"Relay error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
     
 if __name__ == "__main__":
    app.run(host="0.0.0.0", port=5555)

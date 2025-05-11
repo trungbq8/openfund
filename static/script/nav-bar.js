@@ -20,48 +20,69 @@ const sign_in_up_btn_mobile = document.getElementById("sign-in-up-mobile-btn");
 
 investor_disconnect_btn.addEventListener('click', async function() {
    try {
-      await window.ethereum.request({
-         method: 'wallet_revokePermissions',
-         params: [
-            {
-               eth_accounts: {},
-            },
-         ],
-      });
-      await window.ethereum.request({
-         method: 'wallet_disconnect',
-         params: [
-            {
-               eth_accounts: {},
-            },
-         ],
-      });
+      try {
+         await window.ethereum.request({
+            method: 'wallet_revokePermissions',
+            params: [
+               {
+                  eth_accounts: {},
+               },
+            ],
+         });
+      } catch (revokeError) {
+         console.log("Revoke error:", revokeError);
+         // Continue to next method even if this fails
+      }
+      
+      try {
+         await window.ethereum.request({
+            method: 'wallet_disconnect',
+            params: [
+               {
+                  eth_accounts: {},
+               },
+            ],
+         });
+      } catch (disconnectError) {
+         console.log("Disconnect error:", disconnectError);
+      }
    } catch (e) {
-      console.log(e);
+      console.log("General error:", e);
    }
    localStorage.removeItem('selectedWallet');
    window.location.href = '/disconnect';
 });
+
 investor_disconnect_btn_mobile.addEventListener('click', async function() {
    try {
-      await window.ethereum.request({
-         method: 'wallet_revokePermissions',
-         params: [
-            {
-               eth_accounts: {},
-            },
-         ],
-      });
-      await window.ethereum.request({
-         method: 'wallet_disconnect',
-         params: [
-            {
-               eth_accounts: {},
-            },
-         ],
-      });
+      try {
+         await window.ethereum.request({
+            method: 'wallet_revokePermissions',
+            params: [
+               {
+                  eth_accounts: {},
+               },
+            ],
+         });
+      } catch (revokeError) {
+         console.log("Revoke error:", revokeError);
+         // Continue to next method even if this fails
+      }
+      
+      try {
+         await window.ethereum.request({
+            method: 'wallet_disconnect',
+            params: [
+               {
+                  eth_accounts: {},
+               },
+            ],
+         });
+      } catch (disconnectError) {
+         console.log("Disconnect error:", disconnectError);
+      }
    } catch (e) {
-      console.log(e);
+      console.log("General error:", e);
    }
    localStorage.removeItem('selectedWallet');
    window.location.href = '/disconnect';

@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1, user-scalable=no">
+    <title>OpenFund - Testnet Faucet</title>
+    <link rel="icon" href="/static/app_assets/open_fund_logo.png">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.0/dist/ethers.umd.min.js"></script>
+    <style>
+        .faucet-wrapper {
+            margin-top: 80px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+        
+        .faucet-container {
+            width: clamp(330px, 90%, 500px);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            background-color: white;
+        }
+        
+        .faucet-header {
+            background: linear-gradient(135deg, #000145, #d14646);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .faucet-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .faucet-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .faucet-body {
+            padding: 20px;
+        }
+        
+        .token-card {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .token-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .token-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 12px;
+            border-radius: 50%;
+        }
+        
+        .token-details h4 {
+            margin: 0;
+            font-size: 16px;
+        }
+        
+        .token-details p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .faucet-button {
+            background: linear-gradient(135deg, #000145, #d14646);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .faucet-button:hover {
+            opacity: 0.9;
+        }
+        
+        .faucet-button:disabled {
+            background: #d8d8d8;
+            cursor: not-allowed;
+        }
+        
+        .countdown {
+            font-size: 14px;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 5px;
+        }
+        
+        .wallet-connect {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .wallet-connect p {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .connect-wallet-button {
+            background-color: #000145;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .connect-wallet-button:hover {
+            background-color: #00012b;
+        }
+        
+        .faucet-footer {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .gas-warning {
+         margin: 10px 0;
+         padding: 12px;
+         background-color: #fff3cd;
+         color: #856404;
+         border-left: 4px solid #ffc107;
+         border-radius: 4px;
+         display: flex;
+         align-items: center;
+      }
+
+      .gas-warning.hidden {
+         display: none;
+      }
+
+      .warning-icon {
+         font-size: 20px;
+         margin-right: 12px;
+         color: #ffc107;
+      }
+
+      .warning-text p {
+         margin: 0;
+         font-size: 14px;
+      }
+
+      .warning-text p:first-child {
+         margin-bottom: 4px;
+      }
+      .token-address {
+         margin-top: 15px;
+         text-align: center;
+         font-size: 14px;
+         color: #6c757d;
+         border-top: 1px solid #e9ecef;
+         padding-top: 12px;
+      }
+
+      .token-address p {
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         gap: 8px;
+         margin: 0;
+      }
+
+      .copy-button {
+         background: none;
+         border: none;
+         color: #000145;
+         cursor: pointer;
+         padding: 3px 5px;
+         border-radius: 4px;
+         transition: all 0.2s;
+         display: inline-flex;
+         align-items: center;
+         justify-content: center;
+      }
+
+      .copy-button:hover {
+         background-color: rgba(0, 1, 69, 0.1);
+      }
+
+      .copy-button i {
+         font-size: 16px;
+      }
+    </style>
+</head>
+<body>
+    <div class="loading-spinner hidden" id="loading-spinner">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="40" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.4"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="100" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="-.2"></animate></circle><circle fill="#000000" stroke="#000000" stroke-width="15" r="15" cx="160" cy="100"><animate attributeName="opacity" calcMode="spline" dur="2" values="1;0;1;" keySplines=".5 0 .5 1;.5 0 .5 1" repeatCount="indefinite" begin="0"></animate></circle></svg>
+    </div>
+    <!-- nav bar -->
+    <div class="nav-bar">
+        <div class="app-logo" onclick="window.location.href='/'">
+            <img src="/static/app_assets/open_fund_logo.png" alt="OpenFund logo">
+            <p>OpenFund</p>
+        </div>
+        <div class="nav-bar-select">
+            <div class="link" onclick="window.location.href='/invest'">Invest</div>
+            <div class="link" onclick="window.location.href='/blog'">Blog</div>
+            <div class="link" onclick="window.location.href='/document'">Document</div>
+        </div>
+        <div class="authenticate">
+            <button class="sign-in-up" onclick="window.location.href='/sign-up'" id="sign-in-up-btn">Log In/Sign Up</button>
+            <button class="connect-wallet" id="connect-btn">
+                <i class="fa-solid fa-wallet"></i>
+                <div class="investor_connected_check hidden" id="investor_connected_check" style="background-color: white; color: rgb(0, 1, 69); font-size: 15px; position: absolute; bottom: -3px; right: -3px; display: flex; align-items: center; justify-content: center; border-radius: 50%;"><i class="fa-solid fa-circle-check"></i></div>
+            </button>
+            <button class="raiser-account hidden" id="raiser-account">
+                <i class="fa-solid fa-user"></i>
+            </button>
+        </div>
+        <button class="menu-btn">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="investor-account-manage hidden" id="investor-account-manage">
+            <p>Investor account</p>
+            <input name="investor-wallet-address" id="investor-wallet-address" style="text-align: center; font-size: 12px; padding: 0; border: 0;" readonly required>
+            <div class="investor-account-manage-btn" onclick="window.location.href='/edit-profile'">Edit profile</div>
+            <div class="investor-account-manage-btn" id="investor-disconnect-btn">Disconnect</div>
+        </div>
+        <div class="raiser-account-manage hidden" id="raiser-account-manage">
+            <p>Raiser account</p>
+            <div class="raiser-account-manage-btn" onclick="window.location.href='/submitted-project'">Submitted projects</div>
+            <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
+            <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+            <div class="raiser-account-manage-btn" id="raiser-log-out-btn" onclick="window.location.href='/log-out'">Log out</div>
+        </div>
+    </div>
+    <div class="nav-bar-mobile hidden">
+        <div class="link-mobile" onclick="window.location.href='/invest'">Invest<i class="fa-solid fa-arrow-right"></i></div>
+        <hr>
+        <div class="link-mobile" onclick="window.location.href='/blog'">Blog<i class="fa-solid fa-arrow-right"></i></div>
+        <hr>
+        <div class="link-mobile" onclick="window.location.href='/document'">Document<i class="fa-solid fa-arrow-right"></i></div>
+        <hr>
+        <div class="authenticate-mobile">
+            <button class="connect-wallet-mobile" id="connect-btn-mobile">
+                Connect wallet<i class="fa-solid fa-wallet"></i>
+            </button>
+            <button class="sign-in-up-mobile" onclick="window.location.href='/sign-up'" id="sign-in-up-mobile-btn">Log In/Sign Up</button>
+            <button class="sign-in-up-mobile" id="raiser-account-mobile-btn">Raiser Account</button>
+        </div>
+        <div class="investor-account-manage-mobile hidden" id="investor-account-manage-mobile">
+            <p>Investor account</p>
+            <input name="investor-wallet-address hidden" id="investor-wallet-address-mobile" style="text-align: center; font-size: 12px; padding: 0; border: 0;" readonly required>
+            <div class="investor-account-manage-btn" onclick="window.location.href='/edit-profile'">Edit profile</div>
+            <div class="investor-account-manage-btn" id="investor-disconnect-btn-mobile">Disconnect</div>
+        </div>
+        <div class="raiser-account-manage-mobile hidden" id="raiser-account-manage-mobile">
+            <p>Raiser account</p>
+            <div class="raiser-account-manage-btn" onclick="window.location.href='/submitted-project'">Submitted projects</div>
+            <div class="raiser-account-manage-btn" onclick="window.location.href='/raiser-profile/{{ raiser_id }}'">Profile</div>
+            <div class="raiser-account-manage-btn" onclick="window.location.href='/edit-account'">Account settings</div>
+            <div class="raiser-account-manage-btn" id="raiser-log-out-btn-mobile" onclick="window.location.href='/log-out'">Log out</div>
+        </div>
+        <button class="close-nav-bar-mobile-btn" id="close-nav-bar-mobile-btn">Close</button>
+    </div>
+    <!-- end nav bar -->
+    <!-- connect wallet -->
+    <div class="overlay hidden" id="overlay">
+        <div class="connect-wallet-box hidden" id="connect-wallet-box">
+            <button class="close-connect-wallet-btn" id="close-connect-wallet-btn">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h1>Connect wallet</h1>
+            <p>(For investors only)</p>
+            <hr style="width: 100px;">
+            <button class="wallet_intergrated" data-wallet="metamask"><img class="wallet-icon-logo" src="/static/app_assets/metamask.png" alt="Metamask logo">Metamask</button>
+            <button class="wallet_intergrated" data-wallet="binance"><img class="wallet-icon-logo" src="/static/app_assets/binance_web3.png" alt="Metamask logo">Binance Web3</button>
+            <button class="wallet_intergrated" data-wallet="okx"><img class="wallet-icon-logo" src="/static/app_assets/okx_web3.png" alt="Metamask logo">OKX Web3</button>
+            <button class="wallet_intergrated" data-wallet="trust"><img class="wallet-icon-logo" src="/static/app_assets/trust_wallet.png" alt="Metamask logo">Trust Wallet</button>
+            <button class="wallet_intergrated" data-wallet="coinbase"><img class="wallet-icon-logo" src="/static/app_assets/coinbase_wallet.png" alt="Metamask logo">Coinbase Wallet</button>
+            <p>By connecting a wallet, you agree to the OpenFund's <a style="color:black" href="/legal#terms-of-service">Terms of Service</a> and consent to its <a style="color:black" href="/legal#privacy-policy">Privacy Policy</a>.</p>
+        </div>
+    </div>
+
+    <div class="faucet-wrapper">
+        <h1 style="text-align: center; margin-bottom: 0;">OpenFund Test Tokens Faucet</h1>
+        <p style="text-align: center; margin-top:0;">Get test tokens for the SEI DevNet to try out OpenFund features</p>
+        
+        <div class="faucet-container">
+            <div class="faucet-header">
+                <h2 class="faucet-title">Tokens Faucet</h2>
+                <div class="faucet-subtitle">Get SEI and USDT test tokens for free</div>
+            </div>
+            
+            <div class="faucet-body">
+                <div id="wallet-not-connected" class="wallet-connect">
+                    <p>Connect your wallet to access the faucet</p>
+                    <button id="faucet-connect-btn" class="connect-wallet-button">Connect Wallet</button>
+                </div>
+                
+                <div id="wallet-connected" class="hidden">
+                    <div class="token-card">
+                        <div class="token-info">
+                            <img src="/static/app_assets/sei-logo.png" alt="SEI Logo" class="token-icon">
+                            <div class="token-details">
+                                <h4>SEI Token</h4>
+                                <p>0.5 SEI per claim</p>
+                            </div>
+                        </div>
+                        <button id="claim-sei-btn" class="faucet-button">Claim SEI</button>
+                    </div>
+                    <div id="sei-countdown" class="countdown hidden">Next claim available in <span id="sei-timer">00:00:00</span></div>
+                    
+                    <div class="token-card" style="margin-bottom: 0;">
+                        <div class="token-info">
+                            <img src="/static/app_assets/usdt-logo.png" alt="USDT Logo" class="token-icon">
+                            <div class="token-details">
+                                <h4>USDT Token</h4>
+                                <p>3,000 USDT per claim</p>
+                            </div>
+                        </div>
+                        <button id="claim-usdt-btn" class="faucet-button">Claim USDT</button>
+                    </div>
+                    <div id="usdt-countdown" class="countdown hidden">Next claim available in <span id="usdt-timer">00:00:00</span></div>
+                    <div class="token-address">
+                     <p>USDT Contract: <span id="usdt-address-display">0xDeC819....4609</span>
+                         <button id="copy-usdt-address" class="copy-button" title="Copy USDT address">
+                             <i class="fa-regular fa-copy"></i>
+                         </button>
+                     </p>
+                 </div>
+                </div>
+            </div>
+            
+            <div class="faucet-footer">
+                Test tokens are for testing purposes only and have no real value.
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="app-info">
+            <div class="app-logo-footer" onclick="window.location.href='/'">
+                <img src="/static/app_assets/open_fund_logo.png" alt="OpenFund logo">
+                <p>OpenFund</p>
+            </div>
+            <div class="term-links">
+                <a href="/legal#privacy-policy">Privacy</a>
+                <a href="/legal#terms-of-service">Terms</a>
+                <a href="/document">Document</a>
+                <a href="/blog">Blog</a>
+                <a href="/legal#help-center">Help Center</a>
+            </div>
+            <div class="community-links">
+                <i class="fa-brands fa-square-x-twitter" onclick="window.location.href='https://x.com'"></i>
+                <i class="fa-brands fa-telegram" onclick="window.location.href='https://telegram.com'"></i>
+                <i class="fa-brands fa-facebook" onclick="window.location.href='https://facebook.com'"></i>
+                <i class="fa-solid fa-envelope" onclick="window.location.href='mailto:support@openfund.live'"></i>
+            </div>
+        </div>
+        <div class="term-links-mobile">
+            <a href="/legal#privacy-policy">Privacy</a>
+            <a href="/legal#terms-of-service">Terms</a>
+            <a href="/document">Document</a>
+            <a href="/blog">Blog</a>
+            <a href="/legal#help-center">Help Center</a>
+        </div>
+    </div>
+
+    <script src="/static/script/connect.js"></script>
+    <script src="/static/script/main.js"></script>
+    <script>
+        const faucetConfig = {
+         contractAddress: "0x3928fe579bf7214082851d0c5fafa272215910f1",
+         seiAmount: "0.5",
+         usdtAmount: "3000",
+         cooldownTime: 3 * 60 * 60, // 3 hours in seconds
+         rpcUrl: "https://evm-rpc-arctic-1.sei-apis.com"
+      };
+
+      const faucetABI = [
+         "function claimSEI() external",
+         "function claimUSDT() external",
+         "function claimSEIGasless(address user, uint256 nonce, bytes calldata signature) external",
+         "function claimUSDTGasless(address user, uint256 nonce, bytes calldata signature) external",
+         "function getNextClaimTime(address user, uint8 tokenType) external view returns (uint256)",
+         "function getSEIBalance(address user) external view returns (uint256)",
+         "function getUSDTBalance(address user) external view returns (uint256)",
+         "function isNonceUsed(address user, uint256 nonce) external view returns (bool)"
+      ];
+
+      let faucetContract;
+      let provider;
+      let signer;
+      let userAddress;
+      let seiTimerId;
+      let usdtTimerId;
+
+      document.addEventListener('DOMContentLoaded', async function() {
+         const faucetConnectBtn = document.getElementById('faucet-connect-btn');
+         const claimSeiBtn = document.getElementById('claim-sei-btn');
+         const claimUsdtBtn = document.getElementById('claim-usdt-btn');
+         const copyButton = document.getElementById('copy-usdt-address');
+         const usdtAddressDisplay = document.getElementById('usdt-address-display');
+         
+         if (copyButton && usdtAddressDisplay) {
+            copyButton.addEventListener('click', function() {
+                  const usdtAddress = usdtAddressDisplay.textContent;
+                  
+                  navigator.clipboard.writeText(usdtAddress)
+                     .then(() => {
+                        const originalIcon = copyButton.innerHTML;
+                        copyButton.innerHTML = '<i class="fa-solid fa-check" style="color: #4caf50;"></i>';
+                        copyButton.title = "Copied!";
+                        
+                        // Show toast message
+                        showToastMessage("USDT contract address copied to clipboard!", true);
+                        
+                        // Reset after 2 seconds
+                        setTimeout(() => {
+                              copyButton.innerHTML = originalIcon;
+                              copyButton.title = "Copy USDT address";
+                        }, 2000);
+                     })
+                     .catch(err => {
+                        console.error('Could not copy text: ', err);
+                        showToastMessage("Failed to copy. Please try again.", false);
+                     });
+            });
+         }
+         faucetConnectBtn.addEventListener('click', function() {
+            connect_wallet_btn.click();
+         });
+         
+         claimSeiBtn.addEventListener('click', claimSEI);
+         claimUsdtBtn.addEventListener('click', claimUSDT);
+         
+         // Initialize if wallet is already connected
+         if (investor_wallet_connected) {
+            showConnectedUI();
+            initFaucet();
+         }
+         
+         window.addEventListener('walletConnectionVerified', async function(event) {
+            if (event.detail.isConnected) {
+                  showConnectedUI();
+                  initFaucet();
+            }
+         });
+      });
+
+      async function checkGasBalance() {
+         try {
+            if (!userAddress || !provider) return false;
+            
+            const balance = await provider.getBalance(userAddress);
+            const minGasBalance = ethers.parseEther("0.005"); // Minimum gas needed (0.005 SEI)
+            
+            return balance >= minGasBalance;
+         } catch (error) {
+            console.error("Error checking gas balance:", error);
+            return false;
+         }
+      }
+      async function initFaucet() {
+         try {
+            const storedWallet = localStorage.getItem('selectedWallet');
+            
+            switch (storedWallet) {
+                  case 'metamask':
+                  case 'binance':
+                  case 'coinbase':
+                     if (window.ethereum) {
+                        provider = new ethers.BrowserProvider(window.ethereum);
+                     }
+                     break;
+                  case 'okx':
+                     if (window.okxwallet) {
+                        provider = new ethers.BrowserProvider(window.okxwallet);
+                     }
+                     break;
+                  case 'trust':
+                     const trustProvider = window.trustwallet || (window.ethereum && window.ethereum.isTrust ? window.ethereum : null);
+                     if (trustProvider) {
+                        provider = new ethers.BrowserProvider(trustProvider);
+                     }
+                     break;
+            }
+            
+            if (provider) {
+            signer = await provider.getSigner();
+            userAddress = await signer.getAddress();
+            faucetContract = new ethers.Contract(faucetConfig.contractAddress, faucetABI, signer);
+            
+            // Check cooldown times and update UI
+            await checkSEICooldown();
+            await checkUSDTCooldown();
+            
+            // Set up balance update interval
+            setInterval(async () => {
+                await checkGasBalance();
+            }, 10000); // Check every 10 seconds
+        }
+    } catch (error) {
+        console.error("Error initializing faucet:", error);
+        showToastMessage("Failed to initialize faucet. Please try refreshing the page.", false);
+    }
+}
+
+      function showConnectedUI() {
+         document.getElementById('wallet-not-connected').classList.add('hidden');
+         document.getElementById('wallet-connected').classList.remove('hidden');
+      }
+
+      async function checkSEICooldown() {
+         try {
+            const nextClaimTime = await faucetContract.getNextClaimTime(userAddress, 0);
+            const currentTime = Math.floor(Date.now() / 1000);
+            const timeRemaining = Number(nextClaimTime) - currentTime;
+            
+            if (timeRemaining > 0) {
+                  // User is in cooldown period
+                  document.getElementById('claim-sei-btn').disabled = true;
+                  document.getElementById('sei-countdown').classList.remove('hidden');
+                  startSEICountdown(timeRemaining);
+            } else {
+                  // User can claim
+                  document.getElementById('claim-sei-btn').disabled = false;
+                  document.getElementById('sei-countdown').classList.add('hidden');
+                  if (seiTimerId) clearInterval(seiTimerId);
+            }
+         } catch (error) {
+            console.error("Error checking SEI cooldown:", error);
+         }
+      }
+
+      async function checkUSDTCooldown() {
+         try {
+            const nextClaimTime = await faucetContract.getNextClaimTime(userAddress, 1);
+            const currentTime = Math.floor(Date.now() / 1000);
+            const timeRemaining = Number(nextClaimTime) - currentTime;
+            
+            if (timeRemaining > 0) {
+                  // User is in cooldown period
+                  document.getElementById('claim-usdt-btn').disabled = true;
+                  document.getElementById('usdt-countdown').classList.remove('hidden');
+                  startUSDTCountdown(timeRemaining);
+            } else {
+                  // User can claim
+                  document.getElementById('claim-usdt-btn').disabled = false;
+                  document.getElementById('usdt-countdown').classList.add('hidden');
+                  if (usdtTimerId) clearInterval(usdtTimerId);
+            }
+         } catch (error) {
+            console.error("Error checking USDT cooldown:", error);
+         }
+      }
+
+      function startSEICountdown(seconds) {
+         if (seiTimerId) clearInterval(seiTimerId);
+         
+         updateSEITimer(seconds);
+         
+         seiTimerId = setInterval(() => {
+            seconds--;
+            if (seconds <= 0) {
+                  clearInterval(seiTimerId);
+                  document.getElementById('claim-sei-btn').disabled = false;
+                  document.getElementById('sei-countdown').classList.add('hidden');
+            } else {
+                  updateSEITimer(seconds);
+            }
+         }, 1000);
+      }
+
+      function startUSDTCountdown(seconds) {
+         if (usdtTimerId) clearInterval(usdtTimerId);
+         
+         updateUSDTTimer(seconds);
+         
+         usdtTimerId = setInterval(() => {
+            seconds--;
+            if (seconds <= 0) {
+                  clearInterval(usdtTimerId);
+                  document.getElementById('claim-usdt-btn').disabled = false;
+                  document.getElementById('usdt-countdown').classList.add('hidden');
+            } else {
+                  updateUSDTTimer(seconds);
+            }
+         }, 1000);
+      }
+
+      function updateSEITimer(seconds) {
+         const hours = Math.floor(seconds / 3600);
+         const minutes = Math.floor((seconds % 3600) / 60);
+         const secs = seconds % 60;
+         
+         document.getElementById('sei-timer').textContent = 
+            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }
+
+      function updateUSDTTimer(seconds) {
+         const hours = Math.floor(seconds / 3600);
+         const minutes = Math.floor((seconds % 3600) / 60);
+         const secs = seconds % 60;
+         
+         document.getElementById('usdt-timer').textContent = 
+            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }
+
+      async function claimSEI() {
+    if (!faucetContract) {
+        showToastMessage("Faucet not initialized. Please try refreshing the page.", false);
+        return;
+    }
+    
+    document.getElementById('claim-sei-btn').disabled = true;
+    loading_spinner.classList.remove("hidden");
+    overlay.classList.remove("hidden");
+    
+    try {
+        const hasGas = await checkGasBalance();
+        
+        if (hasGas) {
+            // Direct transaction if user has gas
+            showToastMessage("Claiming SEI tokens...", true);
+            const tx = await faucetContract.claimSEI({
+                gasLimit: 200000
+            });
+            
+            await tx.wait();
+        } else {
+            // Gasless transaction via relay server
+            showToastMessage("Processing gasless SEI claim...", true);
+            await claimViaRelay(0); // 0 = SEI
+        }
+        
+        showToastMessage(`Successfully claimed ${faucetConfig.seiAmount} SEI tokens!`, true);
+        
+        // Start cooldown
+        startSEICountdown(faucetConfig.cooldownTime);
+        document.getElementById('sei-countdown').classList.remove('hidden');
+        
+        // Enable USDT claim button as user now has SEI
+        if (document.getElementById('usdt-countdown').classList.contains('hidden')) {
+            document.getElementById('claim-usdt-btn').disabled = false;
+            document.getElementById('claim-usdt-btn').removeAttribute('title');
+        }
+        
+    } catch (error) {
+        console.error("Error claiming SEI:", error);
+        document.getElementById('claim-sei-btn').disabled = false;
+        showToastMessage(`Failed to claim SEI: ${error.reason || error.message || "Transaction failed"}`, false);
+    } finally {
+        loading_spinner.classList.add("hidden");
+        overlay.classList.add("hidden");
+    }
+}
+
+async function claimUSDT() {
+    if (!faucetContract) {
+        showToastMessage("Faucet not initialized. Please try refreshing the page.", false);
+        return;
+    }
+    
+    document.getElementById('claim-usdt-btn').disabled = true;
+    loading_spinner.classList.remove("hidden");
+    overlay.classList.remove("hidden");
+    
+    try {
+        const hasGas = await checkGasBalance();
+        
+        if (hasGas) {
+            // Direct transaction if user has gas
+            showToastMessage("Claiming USDT tokens...", true);
+            const tx = await faucetContract.claimUSDT({
+                gasLimit: 200000
+            });
+            
+            await tx.wait();
+        } else {
+            // Gasless transaction via relay server
+            showToastMessage("Processing gasless USDT claim...", true);
+            await claimViaRelay(1); // 1 = USDT
+        }
+        
+        showToastMessage(`Successfully claimed ${faucetConfig.usdtAmount} USDT tokens!`, true);
+        
+        // Start cooldown
+        startUSDTCountdown(faucetConfig.cooldownTime);
+        document.getElementById('usdt-countdown').classList.remove('hidden');
+    } catch (error) {
+      console.error("Error claiming USDT:", error);
+        document.getElementById('claim-usdt-btn').disabled = false;
+        showToastMessage(`Failed to claim USDT: ${error.reason || error.message || "Transaction failed"}`, false);
+    } finally {
+        loading_spinner.classList.add("hidden");
+        overlay.classList.add("hidden");
+    }
+}
+// New function to claim via relay server
+async function claimViaRelay(tokenType) {
+    try {
+        if (!signer || !userAddress) {
+            throw new Error("Wallet not properly connected");
+        }
+        
+        // Generate a nonce (current timestamp + random number)
+        const nonce = Math.floor(Date.now() / 1000) * 1000 + Math.floor(Math.random() * 1000);
+        
+        // Check if nonce is already used
+        const isUsed = await faucetContract.isNonceUsed(userAddress, nonce);
+        if (isUsed) {
+            throw new Error("Nonce already used, please try again");
+        }
+        
+        // Create message to sign
+        const contractAddress = faucetConfig.contractAddress;
+        const messageHash = ethers.solidityPackedKeccak256(
+            ["address", "address", "uint8", "uint256"],
+            [contractAddress, userAddress, tokenType, nonce]
+        );
+        
+        // Sign the message
+        const signature = await signer.signMessage(ethers.getBytes(messageHash));
+        
+        // Send to relay server
+        const response = await fetch('/relay', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contractAddress,
+                userAddress,
+                tokenType,
+                nonce,
+                signature
+            }),
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Relay server error");
+        }
+        
+        const result = await response.json();
+        
+        // Poll for transaction completion
+        if (result.transactionHash) {
+            await pollForTransaction(result.transactionHash);
+        }
+    } catch (error) {
+        console.error("Relay error:", error);
+        throw error;
+    }
+}
+// Function to poll for transaction completion
+async function pollForTransaction(txHash) {
+    const provider = new ethers.JsonRpcProvider(faucetConfig.rpcUrl);
+    let attempts = 0;
+    const maxAttempts = 30; // Poll for maximum 30 seconds
+    
+    while (attempts < maxAttempts) {
+        try {
+            const receipt = await provider.getTransactionReceipt(txHash);
+            if (receipt && receipt.status === 1) {
+                // Transaction successful
+                return receipt;
+            } else if (receipt && receipt.status === 0) {
+                // Transaction failed
+                throw new Error("Transaction failed on-chain");
+            }
+            
+            // Wait 1 second before next check
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            attempts++;
+        } catch (error) {
+            if (error.message !== "Transaction failed on-chain") {
+                // If it's a network error, just continue polling
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                attempts++;
+            } else {
+                throw error;
+            }
+        }
+    }
+    
+    throw new Error("Transaction confirmation timeout");
+}
+        const menuBtn = document.querySelector('.menu-btn');
+        const mobileNav = document.querySelector('.nav-bar-mobile');
+        const close_nav_bar_mobile_btn = document.getElementById("close-nav-bar-mobile-btn");
+        menuBtn.addEventListener('click', () => {
+            mobileNav.classList.remove('hidden');
+        });
+
+        close_nav_bar_mobile_btn.addEventListener('click', () => {
+            mobileNav.classList.add('hidden');
+        });
+
+        let nonce;
+        nonce = "{{ nonce }}";
+        let isInvstorConnecting = true;
+        const investor_wallet_connected = {{ investor_connected | tojson }};
+        const raiser_loggedin = {{ raiser_logged_in | tojson }};
+        const shortWallet = "{{ investor_wallet_address }}".slice(0, 6) + '...' + "{{ investor_wallet_address }}".slice(-4);
+    </script>
+        <script src="/static/script/nav-bar.js"></script>
+</body>
+</html>

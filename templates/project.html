@@ -97,7 +97,7 @@
          <button class="wallet_intergrated" data-wallet="okx"><img class="wallet-icon-logo" src="/static/app_assets/okx_web3.png" alt="Metamask logo">OKX Web3</button>
          <button class="wallet_intergrated" data-wallet="trust"><img class="wallet-icon-logo" src="/static/app_assets/trust_wallet.png" alt="Metamask logo">Trust Wallet</button>
          <button class="wallet_intergrated" data-wallet="coinbase"><img class="wallet-icon-logo" src="/static/app_assets/coinbase_wallet.png" alt="Metamask logo">Coinbase Wallet</button>
-         <p>By connecting a wallet, you agree to the OpenFund’s <a style="color:black" href="/term-service">Terms of Service</a> and consent to its <a style="color:black" href="/privacy-policy">Privacy Policy</a>.</p>
+         <p>By connecting a wallet, you agree to the OpenFund’s <a style="color:black" href="/legal#terms-of-service">Terms of Service</a> and consent to its <a style="color:black" href="/legal#privacy-policy">Privacy Policy</a>.</p>
 		</div>
 	</div>
    <style>
@@ -501,7 +501,7 @@
 				</div>
 				<p style="margin: 5px 0 0 0; font-size: 14px; text-align: right;">Balance: <span id="usdt-balance">--</span> USDT</p>
 				<p style="margin: 0; font-size: 14px; text-align: right;">You will receive <span id="token-to-receive">--</span> {{ project.token_symbol }}</p>
-            <p id="connect-wallet-alert" style="margin: 0; font-size: 14px; text-align: center; color: red">Connect wallet to continue!</p>
+            <p id="connect-wallet-alert" style="margin: 0; font-size: 14px; text-align: center; color: red; margin-top: 10px;">Connect wallet to continue.</p>
 				<div class="project-actions">
                 <button class="invest-btn" disabled>Invest Now</button>
                 <button class="request-refund-btn" disabled>Request Refund</button>
@@ -515,7 +515,16 @@
 			  <span id="like-count">0</span>
 			</button>
 		 </div>
-		 
+		 <div class="faucet-section" style="margin: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+			<p style="text-align: center; margin-bottom: 10px; color: #6c757d;">Need test tokens to invest in this project?</p>
+			<a href="/faucet" class="faucet-link">
+				<div class="faucet-button">
+					<i class="fa-solid fa-faucet"></i>
+					<span>Get Free Test Tokens</span>
+				</div>
+			</a>
+		</div>
+		
 		 <style>
 			.like-btn {
 			  display: flex;
@@ -571,7 +580,37 @@
 			.like-animation {
 			  animation: like-animation 0.5s ease;
 			}
-		 </style>
+			.faucet-link {
+				text-decoration: none;
+			}
+
+			.faucet-button {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 10px;
+				background: linear-gradient(135deg, #000145, #d14646);
+				color: white;
+				padding: 12px 24px;
+				border-radius: 25px;
+				font-weight: 600;
+				cursor: pointer;
+				transition: all 0.3s ease;
+				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+				border: none;
+			}
+
+			.faucet-button:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+				opacity: 0.95;
+			}
+
+			.faucet-button i {
+				font-size: 20px;
+			}
+
+	</style>
 	</div>
    <div class="footer">
 		<div class="app-info">
@@ -580,11 +619,11 @@
 				<p>OpenFund</p>
 			</div>
 			<div class="term-links">
-				<a href="/privacy_policy">Privacy</a>
-				<a href="/terms">Terms</a>
+				<a href="/legal#privacy-policy">Privacy</a>
+				<a href="/legal#terms-of-service">Terms</a>
 				<a href="/document">Document</a>
 				<a href="/blog">Blog</a>
-				<a href="/help_center">Help Center</a>
+				<a href="/legal#help-center">Help Center</a>
 			</div>
 			<div class="community-links">
 				<i class="fa-brands fa-square-x-twitter" onclick="window.location.href='https://x.com'"></i>
@@ -594,11 +633,11 @@
 			</div>
 		</div>
 		<div class="term-links-mobile">
-			<a href="/privacy_policy">Privacy</a>
-			<a href="/terms">Terms</a>
+			<a href="/legal#privacy-policy">Privacy</a>
+			<a href="/legal#terms-of-service">Terms</a>
 			<a href="/document">Document</a>
 			<a href="/blog">Blog</a>
-			<a href="/help_center">Help Center</a>
+			<a href="/legal#help-center">Help Center</a>
 		</div>
 	</div>
 </body>
@@ -624,7 +663,7 @@
       const shortWallet = "{{ investor_wallet_address }}".slice(0, 6) + '...' + "{{ investor_wallet_address }}".slice(-4);
 		
 		const contractConfig = {
-			openFundAddress: "0x6b2b43b3b162c2a7aea56c8422fd34a94847f2c0",
+			openFundAddress: "0x392cd2aeb4a903c74e718b1ed96add7f02881bf6",
 			usdtAddress: "0xDeC8197C9A95B603f65f147c1061A5aA3F3c4609",
 			projectId: {{ project.id }},
 			tokenContractAddress: "{{ project.token_address }}",

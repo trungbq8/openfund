@@ -20,7 +20,7 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 RPC_URL = "https://evm-rpc-arctic-1.sei-apis.com"
-CONTRACT_ADDRESS = Web3.to_checksum_address("0x6b2b43b3b162c2a7aea56c8422fd34a94847f2c0")
+CONTRACT_ADDRESS = Web3.to_checksum_address("0x392cd2aeb4a903c74e718b1ed96add7f02881bf6")
 
 CONTRACT_ABI = [
     {

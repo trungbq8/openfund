@@ -109,7 +109,6 @@ def create_project_onchain(project_data):
         
         # Wait for transaction receipt
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-        
         print(f"Project created with ID: {project_id}")
         print(f"Transaction hash: {tx_hash.hex()}")
         
@@ -118,7 +117,6 @@ def create_project_onchain(project_data):
             print(f"Project {project_id} status updated to 'created'")
         else:
             print(f"Failed to update project {project_id} status")
-            
         return True
     except Exception as error:
         print(f"Error creating project {project_id}: {str(error)}")
@@ -135,7 +133,8 @@ if not w3.is_connected():
 account = w3.eth.account.from_key(OPENFUND_PRIVATEKEY)
 deployer_address = account.address
 
-open_fund_address = Web3.to_checksum_address("0x6b2b43b3b162c2a7aea56c8422fd34a94847f2c0")
+open_fund_address = Web3.to_checksum_address("0x392cd2aeb4a903c74e718b1ed96add7f02881bf6")
+
 open_fund_abi = [
    {
       "inputs": [
@@ -159,14 +158,12 @@ open_fund_contract = w3.eth.contract(address=open_fund_address, abi=open_fund_ab
 try:
     while True:
         pending_projects = get_pending_projects()
-        
         if pending_projects:
             print(f"Found {len(pending_projects)} pending projects to process")
             for project in pending_projects:
                 create_project_onchain(project)
         else:
             print("No pending projects found")
-            
         print("Sleeping for 20 seconds...")
         time.sleep(20)
 except KeyboardInterrupt:
