@@ -751,7 +751,7 @@
 					unixTimestamp = Number({{ project.end_time + 4*24*60*60 }});
 					document.getElementById("end-time-text").innerHTML = "Claim refund ends in: ";
 				}
-				if (projectDetails[7] == 3 && !investmentDetails[2] && user_token_balance > 0 && currentTimestamp < Number({{ project.end_time + 4*24*60*60 }})){
+				if (projectDetails[7] == 3 && !investmentDetails[2] && user_token_balance > 0 && currentTimestamp > Number({{ project.end_time + 3*24*60*60 }}) && currentTimestamp < Number({{ project.end_time + 4*24*60*60 }})){
 					document.querySelector('.claim-refund-btn').disabled = false;
 					document.querySelector('.claim-refund-btn').style.cursor = 'pointer';
 					document.querySelector('.claim-refund-btn').style.borderColor = 'black';
