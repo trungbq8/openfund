@@ -726,7 +726,7 @@
 				const user_token_balance = await projectTokenContract.balanceOf(userAddress);
 				projectDetails = await openFundContract.getProjectDetails(contractConfig.projectId);
 				investmentDetails = await openFundContract.getInvestmentDetails(contractConfig.projectId, userAddress);
-				if (projectDetails[7] == 1){
+				if (projectDetails[7] == 1 && currentTimestamp < Number({{ project.end_time }})){
 					document.querySelector('.invest-btn').disabled = false;
 					document.querySelector('.invest-btn').style.cursor = 'pointer';
 					document.querySelector('.invest-btn').style.backgroundColor = '#000145';
