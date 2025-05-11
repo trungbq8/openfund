@@ -737,7 +737,7 @@
 					document.querySelector('.request-refund-btn').textContent = 'Voted for Refund';
 				}
 				currentTimestamp = Math.floor(Date.now() / 1000);
-				if (projectDetails[7] == 2 && !investmentDetails[1] && user_token_balance > 0 && currentTimestamp < Number({{ project.end_time + 3*24*60*60 }})){
+				if (!investmentDetails[1] && user_token_balance > 0 && currentTimestamp < Number({{ project.end_time + 3*24*60*60 }}) && currentTimestamp > Number({{ project.end_time }})){
 					unixTimestamp = Number({{ project.end_time + 3*24*60*60 }});
 					document.querySelector('.request-refund-btn').disabled = false;
 					document.querySelector('.request-refund-btn').style.cursor = 'pointer';
