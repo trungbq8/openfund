@@ -1702,10 +1702,15 @@ def relay_transaction():
             raw_tx = signed_tx.raw_transaction
         tx_hash = w3.eth.send_raw_transaction(raw_tx)
         
+        # Convert the tx_hash to hex string and ensure it has 0x prefix
+        tx_hash_hex = tx_hash.hex()
+        if not tx_hash_hex.startswith('0x'):
+            tx_hash_hex = '0x' + tx_hash_hex
+      
         # Return the transaction hash
         return jsonify({
             "success": True,
-            "transactionHash": tx_hash.hex()
+            "transactionHash": tx_hash_hex
         })
         
     except Exception as e:
