@@ -66,7 +66,7 @@ async function signMessage(account, message, walletType) {
             throw new Error(`${formatWalletName(walletType)} provider not found`);
       }
 
-      signedMsg = await window.ethereum.request({
+      signedMsg = await provider.request({
          method: 'personal_sign',
          params: [message, account]
       });

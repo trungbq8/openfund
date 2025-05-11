@@ -35,7 +35,7 @@ investor_disconnect_btn.addEventListener('click', async function() {
       }
       
       try {
-         await window.ethereum.request({
+         await window.okxwallet.request({
             method: 'wallet_disconnect',
             params: [
                {
@@ -70,7 +70,7 @@ investor_disconnect_btn_mobile.addEventListener('click', async function() {
       }
       
       try {
-         await window.ethereum.request({
+         await window.okxwallet.request({
             method: 'wallet_disconnect',
             params: [
                {
@@ -143,7 +143,6 @@ if (investor_wallet_connected) {
    walletAddressInputMobile.value = shortWallet
    document.getElementById("connect-btn-mobile").innerHTML = `Connected<i class="fa-solid fa-circle-check">`;
 }
-
 if (raiser_loggedin) {
    raiser_account_btn.classList.remove('hidden');
    sign_in_up_btn.classList.add('hidden');
