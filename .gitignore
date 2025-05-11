@@ -2,4 +2,4 @@ config.env
 *.pyc
 __pycache__/
 .DS_Store
-contract-set-up.js
+last_processed_block.json

@@ -1611,13 +1611,11 @@ def relay_transaction():
     try:
         data = request.json
         
-        # Validate request data
         required_fields = ['contractAddress', 'userAddress', 'tokenType', 'nonce', 'signature']
         for field in required_fields:
             if field not in data:
                 return jsonify({"error": f"Missing required field: {field}"}), 400
         
-        # Get relayer private key from environment variable
         relayer_private_key = os.getenv("RELAYER_PRIVATE_KEY")
         if not relayer_private_key:
             return jsonify({"error": "Relayer not configured"}), 500
@@ -1647,30 +1645,25 @@ def relay_transaction():
             }
         ]
         
-        # Create contract instance
         contract_address = data['contractAddress']
         contract = w3.eth.contract(address=Web3.to_checksum_address(contract_address), abi=faucet_abi)
-        # Create transaction based on token type
         token_type = int(data['tokenType'])
         user_address = data['userAddress']
         nonce = int(data['nonce'])
         signature = data['signature']
         
-        # Get the relayer address
         account = w3.eth.account.from_key(relayer_private_key)
         relayer_address = account.address
         
-        # Check if the relayer has enough balance
         gas_price = w3.eth.gas_price
-        estimated_gas = 200000  # Set a default gas limit
+        estimated_gas = 200000
         required_balance = gas_price * estimated_gas
         relayer_balance = w3.eth.get_balance(relayer_address)
         
         if relayer_balance < required_balance:
             return jsonify({"error": "Relayer has insufficient balance"}), 500
         
-        # Create and sign transaction
-        if token_type == 0:  # SEI
+        if token_type == 0:
             tx = contract.functions.claimSEIGasless(
                 user_address,
                 nonce,
@@ -1681,7 +1674,7 @@ def relay_transaction():
                 'gas': estimated_gas,
                 'gasPrice': gas_price
             })
-        else:  # USDT
+        else:
            tx = contract.functions.claimUSDTGasless(
                 user_address,
                 nonce,
@@ -1693,21 +1686,17 @@ def relay_transaction():
                 'gasPrice': gas_price
             })
         
-        # Sign and send transaction
         signed_tx = w3.eth.account.sign_transaction(tx, relayer_private_key)
         if hasattr(signed_tx, 'rawTransaction'):
             raw_tx = signed_tx.rawTransaction
         else:
-            # For newer web3.py versions
             raw_tx = signed_tx.raw_transaction
         tx_hash = w3.eth.send_raw_transaction(raw_tx)
         
-        # Convert the tx_hash to hex string and ensure it has 0x prefix
         tx_hash_hex = tx_hash.hex()
         if not tx_hash_hex.startswith('0x'):
             tx_hash_hex = '0x' + tx_hash_hex
       
-        # Return the transaction hash
         return jsonify({
             "success": True,
             "transactionHash": tx_hash_hex
