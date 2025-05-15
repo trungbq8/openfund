@@ -267,6 +267,56 @@
 		.request-refund-btn:hover, .claim-refund-btn:hover {
 			background-color: #f8f9fa;
 		}
+		.token-details-table {
+			width: 100%;
+			max-width: 800px;
+			margin: 20px auto 0px auto;
+		}
+		
+		.token-details-table h3 {
+			text-align: center;
+			margin-bottom: 15px;
+		}
+		
+		.token-details-table table {
+			width: 100%;
+			border-collapse: separate;
+			border-radius: 12px;
+			border: solid 1px rgb(233, 233, 233);
+			overflow: hidden;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+		}
+		
+		.token-details-table th, 
+		.token-details-table td {
+			padding: 12px 15px;
+			text-align: left;
+			border-bottom: 1px solid #eee;
+			word-break: break-word;
+		}
+		
+		.token-details-table tr:nth-child(even) {
+			background-color: #f8f9fa;
+		}
+		
+		.token-details-table tr:hover {
+			background-color: #f1f3f5;
+		}
+		
+		.token-details-table tr:last-child td {
+			border-bottom: none;
+		}
+		
+		@media (max-width: 600px) {
+			.token-details-table table {
+				font-size: 14px;
+			}
+			
+			.token-details-table th, 
+			.token-details-table td {
+				padding: 10px;
+			}
+		}
    </style>
    <div class="project-wrapper">
 		<img style="width: 100px; height: 100px; border-radius: 50%; margin-bottom: 10px;" src="{{ project.logo_url if project.logo_url else '/static/app_assets/open_fund_logo.png' }}">
@@ -276,58 +326,6 @@
 		<div style="width: 100%; max-width: 800px; text-align: justify;" class="introduction" id="introduction">{{ project.description | safe }}
 			<p><b>⚠️ Disclaimer</b><i> All information provided on this profile page has been submitted by the raiser and is not independently verified by our platform. We do not guarantee the accuracy, completeness, or reliability of the content. Investors are encouraged to conduct their own due diligence before making any decisions.</i></p>
 		</div>
-		<style>
-			.token-details-table {
-			  width: 100%;
-			  max-width: 800px;
-			  margin: 20px auto 0px auto;
-			}
-			
-			.token-details-table h3 {
-			  text-align: center;
-			  margin-bottom: 15px;
-			}
-			
-			.token-details-table table {
-			  width: 100%;
-			  border-collapse: separate;
-			  border-radius: 12px;
-			  border: solid 1px rgb(233, 233, 233);
-			  overflow: hidden;
-			  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-			}
-			
-			.token-details-table th, 
-			.token-details-table td {
-			  padding: 12px 15px;
-			  text-align: left;
-			  border-bottom: 1px solid #eee;
-			  word-break: break-word;
-			}
-			
-			.token-details-table tr:nth-child(even) {
-			  background-color: #f8f9fa;
-			}
-			
-			.token-details-table tr:hover {
-			  background-color: #f1f3f5;
-			}
-			
-			.token-details-table tr:last-child td {
-			  border-bottom: none;
-			}
-			
-			@media (max-width: 600px) {
-			  .token-details-table table {
-				 font-size: 14px;
-			  }
-			  
-			  .token-details-table th, 
-			  .token-details-table td {
-				 padding: 10px;
-			  }
-			}
-			</style>
 		<div class="token-details-table">
 			<h3>TOKEN DETAILS</h3>
 			<table>
