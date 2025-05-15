@@ -915,6 +915,32 @@
 				loading_spinner.classList.remove("hidden");
 				overlay.classList.remove("hidden");
 				const projectId = {{ project.id }};
+				
+				// Get user address and token balance
+				const address = await signer.getAddress();
+				const tokenBalance = await projectTokenContract.balanceOf(address);
+				
+				if (tokenBalance.toString() === "0") {
+					showToastMessage("No tokens to return for refund", false);
+					loading_spinner.classList.add("hidden");
+					overlay.classList.add("hidden");
+					return;
+				}
+				
+				// Check token approval
+				const allowance = await projectTokenContract.allowance(address, contractConfig.openFundAddress);
+				
+				// If allowance is less than balance, request approval
+				if (allowance < tokenBalance) {
+					showToastMessage("Approving tokens for refund...", true);
+					const approveTx = await projectTokenContract.approve(
+						contractConfig.openFundAddress,
+						tokenBalance
+					);
+					await approveTx.wait();
+					showToastMessage("Token approval successful", true);
+				}
+				
 				showToastMessage("Claiming refund...", true);
 				const claimTx = await openFundContract.getRefund(projectId, {
 					gasLimit: 300000
@@ -937,6 +963,7 @@
 				}, 1000);
 			}
 		}
+		
 		document.getElementById('usdt-amount').addEventListener('input', function(e) {
 			this.value = this.value.replace(/[^0-9]/g, '');
 			
