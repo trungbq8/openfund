@@ -916,7 +916,6 @@
 				overlay.classList.remove("hidden");
 				const projectId = {{ project.id }};
 				
-				// Get user address and token balance
 				const address = await signer.getAddress();
 				const tokenBalance = await projectTokenContract.balanceOf(address);
 				
@@ -927,10 +926,8 @@
 					return;
 				}
 				
-				// Check token approval
 				const allowance = await projectTokenContract.allowance(address, contractConfig.openFundAddress);
 				
-				// If allowance is less than balance, request approval
 				if (allowance < tokenBalance) {
 					showToastMessage("Approving tokens for refund...", true);
 					const approveTx = await projectTokenContract.approve(
@@ -963,7 +960,7 @@
 				}, 1000);
 			}
 		}
-		
+
 		document.getElementById('usdt-amount').addEventListener('input', function(e) {
 			this.value = this.value.replace(/[^0-9]/g, '');
 			
