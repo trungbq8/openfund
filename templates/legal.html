@@ -531,7 +531,6 @@
    <script src="/static/script/connect.js"></script>
    <script src="/static/script/main.js"></script>
    <script>
-      // Navigation and hash handling
       const menuBtn = document.querySelector('.menu-btn');
       const mobileNav = document.querySelector('.nav-bar-mobile');
       const close_nav_bar_mobile_btn = document.getElementById("close-nav-bar-mobile-btn");
@@ -539,7 +538,6 @@
       const sections = document.querySelectorAll('.legal-section');
       const helpCards = document.querySelectorAll('.help-card');
 
-      // Mobile menu handler
       menuBtn.addEventListener('click', () => {
          mobileNav.classList.remove('hidden');
       });
@@ -548,7 +546,6 @@
          mobileNav.classList.add('hidden');
       });
 
-      // Function to show a specific section
       function showSection(sectionId) {
          sections.forEach(section => {
             section.classList.remove('active');
@@ -567,13 +564,11 @@
             navItem.classList.add('active');
          }
 
-         // Update URL hash without scrolling
          const scrollPosition = window.scrollY;
          window.location.hash = sectionId;
          window.scrollTo(0, scrollPosition - 100);
       }
 
-      // Handle navigation clicks
       navItems.forEach(item => {
          item.addEventListener('click', () => {
             const sectionId = item.getAttribute('data-section');
@@ -581,18 +576,15 @@
          });
       });
 
-      // Handle URL hash on load
       function handleHash() {
          const hash = window.location.hash.substring(1);
          if (hash) {
             showSection(hash);
          } else {
-            // Default to privacy policy if no hash is present
             showSection('privacy-policy');
          }
       }
 
-      // Handle help card expansion
       helpCards.forEach(card => {
          card.addEventListener('click', function(e) {
             const isIcon = e.target.closest('.expand-icon');
@@ -604,7 +596,6 @@
          });
       });
 
-      // Connect wallet globals
       let nonce;
       nonce = "{{ nonce }}";
       let isInvstorConnecting = true;
@@ -612,7 +603,6 @@
       const raiser_loggedin = {{ raiser_logged_in | tojson }};
       const shortWallet = "{{ investor_wallet_address }}".slice(0, 6) + '...' + "{{ investor_wallet_address }}".slice(-4);
 
-      // Initialize the page
       window.addEventListener('load', handleHash);
       window.addEventListener('hashchange', handleHash);
    </script>
