@@ -1055,10 +1055,15 @@
             await fetchProjectDetails();
             await updateTokenBalance();
             updateActionsBasedOnStatus();
-            
+            setTimeout(() => {
+					location.reload();
+				}, 2000);
          } catch (error) {
             console.error('Failed to deposit tokens:', error);
             showToastMessage(`Failed to deposit tokens: ${error.reason || error.message}`, false);
+            setTimeout(() => {
+					location.reload();
+				}, 2000);
          } finally {
             loadingSpinner.classList.add('hidden');
             overlay.classList.add('hidden');
@@ -1087,10 +1092,15 @@
             // Refresh data
             await fetchProjectDetails();
             updateActionsBasedOnStatus();
-            
+            setTimeout(() => {
+					location.reload();
+				}, 2000);
          } catch (error) {
             console.error('Failed to claim funds:', error);
             showToastMessage(`Failed to claim funds: ${error.reason || error.message}`, false);
+            setTimeout(() => {
+					location.reload();
+				}, 2000);
          } finally {
             loadingSpinner.classList.add('hidden');
             overlay.classList.add('hidden');
@@ -1120,10 +1130,15 @@
             await fetchProjectDetails();
             await updateTokenBalance();
             updateActionsBasedOnStatus();
-            
+            setTimeout(() => {
+					location.reload();
+				}, 2000);
          } catch (error) {
             console.error('Failed to claim unsold tokens:', error);
             showToastMessage(`Failed to claim unsold tokens: ${error.reason || error.message}`, false);
+            setTimeout(() => {
+					location.reload();
+				}, 2000);
          } finally {
             loadingSpinner.classList.add('hidden');
             overlay.classList.add('hidden');
