@@ -972,6 +972,11 @@
                claimFundsBtn.disabled = true;
                claimUnsoldTokensBtn.disabled = true;
                actionWarning.textContent = "The project is in the voting period. Investors are voting on whether to refund or approve.";
+               if (currentTime > endRefundTime){
+                  claimFundsBtn.disabled = false;
+                  claimUnsoldTokensBtn.disabled = false;
+                  actionWarning.textContent = "You can claim funds and unsold tokens now.";
+               }
                break;
                
             case 3,4: // FundingFailed
