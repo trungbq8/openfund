@@ -75,8 +75,9 @@ def get_active_projects():
         cur.execute("""
             SELECT id, funding_status 
             FROM project 
-            WHERE funding_status IN ('raising', 'voting', 'created') 
+            WHERE funding_status IN ('raising', 'voting', 'created', 'failed') 
             AND listing_status = 'accepted'
+            AND extract(epoch from now()) < (investment_end_time + (4 * 24 * 60 * 60))
         """)
         
         projects = cur.fetchall()

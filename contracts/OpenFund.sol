@@ -254,7 +254,6 @@ contract OpenFund is Ownable, ReentrancyGuard {
         );
         
         project.tokensSold -= userTokenBalance / 10**project.decimal;
-        project.tokensToSell += userTokenBalance / 10**project.decimal;
         project.refundClaimed[msg.sender] = true;
         project.fundsRaised -= refundAmount;
         

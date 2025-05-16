@@ -950,7 +950,6 @@
          const currentTime = Math.floor(Date.now() / 1000);
          const endFundingTime = projectDetails.endFundingTime;
          const endRefundTime = endFundingTime + (4 * 24 * 60 * 60); // 4 days after funding ends
-         
          // Status: 0 = InitialCreated, 1 = RaisingPeriod, 2 = VotingPeriod, 3 = FundingFailed, 4 = FundingCompleted
          switch (projectDetails.status) {
             case 0: // InitialCreated
@@ -979,10 +978,10 @@
                }
                break;
                
-            case 3,4: // FundingFailed
+            case 3: // FundingFailed
+            case 4: // FundingCompleted
                depositTokensBtn.disabled = true;
                //claimFundsBtn.disabled = true;
-               
                if (currentTime > endRefundTime && !projectDetails.fundsClaimed && !projectDetails.unsoldTokensClaimed) {
                   claimFundsBtn.disabled = false;
                   claimUnsoldTokensBtn.disabled = false;
