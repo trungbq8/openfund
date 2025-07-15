@@ -69,10 +69,10 @@ describe("OpenFund", function () {
       
       // Verify project details
       const projectDetails = await openFund.getProjectDetails(projectId);
-      expect(projectDetails.raiser).to.equal(projectRaiser.address);
-      expect(projectDetails.tokenAddress).to.equal(await testProjectToken.getAddress());
-      expect(projectDetails.tokensToSell).to.equal(tokensToSell);
-      expect(projectDetails.tokenPrice).to.equal(tokenPrice);
+      expect(projectDetails[0]).to.equal(projectRaiser.address); // raiser
+      expect(projectDetails[1]).to.equal(await testProjectToken.getAddress()); // tokenAddress
+      expect(projectDetails[2]).to.equal(tokensToSell); // tokensToSell
+      expect(projectDetails[4]).to.equal(tokenPrice); // tokenPrice
     });
 
     it("Should allow raiser to deposit tokens", async function () {
@@ -100,7 +100,7 @@ describe("OpenFund", function () {
         .withArgs(projectId, ethers.parseUnits(tokensToSell.toString(), decimal));
       
       const projectDetails = await openFund.getProjectDetails(projectId);
-      expect(projectDetails.status).to.equal(1); // RaisingPeriod
+      expect(projectDetails[7]).to.equal(1); // RaisingPeriod
     });
   });
 
@@ -143,15 +143,14 @@ describe("OpenFund", function () {
       
       // Check investment details
       const investmentDetails = await openFund.getInvestmentDetails(projectId, investor1.address);
-      expect(investmentDetails.investmentAmount).to.equal(ethers.parseUnits("100", 6));
+      expect(investmentDetails[0]).to.equal(ethers.parseUnits("100", 6)); // investmentAmount
       
       // Check project details after investment
       const projectDetails = await openFund.getProjectDetails(projectId);
-      expect(projectDetails.fundsRaised).to.equal(ethers.parseUnits("100", 6));
-      expect(projectDetails.investorsCount).to.equal(1);
+      expect(projectDetails[6]).to.equal(ethers.parseUnits("100", 6)); // fundsRaised
       
       // Check token balance of investor
-      const expectedTokens = ethers.parseUnits("100", 6) / BigInt(projectDetails.tokenPrice);
+      const expectedTokens = ethers.parseUnits("100", 6) / BigInt(projectDetails[4]); // tokenPrice
       const tokenBalance = await testProjectToken.balanceOf(investor1.address);
       expect(tokenBalance).to.equal(ethers.parseUnits(expectedTokens.toString(), decimal));
     });
@@ -235,25 +234,66 @@ describe("OpenFund", function () {
       
       // Check voting status
       const investmentDetails = await openFund.getInvestmentDetails(projectId, investor1.address);
-      expect(investmentDetails.hasVoted).to.be.true;
+      expect(investmentDetails[1]).to.be.true; // hasVoted
 
       const projectDetails = await openFund.getProjectDetails(projectId);
-      expect(projectDetails.status).to.equal(2); // VotingPeriod
-      expect(projectDetails.votersForRefundCount).to.equal(1);
+      expect(projectDetails[7]).to.equal(2); // VotingPeriod status
     });
 
-    it("Should fail project if majority votes for refund", async function () {
+    it("Should allow investors to vote only once", async function () {
       // Fast forward time to end of funding period
       await time.increaseTo(endFundingTime + 1);
       
-      // All investors vote for refund (more than 50%)
+      // Vote for refund
       await openFund.connect(investor1).voteForRefund(projectId);
+      
+      // Try to vote again
+      await expect(
+        openFund.connect(investor1).voteForRefund(projectId)
+      ).to.be.revertedWith("Already voted");
+    });
+
+    it("Should update vote amount correctly when user votes", async function () {
+      // Fast forward time to end of funding period
+      await time.increaseTo(endFundingTime + 1);
+      
+      // Vote for refund
+      await openFund.connect(investor1).voteForRefund(projectId);
+      
+      // Check voting status and vote amount
+      const projectDetails = await openFund.getProjectDetails(projectId);
+      
+      // Calculate expected token amount that investor1 has (2 units = 200 USDT)
+      const tokensForTwoUnits = ethers.parseUnits("200", 6) / BigInt(tokenPrice);
+      expect(projectDetails[9]).to.equal(tokensForTwoUnits); // voteForRefundAmount
+      
+      // Vote with another investor
       await openFund.connect(investor2).voteForRefund(projectId);
-      await openFund.connect(investor3).voteForRefund(projectId);
+      
+      // Check updated vote amount
+      const updatedDetails = await openFund.getProjectDetails(projectId);
+      
+      // Calculate expected token amount that investor2 has (3 units = 300 USDT)
+      const tokensForThreeUnits = ethers.parseUnits("300", 6) / BigInt(tokenPrice);
+      expect(updatedDetails[9]).to.equal(tokensForTwoUnits + tokensForThreeUnits); // voteForRefundAmount
+    });
+
+    it("Should emit ProjectFailed event when majority votes for refund", async function () {
+      // Fast forward time to end of funding period
+      await time.increaseTo(endFundingTime + 1);
+      
+      // Investor1 and Investor2 vote for refund (more than 50% of tokens)
+      await openFund.connect(investor1).voteForRefund(projectId);
+      
+      // The second vote should trigger project failure
+      await expect(
+        openFund.connect(investor2).voteForRefund(projectId)
+      ).to.emit(openFund, "ProjectFailed")
+        .withArgs(projectId);
       
       // Check project status
       const projectDetails = await openFund.getProjectDetails(projectId);
-      expect(projectDetails.status).to.equal(3); // FundingFailed
+      expect(projectDetails[7]).to.equal(3); // FundingFailed
     });
 
     it("Should allow refunds when project fails", async function () {
@@ -290,7 +330,7 @@ describe("OpenFund", function () {
       
       // Check refund claimed status
       const investmentDetails = await openFund.getInvestmentDetails(projectId, investor1.address);
-      expect(investmentDetails.hasClaimedRefund).to.be.true;
+      expect(investmentDetails[2]).to.be.true; // hasClaimedRefund
     });
 
     it("Should allow raiser to claim funds after successful funding", async function () {
@@ -314,7 +354,7 @@ describe("OpenFund", function () {
       
       // Check project status
       const projectDetails = await openFund.getProjectDetails(projectId);
-      expect(projectDetails.status).to.equal(4); // FundingCompleted
+      expect(projectDetails[7]).to.equal(4); // FundingCompleted
     });
 
     it("Should allow platform to claim fee after successful funding", async function () {
@@ -429,7 +469,7 @@ describe("OpenFund", function () {
       ).to.be.revertedWith("Only token holders can vote");
     });
 
-    it("Should not allow multiple votes from the same investor", async function () {
+    it("Should not allow claiming unsold tokens before refund period ends", async function () {
       // Invest first
       await testUSDT.connect(investor1).approve(
         await openFund.getAddress(),
@@ -437,16 +477,10 @@ describe("OpenFund", function () {
       );
       await openFund.connect(investor1).invest(projectId, 1);
       
-      // Fast forward time to voting period
-      await time.increaseTo(endFundingTime + 1);
-      
-      // Vote once
-      await openFund.connect(investor1).voteForRefund(projectId);
-      
-      // Try to vote again
+      // Try to claim unsold tokens before refund period ends
       await expect(
-        openFund.connect(investor1).voteForRefund(projectId)
-      ).to.be.revertedWith("Already voted");
+        openFund.connect(projectRaiser).claimUnsoldTokens(projectId)
+      ).to.be.revertedWith("It is not time to claim unsold tokens");
     });
 
     it("Should not allow refunds before voting period ends", async function () {
@@ -467,6 +501,188 @@ describe("OpenFund", function () {
       await expect(
         openFund.connect(investor1).getRefund(projectId)
       ).to.be.revertedWith("Not in refund period");
+    });
+
+    it("Should not allow claiming platform fee when project has failed", async function () {
+      // Invest first
+      await testUSDT.connect(investor1).approve(
+        await openFund.getAddress(),
+        ethers.parseUnits("100", 6)
+      );
+      await openFund.connect(investor1).invest(projectId, 1);
+      
+      // Fast forward time to end of funding period
+      await time.increaseTo(endFundingTime + 1);
+      
+      // Vote for refund to make project fail
+      await openFund.connect(investor1).voteForRefund(projectId);
+      
+      // Fast forward time beyond refund period
+      await time.increaseTo(endFundingTime + time.duration.days(4) + 1);
+      
+      // Try to claim platform fee when project has failed
+      await expect(
+        openFund.connect(owner).claimPlatformFee(projectId)
+      ).to.be.revertedWith("Project funding is failed");
+    });
+  });
+  
+  describe("Project Status and State Transitions", function () {
+    beforeEach(async function () {
+      // Create project
+      await openFund.createProject(
+        projectId,
+        projectRaiser.address,
+        await testProjectToken.getAddress(),
+        tokensToSell,
+        tokenPrice,
+        endFundingTime,
+        decimal
+      );
+      
+      // Approve and deposit tokens
+      await testProjectToken.connect(projectRaiser).approve(
+        await openFund.getAddress(),
+        ethers.parseUnits(tokensToSell.toString(), decimal)
+      );
+      await openFund.connect(projectRaiser).depositTokens(projectId);
+      
+      // Approve USDT for investments
+      await testUSDT.connect(investor1).approve(
+        await openFund.getAddress(),
+        ethers.parseUnits("1000", 6)
+      );
+      await testUSDT.connect(investor2).approve(
+        await openFund.getAddress(),
+        ethers.parseUnits("1000", 6)
+      );
+      await testUSDT.connect(investor3).approve(
+        await openFund.getAddress(),
+        ethers.parseUnits("1000", 6)
+      );
+      
+      // Make investments
+      await openFund.connect(investor1).invest(projectId, 2); // 200 USDT
+      await openFund.connect(investor2).invest(projectId, 3); // 300 USDT
+      await openFund.connect(investor3).invest(projectId, 1); // 100 USDT
+    });
+
+    it("Should transition from RaisingPeriod to VotingPeriod when first vote is cast", async function () {
+      // Verify project is in RaisingPeriod
+      let projectDetails = await openFund.getProjectDetails(projectId);
+      expect(projectDetails[7]).to.equal(1); // RaisingPeriod
+      
+      // Fast forward time to end of funding period
+      await time.increaseTo(endFundingTime + 1);
+      
+      // Cast first vote
+      await openFund.connect(investor1).voteForRefund(projectId);
+      
+      // Verify project is now in VotingPeriod
+      projectDetails = await openFund.getProjectDetails(projectId);
+      expect(projectDetails[7]).to.equal(2); // VotingPeriod
+    });
+    
+    it("Should not transition to FundingFailed unless vote threshold is reached", async function () {
+      // Fast forward time to end of funding period
+      await time.increaseTo(endFundingTime + 1);
+      
+      // Cast vote from smallest investor (not enough for majority)
+      await openFund.connect(investor3).voteForRefund(projectId);
+      
+      // Verify project is still in VotingPeriod
+      let projectDetails = await openFund.getProjectDetails(projectId);
+      expect(projectDetails[7]).to.equal(2); // VotingPeriod
+      
+      // Cast vote from another investor to reach threshold
+      await openFund.connect(investor2).voteForRefund(projectId);
+      
+      // Verify project is now in FundingFailed
+      projectDetails = await openFund.getProjectDetails(projectId);
+      expect(projectDetails[7]).to.equal(3); // FundingFailed
+    });
+    
+    it("Should allow raiser to claim funds even when project failed after refund period", async function () {
+      // Fast forward time to end of funding period
+      await time.increaseTo(endFundingTime + 1);
+      
+      // All investors vote for refund
+      await openFund.connect(investor1).voteForRefund(projectId);
+      await openFund.connect(investor2).voteForRefund(projectId);
+      await openFund.connect(investor3).voteForRefund(projectId);
+      
+      // Verify project failed
+      let projectDetails = await openFund.getProjectDetails(projectId);
+      expect(projectDetails[7]).to.equal(3); // FundingFailed
+      
+      // Some investors claim refunds
+      await time.increaseTo(endFundingTime + time.duration.days(3) + 1); // Just after voting period
+      
+      // Approve tokens to be returned
+      const investor1TokenBalance = await testProjectToken.balanceOf(investor1.address);
+      await testProjectToken.connect(investor1).approve(
+        await openFund.getAddress(),
+        investor1TokenBalance
+      );
+      
+      // Get refund for investor1 only
+      await openFund.connect(investor1).getRefund(projectId);
+      
+      // Fast forward to after refund period
+      await time.increaseTo(endFundingTime + time.duration.days(4) + 1);
+      
+      // Get USDT balance before claim
+      const usdtBalanceBefore = await testUSDT.balanceOf(projectRaiser.address);
+      
+      // Raiser claims remaining funds
+      await expect(
+        openFund.connect(projectRaiser).claimFunds(projectId)
+      ).to.emit(openFund, "FundsClaimed");
+      
+      // Check USDT balance after claim
+      const usdtBalanceAfter = await testUSDT.balanceOf(projectRaiser.address);
+      
+      // Only investor1 got refund (200 USDT), so 400 USDT remains for raiser
+      const expectedFunds = ethers.parseUnits("400", 6);
+      expect(usdtBalanceAfter - usdtBalanceBefore).to.equal(expectedFunds);
+      
+      // Verify project status remains as FundingFailed
+      projectDetails = await openFund.getProjectDetails(projectId);
+      expect(projectDetails[7]).to.equal(3); // Still FundingFailed
+    });
+    
+    it("Should correctly track tokensSold during refund process", async function () {
+      // Fast forward time to end of funding period
+      await time.increaseTo(endFundingTime + 1);
+      
+      // All investors vote for refund
+      await openFund.connect(investor1).voteForRefund(projectId);
+      await openFund.connect(investor2).voteForRefund(projectId);
+      await openFund.connect(investor3).voteForRefund(projectId);
+      
+      // Fast forward to refund period
+      await time.increaseTo(endFundingTime + time.duration.days(3) + 1);
+      
+      // Check initial tokensSold
+      let projectDetails = await openFund.getProjectDetails(projectId);
+      const initialTokensSold = projectDetails[3]; // tokensSold
+      
+      // Calculate expected tokens for investor1 (2 units = 200 USDT)
+      const tokensForTwoUnits = ethers.parseUnits("200", 6) / BigInt(tokenPrice);
+      
+      // Approve tokens to be returned
+      const investor1TokenBalance = await testProjectToken.balanceOf(investor1.address);
+      await testProjectToken.connect(investor1).approve(
+        await openFund.getAddress(),
+        investor1TokenBalance
+      );
+      
+      // Get refund for investor1
+      await openFund.connect(investor1).getRefund(projectId);
+      
+      // Check updated tokensSold
+      projectDetails = await openFund.getProjectDetails(projectId);
+      expect(projectDetails[3]).to.equal(initialTokensSold - tokensForTwoUnits); // tokensSold
     });
   });
 });
